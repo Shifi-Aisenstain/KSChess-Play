@@ -26,31 +26,50 @@ public class GameManager {
     public void updateGame() {
         List<GameEvent> triggeredEvents = new ArrayList<>();
         for (GameEvent event : activeEvents) {
-            if (gameClockMs >= event.getEndTime()) triggeredEvents.add(event);
+            if (gameClockMs >= event.getEndTime()) {
+                triggeredEvents.add(event);
+            }
         }
-
         for (GameEvent event : triggeredEvents) {
-            if (event.getType() == GameEvent.EventType.MOVE) handleMoveArrival(event);
-            else activeEvents.remove(event);
+            if (event.getType() == GameEvent.EventType.MOVE) {
+                handleMoveArrival(event);
+            }
+        }
+        for (GameEvent event : triggeredEvents) {
+            if (event.getType() == GameEvent.EventType.JUMP) {
+                activeEvents.remove(event);
+            }
         }
     }
 
     private void handleMoveArrival(GameEvent moveEvent) {
         int toRow = moveEvent.getToRow();
         int toCol = moveEvent.getToCol();
+        Piece movingPiece = moveEvent.getPiece();
 
-        boolean captured = activeEvents.stream().anyMatch(e ->
-                e.getType() == GameEvent.EventType.JUMP && e.getFromRow() == toRow && e.getFromCol() == toCol);
+        boolean capturedByJumper = false;
+        for (GameEvent event : activeEvents) {
+            if (event.getType() == GameEvent.EventType.JUMP
+                    && event.getFromRow() == toRow
+                    && event.getFromCol() == toCol
+                    && event.getPiece().getColor() != movingPiece.getColor()) {
 
-        if (captured) {
+                capturedByJumper = true;
+                break;
+            }
+        }
+
+        if (capturedByJumper) {
             board.setPieceAt(moveEvent.getFromRow(), moveEvent.getFromCol(), null);
         } else {
             Piece target = board.getPieceAt(toRow, toCol);
-            if (target != null && target.getType() == 'K') this.isGameOver = true;
-
-            board.setPieceAt(toRow, toCol, moveEvent.getPiece());
+            if (target != null && target.getType() == 'K') {
+                this.isGameOver = true;
+            }
+            board.setPieceAt(toRow, toCol, movingPiece);
             board.setPieceAt(moveEvent.getFromRow(), moveEvent.getFromCol(), null);
         }
+
         activeEvents.remove(moveEvent);
     }
 
@@ -59,12 +78,12 @@ public class GameManager {
     }
 
     public boolean isPieceBusy(int row, int col) {
-        return activeEvents.stream().anyMatch(e -> e.getFromRow() == row && e.getFromCol() == col);
+        return activeEvents.stream().anyMatch(e -> 
+            e.getType() == GameEvent.EventType.MOVE && 
+            e.getFromRow() == row && 
+            e.getFromCol() == col
+        );
     }
-
-    /**
-     * 🎯 המתודה שהייתה חסרה ומייצרת את המטריצה עבור ה-IO
-     */
     public String[][] getUpdatedBoardMatrix() {
         updateGame();
         int rows = board.getLength();

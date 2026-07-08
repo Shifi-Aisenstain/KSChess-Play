@@ -46,8 +46,9 @@ public class InteractionManager {
     public void handleJump(int row, int col) {
         gameManager.updateGame();
         Piece piece = gameManager.getBoard().getPieceAt(row, col);
-        if (piece != null && !gameManager.isPieceBusy(row, col)) {
-            gameManager.addEvent(GameEvent.EventType.JUMP, piece, row, col, row, col);
+        if (piece == null || gameManager.isPieceBusy(row, col)) {
+            return;
         }
+        gameManager.addEvent(GameEvent.EventType.JUMP, piece, row, col, row, col);
     }
 }

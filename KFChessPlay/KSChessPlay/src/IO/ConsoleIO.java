@@ -85,10 +85,11 @@ public class ConsoleIO {
 
             } else if (line.startsWith("jump")) {
                 String[] parts = line.split("\\s+");
-                int row = Integer.parseInt(parts[1]);
-                int col = Integer.parseInt(parts[2]);
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                int col = x / 100;
+                int row = y / 100;
                 interactionManager.handleJump(row, col);
-
             } else if (line.equalsIgnoreCase("print board")) {
                 printBoardToConsole();
             }
