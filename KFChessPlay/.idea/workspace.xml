@@ -1,15 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackgroundAgentGlobalSettings">
+    <option name="selectedModelId" value="auto" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="" />
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability.">
+      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/IO/ConsoleIO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Bishop.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Board.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/King.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Knight.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Pawn.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Piece.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Queen.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Rook.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/KFChess Play.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/KFChess Play.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/User/Desktop/studies/bootcamp/KSChess-Play/KFChessPlay" value="3GD5bwNiNjcLGxPe6RTxjEvsCWe" />
+    </persistenceIdMap>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="3GD5bwNiNjcLGxPe6RTxjEvsCWe" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -17,10 +62,18 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.Main.executor": "Run",
+    "JUnit.test1.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "copilot.chat.legacySessionMetadata.migrated": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/User/Downloads/KFChess Play"
+    "last_opened_file_path": "C:/Users/User/Desktop/studies/bootcamp/KSChess-Play/KFChessPlay",
+    "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -39,5 +92,20 @@
       <updated>1783493373615</updated>
     </task>
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability." />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/KSChessPlay/src/Main.kt</url>
+          <line>169</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
