@@ -1,7 +1,8 @@
-package Controller;
+package Engine;
 
 import Models.Board;
 import Models.Piece;
+import Models.Position; // 🔥 ייבוא הטיפוס החדש
 import java.util.List;
 
 public class MoveEvent extends GameEvent {
@@ -35,12 +36,16 @@ public class MoveEvent extends GameEvent {
             }
         }
 
+        // 🔥 התאמה לשימוש ב-Position המאובטח של הלוח
+        Position sourcePos = new Position(this.fromRow, this.fromCol);
+        Position targetPos = new Position(toRow, toCol);
+
         if (capturedByJumper) {
             // אם קפצו עליו באוויר - הוא נלכד! מנקים רק את משבצת המוצא שלו והוא לא מגיע ליעד
-            board.setPieceAt(this.fromRow, this.fromCol, null);
+            board.setPieceAt(sourcePos, null);
         } else {
             // הגעה רגילה ליעד
-            Piece target = board.getPieceAt(toRow, toCol);
+            Piece target = board.getPieceAt(targetPos);
             if (target != null && target.getType() == 'K') {
                 gameManager.setGameOver(true);
             }
@@ -50,12 +55,12 @@ public class MoveEvent extends GameEvent {
             if (this.piece.getType() == 'P') {
                 if ((this.piece.getColor() == 'w' && toRow == 0) ||
                         (this.piece.getColor() == 'b' && toRow == board.getLength() - 1)) {
-                    pieceToPlace = new Models.Queen(this.piece.getColor());
+                    pieceToPlace = new Models.Piece(this.piece.getColor(), 'Q');
                 }
             }
 
-            board.setPieceAt(toRow, toCol, pieceToPlace);
-            board.setPieceAt(this.fromRow, this.fromCol, null);
+            board.setPieceAt(targetPos, pieceToPlace);
+            board.setPieceAt(sourcePos, null);
         }
     }
 }
