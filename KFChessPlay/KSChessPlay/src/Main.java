@@ -1,6 +1,6 @@
-import Controller.GameManager;
+import Engine.GameManager;             // 🔥 עודכן מ-Controller.GameManager ל-Engine.GameManager
 import Controller.InteractionManager;
-import IO.ConsoleIO;
+import Controller.ConsoleIO;           // 🔥 עודכן מ-IO.ConsoleIO ל-Controller.ConsoleIO
 
 public class Main {
     public static void main(String[] args) {

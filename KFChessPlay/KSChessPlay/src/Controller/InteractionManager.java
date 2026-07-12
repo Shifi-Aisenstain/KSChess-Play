@@ -1,57 +1,60 @@
 package Controller;
 
+import Models.Position;
 import Models.Piece;
+import Engine.GameManager;
 
 public class InteractionManager {
     private final GameManager gameManager;
-    private int selectedRow = -1;
-    private int selectedCol = -1;
+    private Position selectedPosition = null;
 
     public InteractionManager(GameManager gameManager) {
         this.gameManager = gameManager;
     }
 
     public void handleClick(int x, int y) {
-        if (gameManager.isGameOver()) return;
-        gameManager.updateGame();
+        Position clickedPos = CoordinateParser.parseClick(
+                x, y,
+                gameManager.getBoard().getLength(),
+                gameManager.getBoard().getCols()
+        );
 
-        int col = x / 100;
-        int row = y / 100;
-
-        if (gameManager.isPieceBusy(row, col)) return;
-
-        Piece clicked = gameManager.getBoard().getPieceAt(row, col);
-
-        if (clicked != null) {
-            if (selectedRow == -1 || gameManager.getBoard().getPieceAt(selectedRow, selectedCol).getColor() == clicked.getColor()) {
-                selectedRow = row;
-                selectedCol = col;
-            } else {
-                tryMove(selectedRow, selectedCol, row, col);
-            }
-        } else if (selectedRow != -1) {
-            tryMove(selectedRow, selectedCol, row, col);
+        if (clickedPos == null) {
+            selectedPosition = null;
+            return;
         }
-    }
 
-    private void tryMove(int fromRow, int fromCol, int toRow, int toCol) {
-        Piece piece = gameManager.getBoard().getPieceAt(fromRow, fromCol);
-        if (piece.isValidMove(gameManager.getBoard().getMatrixReadOnly(), fromRow, fromCol, toRow, toCol)) {
-            gameManager.addMoveEvent(piece, fromRow, fromCol, toRow, toCol);
-            selectedRow = -1;
-            selectedCol = -1;
+        Piece clickedPiece = gameManager.getBoard().getPieceAt(clickedPos);
+
+        if (selectedPosition == null) {
+            // לחיצה ראשונה - בחירת כלי
+            if (clickedPiece != null) {
+                selectedPosition = clickedPos;
+            }
+        } else {
+            Piece selectedPiece = gameManager.getBoard().getPieceAt(selectedPosition);
+
+            // 🔥 תיקון קריטי: מחליפים בחירה רק אם לחצנו על כלי אחר מאותו הצבע של השחקן הנוכחי!
+            if (clickedPiece != null && selectedPiece != null && clickedPiece.getColor() == selectedPiece.getColor() && !clickedPos.equals(selectedPosition)) {
+                selectedPosition = clickedPos;
+            } else {
+                // אם זה יעד ריק או כלי אויב - מדובר בניסיון מהלך/אכילה
+                MoveCommand command = new MoveCommand(selectedPosition, clickedPos);
+                gameManager.requestMove(command);
+                selectedPosition = null; // איפוס הבחירה לאחר המהלך
+            }
         }
     }
 
     public void handleJump(int x, int y) {
-        gameManager.updateGame();
-        int col = x / 100;
-        int row = y / 100;
-
-        Piece piece = gameManager.getBoard().getPieceAt(row, col);
-        if (piece == null || gameManager.isPieceBusy(row, col)) {
-            return;
+        Position clickedPos = CoordinateParser.parseClick(
+                x, y,
+                gameManager.getBoard().getLength(),
+                gameManager.getBoard().getCols()
+        );
+        if (clickedPos != null) {
+            gameManager.requestJump(clickedPos);
         }
-        gameManager.addJumpEvent(piece, row, col);
+        selectedPosition = null;
     }
 }
