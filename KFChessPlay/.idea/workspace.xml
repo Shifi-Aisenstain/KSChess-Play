@@ -7,8 +7,12 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability.">
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="Add Jump command">
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/JumpEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/MoveEvent.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/PieceFactory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameEvent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/IO/ConsoleIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/IO/ConsoleIO.java" afterDir="false" />
@@ -34,6 +38,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Shifi-Aisenstain"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Shifi-Aisenstain/KSChess-Play.git",
+    "accountId": "9968f3d2-db74-4bbd-a66a-d77a971707b5"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -81,12 +97,32 @@
       <option name="project" value="LOCAL‎" />
       <updated>1783526256115</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL‎-00002" summary="Add Jump command">
+      <option name="closed" value="true" />
+      <created>1783545928476</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL‎-00002" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1783545928476</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability." />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability." />
+    <MESSAGE value="Add Jump command" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Jump command" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
