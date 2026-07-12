@@ -3,12 +3,7 @@ package IO;
 import Controller.GameManager;
 import Controller.InteractionManager;
 import Models.Piece;
-import Models.Rook;
-import Models.Bishop;
-import Models.Queen;
-import Models.King;
-import Models.Knight;
-import Models.Pawn;
+import Models.PieceFactory;
 import java.util.Scanner;
 import java.util.ArrayList;
 
@@ -54,14 +49,29 @@ public class ConsoleIO {
         int numRows = rowsList.size();
         int numCols = rowsList.get(0).length;
 
+        // 🔥 בדיקת אחידות רוחב השורות (טסט 5 ו-11)
+        for (String[] rowTokens : rowsList) {
+            if (rowTokens.length != numCols) {
+                System.out.println("ERROR ROW_WIDTH_MISMATCH");
+                System.exit(0);
+            }
+        }
+
         gameManager.initializeBoard(numRows, numCols);
 
         for (int i = 0; i < numRows; i++) {
             String[] rowTokens = rowsList.get(i);
             for (int j = 0; j < numCols; j++) {
-                Piece piece = createPieceFromToken(rowTokens[j]);
-                if (piece != null) {
-                    gameManager.getBoard().setPieceAt(i, j, piece);
+                String token = rowTokens[j];
+
+                // 🔥 בדיקת טוקן לא מוכר (טסט 4 ו-10)
+                if (!token.equals(".")) {
+                    Piece piece = PieceFactory.createPiece(token);
+                    if (piece == null) {
+                        System.out.println("ERROR UNKNOWN_TOKEN");
+                        System.exit(0);
+                    }
+                    gameManager.addPieceToBoard(i, j, piece);
                 }
             }
         }
@@ -87,9 +97,9 @@ public class ConsoleIO {
                 String[] parts = line.split("\\s+");
                 int x = Integer.parseInt(parts[1]);
                 int y = Integer.parseInt(parts[2]);
-                int col = x / 100;
-                int row = y / 100;
-                interactionManager.handleJump(row, col);
+                // ✅ נקי! מעביר את ה-x וה-y הגולמיים, בלי לבצע מתמטיקה בתוך ה-IO
+                interactionManager.handleJump(x, y);
+
             } else if (line.equalsIgnoreCase("print board")) {
                 printBoardToConsole();
             }
@@ -107,21 +117,6 @@ public class ConsoleIO {
                 }
             }
             System.out.println();
-        }
-    }
-
-    private Piece createPieceFromToken(String token) {
-        if (token.equals(".")) return null;
-        char color = token.charAt(0);
-        char type = token.charAt(1);
-        switch (type) {
-            case 'R': return new Rook(color);
-            case 'B': return new Bishop(color);
-            case 'Q': return new Queen(color);
-            case 'K': return new King(color);
-            case 'N': return new Knight(color);
-            case 'P': return new Pawn(color);
-            default: return null;
         }
     }
 }

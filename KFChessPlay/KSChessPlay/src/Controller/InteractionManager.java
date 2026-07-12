@@ -37,18 +37,21 @@ public class InteractionManager {
     private void tryMove(int fromRow, int fromCol, int toRow, int toCol) {
         Piece piece = gameManager.getBoard().getPieceAt(fromRow, fromCol);
         if (piece.isValidMove(gameManager.getBoard().getMatrixReadOnly(), fromRow, fromCol, toRow, toCol)) {
-            gameManager.addEvent(GameEvent.EventType.MOVE, piece, fromRow, fromCol, toRow, toCol);
+            gameManager.addMoveEvent(piece, fromRow, fromCol, toRow, toCol);
             selectedRow = -1;
             selectedCol = -1;
         }
     }
 
-    public void handleJump(int row, int col) {
+    public void handleJump(int x, int y) {
         gameManager.updateGame();
+        int col = x / 100;
+        int row = y / 100;
+
         Piece piece = gameManager.getBoard().getPieceAt(row, col);
         if (piece == null || gameManager.isPieceBusy(row, col)) {
             return;
         }
-        gameManager.addEvent(GameEvent.EventType.JUMP, piece, row, col, row, col);
+        gameManager.addJumpEvent(piece, row, col);
     }
 }
