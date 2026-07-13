@@ -6,42 +6,24 @@ import models.Position;
 import java.util.List;
 
 /**
- * ✅ JumpEvent: Represents airborne state (piece temporarily vanishes and reappears)
+ * ✅ JumpEvent: Represents a piece "jumping" (airborne state)
  * 
- * LIFECYCLE:
- * 1. registerJump() creates this event with duration = JUMP_DURATION_MS
- * 2. Piece stays visible on board (protects its square from friendly pieces)
- * 3. At endTime: execute() is called
- * 4. execute() returns piece to its original position
+ * Behavior:
+ * 1. When registered: Piece disappears from board (setPieceAt(pos, null)) [by Arbiter]
+ * 2. While jumping (0ms - 1000ms): Position shows empty
+ * 3. When endTime reached: execute() is called
+ * 4. execute() returns piece to original position
  * 
- * JUMP DOES NOT PERMANENTLY REMOVE PIECE (CR Requirement Part E):
- *   - OLD BUG: Jumping piece was removed from board with setPieceAt(pos, null)
- *   - Problem: Friendly pieces could land on its square (illegal!)
- *   - Solution: Keep piece visible, it acts as a "ghost" that blocks friendly pieces
+ * Purpose: Air capture mechanic
+ * - White King jumps to block Black Rook's arrival
+ * - If Black Rook arrives AFTER jump ends, it lands normally
+ * - If Black Rook arrives DURING jump, MoveEvent checks and is blocked
  * 
- * AIR CAPTURE MECHANIC:
- *   Purpose: Jumping piece can intercept arriving enemy piece
- *   
- *   Example:
- *   - White King at (1, 0), jumps
- *   - Black Rook at (3, 0), moves left toward (1, 0)
- *   
- *   Timeline:
- *   - 0ms: King jumps (stays visible)
- *   - 1000ms: Jump ends, King returns to (1, 0)
- *   - 2000ms: Rook arrives at (1, 0) → captures King!
- *   
- *   If instead:
- *   - 0ms: King jumps
- *   - 1000ms: Rook arrives at (1, 0) BEFORE jump ends
- *   - Result: Rook is captured by King (air capture!)
- *   - Rook never lands
- * 
- * PRIORITY: 2 (executes AFTER MoveEvent)
- * This ensures moves are checked for air capture before jumps complete
- * 
- * @author Chess Game Architecture
- * @version 1.0 (Air Capture Mechanic)
+ * ✅ Timeline Example:
+ * - 0ms: jump 50 150 → King airborne, position empty
+ * - 500ms: position still empty
+ * - 1000ms: JumpEvent.execute() → King returns
+ * - Board shows King back at position
  */
 public class JumpEvent extends GameEvent {
 

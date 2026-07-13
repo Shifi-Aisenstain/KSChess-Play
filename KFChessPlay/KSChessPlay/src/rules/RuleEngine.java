@@ -6,34 +6,12 @@ import models.Position;
 import java.util.List;
 
 /**
- * ✅ STATELESS Rule Validator - CORE CR REQUIREMENT
- * 
- * PURPOSE: Validate ONLY chess rules on a given board state
- * (Real-time checks like isPieceBusy are NOT the responsibility of this class)
- * 
- * STATELESS DESIGN:
- * - No internal Board, GameManager, or event tracking fields
+ * ✅ Stateless Rule Validator
+ * - No internal state (no board, gameManager, or event tracking)
  * - Each validation is a pure function: (board, src, dest) → MoveValidation
- * - All state comes from method parameters, not stored in fields
+ * - Separation of Concerns: Only validates chess rules, NOT real-time state
  * 
- * ❌ VIOLATIONS (MUST NEVER ADD THESE):
- *   private Board board;           // ❌ Would store state
- *   private GameManager manager;   // ❌ Would create coupling
- *   private List<Position> cache;  // ❌ Would hide dependencies
- *   
- * ✅ CORRECT PATTERN (current):
- *   public MoveValidation validateMove(Board board, Position src, Position dest)
- *   - All needed state passed as parameters
- *   - No hidden dependencies
- *   - Each call independent of previous calls
- * 
- * SEPARATION OF CONCERNS:
- * - RuleEngine: "Is this move geometrically valid on this board?"
- * - GameManager: "Is the piece currently busy doing something else?"
- * - These are TWO DIFFERENT QUESTIONS - this class answers only the first
- * 
- * @author Chess Game Architecture
- * @version 1.0 (Stateless)
+ * Real-time checks (isPieceBusy) are handled by GameManager/Arbiter, not here!
  */
 public class RuleEngine {
     private final PieceRules pieceRules = new PieceRules();
