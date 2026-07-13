@@ -1,4 +1,4 @@
-package Models;
+package models;
 
 public class Piece {
     private final char color; // 'w' או 'b'
