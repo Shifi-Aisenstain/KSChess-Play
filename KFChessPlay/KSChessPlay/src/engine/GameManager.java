@@ -7,51 +7,6 @@ import models.Position;
 import rules.RuleEngine;
 import realtime.RealTimeArbiter;
 
-/**
- * ✅ GameManager: Central Orchestrator & Two-Phase Validation
- * 
- * RESPONSIBILITY: Coordinate between layers and enforce game rules.
- * - Receives move requests from InteractionManager
- * - Validates moves through RuleEngine (chess rules)
- * - Checks real-time state through Arbiter (is piece busy?)
- * - Delegates execution to Arbiter and events
- * 
- * TWO-PHASE VALIDATION PATTERN (CR Requirement Part B):
- * 
- * Phase 1: Chess Rules (RuleEngine)
- *   Question: "Is this move geometrically valid?"
- *   What it checks:
- *     - Source and destination on board?
- *     - Piece exists at source?
- *     - Move follows piece's movement rules?
- *     - Path not blocked?
- *   Returns: MoveValidation object (with detailed error message)
- * 
- * Phase 2: Real-Time State (Arbiter)
- *   Question: "Can this piece move RIGHT NOW?"
- *   What it checks:
- *     - Is piece currently in motion?
- *     - Is destination occupied by arriving piece?
- *     - Is game over?
- *   Returns: boolean isPieceBusy()
- * 
- * EXAMPLE:
- *   Rook at (0,0) trying to move to (0,3) when Bishop is in flight to (0,2):
- *   
- *   Phase 1: ✅ Valid - Rook can move right in straight line
- *   Phase 2: ❌ Invalid - Destination will be occupied when rook arrives
- *   Result: Move rejected
- * 
- * SEPARATION OF CONCERNS:
- * This pattern ensures:
- * - RuleEngine stays STATELESS (no board reference)
- * - Arbiter handles TIMING correctly
- * - No logic duplication
- * - Easy to test each layer independently
- * 
- * @author Chess Game Architecture
- * @version 1.0 (Two-Phase Validation)
- */
 public class GameManager {
     private Board board;
     private final RuleEngine ruleEngine = new RuleEngine();

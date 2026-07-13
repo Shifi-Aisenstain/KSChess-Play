@@ -5,32 +5,6 @@ import models.Piece;
 import models.Position;
 import java.util.List;
 
-/**
- * ✅ MoveEvent: Represents a piece in motion (moving from src to dest)
- * 
- * LIFECYCLE:
- * 1. registerMove() creates this event with endTime = now + distance * TIME_PER_CELL_MS
- * 2. While executing: Arbiter.isPieceBusy() returns true (prevents re-selection)
- * 3. At endTime: execute() is called
- * 4. execute() checks for air capture, then moves piece
- * 
- * AIR CAPTURE DETECTION (CR Requirement Part E):
- *   - While this move is executing, check activeEvents for enemy JumpEvent
- *   - If enemy is jumping AT this move's destination → collision!
- *   - This piece is captured (removed from board)
- *   - Never reaches destination
- * 
- * PAWN PROMOTION:
- *   - Handled during execute() phase
- *   - Checks if pawn reached final row
- *   - Converts to Queen if so
- * 
- * PRIORITY: 1 (executes before JumpEvent)
- * This ensures air capture works: arrival checked against active jump
- * 
- * @author Chess Game Architecture
- * @version 1.0 (Movement + Air Capture)
- */
 public class MoveEvent extends GameEvent {
     private final Position toPosition;
 

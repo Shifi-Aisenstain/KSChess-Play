@@ -1,0 +1,5 @@
+Board:
+wR bP . .
+. . . .
+Move: a1 to b1
+Wait: 1000

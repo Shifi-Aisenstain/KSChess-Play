@@ -10,47 +10,6 @@ import engine.GameManager;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ✅ RealTimeArbiter: Chess Game Real-Time Orchestrator (CR Requirement Part D)
- * 
- * RESPONSIBILITY: Manage real-time movement, timing, and collision detection.
- * This is the HEART of animating moves and handling simultaneous piece movements.
- * 
- * KEY COMPONENTS:
- * 1. activeEvents List - Tracks all in-flight moves and jumps
- * 2. gameClockMs - Central clock for the entire game
- * 3. Priority system - Determines execution order (moves before jumps)
- * 
- * MOVE LIFECYCLE:
- *   Phase 1: registerMove(piece, src, dest)
- *     → Create MoveEvent with duration based on distance
- *     → Add to activeEvents (piece still visible at source)
- *     → isPieceBusy() returns true for src (can't move again until arrival)
- *   
- *   Phase 2: advanceTime(ms)
- *     → gameClockMs += ms
- *     → Check which events reached endTime
- *     → Execute them in priority order
- *   
- *   Phase 3: event.execute()
- *     → Move piece to destination
- *     → Handle captures
- *     → Remove from activeEvents
- * 
- * JUMP MECHANICS (Air Capture):
- *   - registerJump() creates JumpEvent
- *   - Jumping piece stays visible (protects its square)
- *   - When move arrives during jump: MoveEvent.execute() detects collision
- *   - Arriving piece is captured (never lands)
- * 
- * PRIORITY SYSTEM:
- *   - MoveEvent: Priority 1 (executes first)
- *   - JumpEvent: Priority 2 (executes second)
- *   - Enables air capture: arriving move is checked DURING execution
- * 
- * @author Chess Game Architecture
- * @version 1.0 (Real-Time Orchestration)
- */
 public class RealTimeArbiter {
     public static final long TIME_PER_CELL_MS = 1000L;
     public static final long JUMP_DURATION_MS = 1000L;

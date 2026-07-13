@@ -7,39 +7,52 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי">
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/io/BoardParser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/io/BoardPrinter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/models/GameState.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/Motion.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/ImageView.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/Renderer.java" afterDir="false" />
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="הוספת REALTIME &#10;ועוד כמה תיקונים&#10;&#10;לא כולל טסטים">
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/integration/ChessGameIntegrationTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardMapperTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardParserTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardPrinterTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ConsoleIOTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ControllerTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/CoordinateParserTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameEventTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameManagerTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameStateTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/InteractionManagerTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/JumpEventTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MainTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MotionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveCommandTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveEventTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveValidationTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PieceRulesTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PieceTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PositionTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/RealTimeArbiterTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/RuleEngineTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ViewTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/01_board_parsing" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/02_click_to_move" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/03_rook_moves" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/04_invalid_moves" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/05_capture" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/06_game_over" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/KFChess Play.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/KFChess Play.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/20260709_134051.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134259 (1).png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134259.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134356.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134427.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134442.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134517.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134546.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134608.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/CoordinateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/MoveCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/JumpEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/MoveEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Piece.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Piece.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Rules/PieceRules.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/PieceRules.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Rules/RuleEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/rules/PieceRules.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/PieceRules.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/ChessGameTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/test1.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,22 +75,40 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Shifi-Aisenstain"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Shifi-Aisenstain&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Shifi-Aisenstain/KSChess-Play.git",
-    "accountId": "9968f3d2-db74-4bbd-a66a-d77a971707b5"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Shifi-Aisenstain/KSChess-Play.git&quot;,
+    &quot;accountId&quot;: &quot;9968f3d2-db74-4bbd-a66a-d77a971707b5&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
   <component name="ProjectId" id="3GD5bwNiNjcLGxPe6RTxjEvsCWe" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectSessionTemplates">
+    <option name="panelTemplate">
+      <template>
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="BACKGROUND" />
+        <option name="worktreeMode" value="WORKSPACE" />
+      </template>
+    </option>
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -85,8 +116,17 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.Main.executor": "Run",
+    "Downloaded.Files.Path.Enabled": "false",
+    "JUnit.test in KFChess Play.executor": "Coverage",
+    "JUnit.test.Test in KFChess Play.executor": "Coverage",
+    "JUnit.test.Test.unit in KFChess Play.executor": "Coverage",
     "JUnit.test1.executor": "Run",
+    "Maven.kschess-play [clean].executor": "Run",
+    "Maven.kschess-play [compile].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
@@ -98,6 +138,57 @@
     "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable"
   }
 }]]></component>
+  <component name="RunManager" selected="JUnit.test in KFChess Play">
+    <configuration name="test in KFChess Play" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="KFChess Play" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="test" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test.Test in KFChess Play" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="KFChess Play" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="test.Test.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="test.Test" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="test.Test.unit in KFChess Play" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="KFChess Play" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="test.Test.unit.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="test.Test.unit" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.test in KFChess Play" />
+        <item itemvalue="JUnit.test.Test in KFChess Play" />
+        <item itemvalue="JUnit.test.Test.unit in KFChess Play" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -145,7 +236,23 @@
       <option name="project" value="LOCAL‎" />
       <updated>1783863416375</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL‎-00005" summary="הוספת REALTIME &#10;ועוד כמה תיקונים">
+      <option name="closed" value="true" />
+      <created>1783945226677</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL‎-00005" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1783945226678</updated>
+    </task>
+    <task id="LOCAL‎-00006" summary="הוספת REALTIME &#10;ועוד כמה תיקונים&#10;&#10;לא כולל טסטים">
+      <option name="closed" value="true" />
+      <created>1783945345530</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL‎-00006" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1783945345530</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -164,7 +271,9 @@
     <MESSAGE value="Add Jump command" />
     <MESSAGE value="חלוקה ראשונית למחלקות לפי כללי הדיזיין. עדיין לא לגמרי רץ" />
     <MESSAGE value="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי" />
-    <option name="LAST_COMMIT_MESSAGE" value="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי" />
+    <MESSAGE value="הוספת REALTIME &#10;ועוד כמה תיקונים" />
+    <MESSAGE value="הוספת REALTIME &#10;ועוד כמה תיקונים&#10;&#10;לא כולל טסטים" />
+    <option name="LAST_COMMIT_MESSAGE" value="הוספת REALTIME &#10;ועוד כמה תיקונים&#10;&#10;לא כולל טסטים" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -176,5 +285,16 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/KFChessPlay$test_in_KFChess_Play.ic" NAME="test in KFChess Play Coverage Results" MODIFIED="1783952333154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>test.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/KFChessPlay$test_Test_in_KFChess_Play.ic" NAME="test.Test in KFChess Play Coverage Results" MODIFIED="1783952218435" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>test.Test.*</FILTER>
+    </SUITE>
+    <SUITE FILE_PATH="coverage/KFChessPlay$test_Test_unit_in_KFChess_Play.ic" NAME="test.Test.unit in KFChess Play Coverage Results" MODIFIED="1783949596957" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>test.Test.unit.*</FILTER>
+    </SUITE>
   </component>
 </project>

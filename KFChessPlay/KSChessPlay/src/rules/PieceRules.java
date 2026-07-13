@@ -9,25 +9,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * ✅ PieceRules: CENTRALIZED piece movement logic (SRP - Single Responsibility Principle)
+ * ✅ PieceRules: All piece-specific movement knowledge lives here
+ * - Ray directions (Rook, Bishop, Queen)
+ * - Fixed offsets (King, Knight)
+ * - Pawn special logic (double move, diagonal capture, promotion)
  * 
- * This class owns ALL knowledge about how chess pieces move:
- * - Ray-based pieces: Rook (orthogonal), Bishop (diagonal), Queen (both)
- * - Fixed-offset pieces: King (1 step any direction), Knight (L-shape)
- * - Pawn (special logic): Single step, double from start, diagonal capture
- * 
- * WHY CENTRALIZED HERE?
- * - Before: Pawn logic was scattered in RuleEngine AND Piece class → maintenance nightmare
- * - Now: All piece logic in ONE place → change pawn rules once, fixes everywhere
- * - Enables testing piece movement independently from board state
- * 
- * CRITICAL SRP RULES:
- * ❌ WRONG: Adding piece logic to RuleEngine
- * ❌ WRONG: Adding piece logic to Piece class
- * ✅ CORRECT: All piece logic lives HERE
- * 
- * @author Chess Game Architecture
- * @version 1.0 (SRP Compliant)
+ * Single Responsibility: All logic about HOW pieces move is here!
  */
 public class PieceRules {
 
