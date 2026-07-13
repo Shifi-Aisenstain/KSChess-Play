@@ -1,5 +1,33 @@
-package Models;
+package models;
 
+/**
+ * ✅ Board: Data Owner & Encapsulation (CR Requirement Part C)
+ * 
+ * RESPONSIBILITY: Board is the SOLE OWNER of piece placement.
+ * No external code can modify piece positions without going through Board's methods.
+ * 
+ * ENCAPSULATION RULES:
+ * - grid is PRIVATE + FINAL (no direct access)
+ * - Pieces are modified ONLY via setPieceAt()
+ * - Read access is safe (returns strings, not mutable piece arrays)
+ * 
+ * CRITICAL METHODS:
+ * 1. getPieceAt(Position) - READ: Returns piece reference (safe - Piece is immutable)
+ * 2. setPieceAt(Position, Piece) - WRITE: Only Board can call this internally
+ * 3. getReadOnlyMatrixView() - RENDER: Returns STRING array (external code CAN'T mutate board)
+ * 
+ * WHY getReadOnlyMatrixView() Returns Strings?
+ *   OLD BUG: Returned Piece[][] array → external code could do:
+ *     Piece[][] grid = board.getReadOnlyMatrix();
+ *     grid[0][0] = null;  // ❌ Changed board state without permission!
+ * 
+ *   NEW SOLUTION: Return String[][] instead:
+ *     String[][] view = board.getReadOnlyMatrixView();
+ *     view[0][0] = null;  // ❌ Doesn't affect board (strings are immutable)
+ * 
+ * @author Chess Game Architecture
+ * @version 1.0 (Encapsulation Pattern)
+ */
 public class Board {
     private final Piece[][] grid;
     private final int rows;

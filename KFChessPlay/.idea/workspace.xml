@@ -7,29 +7,39 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="חלוקה ראשונית למחלקות לפי כללי הדיזיין. עדיין לא לגמרי רץ">
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/CoordinateParser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/MoveCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Position.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Rules/PieceRules.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/Rules/RuleEngine.java" afterDir="false" />
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי">
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/io/BoardParser.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/io/BoardPrinter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/models/GameState.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/Motion.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/ImageView.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/Renderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/JumpEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Engine/JumpEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/MoveEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Engine/MoveEvent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/IO/ConsoleIO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/20260709_134051.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134259 (1).png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134259.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134356.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134427.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134442.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134517.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134546.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/gmail_images20260709_134608.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/CoordinateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Controller/MoveCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/JumpEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Engine/MoveEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Bishop.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Board.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/King.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Knight.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Pawn.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Piece.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Models/Piece.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/PieceFactory.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Queen.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Rook.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Piece.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Piece.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Models/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Rules/PieceRules.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/PieceRules.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Rules/RuleEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,7 +137,15 @@
       <option name="project" value="LOCAL‎" />
       <updated>1783859035826</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL‎-00004" summary="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי">
+      <option name="closed" value="true" />
+      <created>1783863416375</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL‎-00004" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1783863416375</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -145,7 +163,8 @@
     <MESSAGE value="Refactor project from a monolithic main into a clean, layered MVC architecture&#10;&#10;Successfully split the codebase into decoupled packages for Models, Controller, and IO to improve encapsulation and code readability. This separates piece logic, time-event scheduling, and user interactions into self-contained modules for better scalability." />
     <MESSAGE value="Add Jump command" />
     <MESSAGE value="חלוקה ראשונית למחלקות לפי כללי הדיזיין. עדיין לא לגמרי רץ" />
-    <option name="LAST_COMMIT_MESSAGE" value="חלוקה ראשונית למחלקות לפי כללי הדיזיין. עדיין לא לגמרי רץ" />
+    <MESSAGE value="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי" />
+    <option name="LAST_COMMIT_MESSAGE" value="חלוקה מושלמת לפי כל כללי הדיזיין&#10;כל הטסטים עוברים&#10;עדיין בלי טסטים שלי" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
