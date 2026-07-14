@@ -1,27 +1,25 @@
 package view;
 
-import models.GameState;
-import io.BoardPrinter;
+import graphics.Image; // הספרייה שקיבלת
 
 public class Renderer {
-    private BoardPrinter boardPrinter;
+    private SpriteLoader spriteLoader;
+    private static final int PIXELS_PER_METER = 100;
 
-    public Renderer() {
-        this.boardPrinter = new BoardPrinter();
+    public Renderer(SpriteLoader spriteLoader) {
+        this.spriteLoader = spriteLoader;
     }
 
-    /**
-     * מציג את כל מסך המשחק למשתמש (לוח + הודעות מערכת)
-     */
-    public void render(GameState gameState) {
-        // 1. מדפיס את הלוח באמצעות ה-Printer
-        boardPrinter.printBoard(gameState.getBoard());
+    public void render(GameSnapshot snapshot, Image canvas) {
+        for (PieceSnapshot piece : snapshot.getPieces()) {
+            // כאן ה-Renderer משתמש במשתנים שהגדרנו ב-PieceSnapshot
+            Image img = spriteLoader.getSprite(piece.type, piece.color, piece.state);
 
-        // 2. מציג מידע נוסף על מצב המשחק
-        System.out.println("תור השחקן: " + gameState.getCurrentTurn());
+            // המרה למסך (פיקסלים)
+            int x = (int)(piece.xMeters * PIXELS_PER_METER);
+            int y = (int)(piece.yMeters * PIXELS_PER_METER);
 
-        if (gameState.isGameOver()) {
-            System.out.println("המשחק הסתיים!");
+            img.drawOn(canvas, x, y);
         }
     }
 }
