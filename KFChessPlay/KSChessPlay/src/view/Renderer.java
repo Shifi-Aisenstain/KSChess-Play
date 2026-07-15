@@ -16,8 +16,8 @@ public class Renderer {
             Image img = spriteLoader.getSprite(piece.type, piece.color, piece.state);
 
             // המרה למסך (פיקסלים)
-            int x = (int)(piece.xMeters * PIXELS_PER_METER);
-            int y = (int)(piece.yMeters * PIXELS_PER_METER);
+            int x = (int)(piece.x * PIXELS_PER_METER);
+            int y = (int)(piece.y  * PIXELS_PER_METER);
 
             img.drawOn(canvas, x, y);
         }

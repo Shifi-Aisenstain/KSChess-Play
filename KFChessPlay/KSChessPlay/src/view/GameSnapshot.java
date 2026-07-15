@@ -14,5 +14,6 @@ public class GameSnapshot {
 
     public List<PieceSnapshot> getPieces() { return pieces; }
     public boolean isGameOver() { return isGameOver; }
+
 }
 

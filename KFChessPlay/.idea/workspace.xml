@@ -7,17 +7,18 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="טסטים רצים עם כיסוי של 95%&#10;לא כולל טסט למיין">
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/GameController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/graphics/Image.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameSnapshot.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/ImgRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/SpriteLoader.java" afterDir="false" />
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="הוספת גרפיקה - שלב ראשון.&#10;לא רץ - בעיות דיזיין">
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/kschess-play.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardMapperTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardMapperTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ViewTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ViewTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameSnapshot.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameSnapshot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/ImgRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/ImgRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/Renderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/Renderer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -104,7 +105,7 @@
     "settings.editor.selected.configurable": "com.github.copilot.settings.customization.CustomizationConfigurable"
   }
 }]]></component>
-  <component name="RunManager" selected="JUnit.test in KFChess Play">
+  <component name="RunManager">
     <configuration name="test in KFChess Play" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="KFChess Play" />
       <extension name="coverage">
@@ -226,7 +227,15 @@
       <option name="project" value="LOCAL‎" />
       <updated>1783952797874</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL‎-00008" summary="הוספת גרפיקה - שלב ראשון.&#10;לא רץ - בעיות דיזיין">
+      <option name="closed" value="true" />
+      <created>1784027874534</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL‎-00008" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1784027874534</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -248,7 +257,8 @@
     <MESSAGE value="הוספת REALTIME &#10;ועוד כמה תיקונים" />
     <MESSAGE value="הוספת REALTIME &#10;ועוד כמה תיקונים&#10;&#10;לא כולל טסטים" />
     <MESSAGE value="טסטים רצים עם כיסוי של 95%&#10;לא כולל טסט למיין" />
-    <option name="LAST_COMMIT_MESSAGE" value="טסטים רצים עם כיסוי של 95%&#10;לא כולל טסט למיין" />
+    <MESSAGE value="הוספת גרפיקה - שלב ראשון.&#10;לא רץ - בעיות דיזיין" />
+    <option name="LAST_COMMIT_MESSAGE" value="הוספת גרפיקה - שלב ראשון.&#10;לא רץ - בעיות דיזיין" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
