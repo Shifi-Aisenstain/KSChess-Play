@@ -1,9 +1,17 @@
 package view;
+
 public class PieceSnapshot {
-    public char type, color;
-    public String state;
-    public double x, y; // מטרים
-    public PieceSnapshot(char t, char c, String s, double x, double y) {
-        this.type = t; this.color = c; this.state = s; this.x = x; this.y = y;
+    public final char type;
+    public final char color;
+    public final String state;
+    public final double x;
+    public final double y;
+
+    public PieceSnapshot(char type, char color, String state, double x, double y) {
+        this.type = type;
+        this.color = color;
+        this.state = state;
+        this.x = x;
+        this.y = y;
     }
 }

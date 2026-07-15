@@ -1,28 +1,39 @@
-import engine.GameManager;
-import controller.GameController; // ה-Controller שלך שמחליף חלקית את ConsoleIO
 import view.*;
+import engine.GameManager;
+import controller.GameController;
 import input.BoardMapper;
 import graphics.Image;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. יצירת רכיבי המנוע
+        System.out.println("Starting Game...");
+
+        // 1. אתחול מנוע הלוגיקה
         GameManager gameManager = new GameManager();
 
-        // 2. יצירת רכיבי ה-View והקלט
-        SpriteLoader spriteLoader = new SpriteLoader();
-        BoardMapper boardMapper = new BoardMapper();
-
-        // טעינת תמונת רקע (דוגמה)
-        Image background = new Image();
-        background.read("assets/board_layout.png");
-
-        ImgRenderer renderer = new ImgRenderer(spriteLoader, background, boardMapper);
-
-        // 3. ה-Controller מחבר בין ה-Input (Window) ל-Engine
+        // 2. אתחול ה-UI והאדפטרים
+        BoardMapper mapper = new BoardMapper();
         GameController controller = new GameController(gameManager);
+        SpriteLoader spriteLoader = new SpriteLoader();
 
-        // 4. הרצת החלון
-        GameWindow window = new GameWindow(renderer, boardMapper, controller);
+        // טעינת תמונת הרקע מהנתיב המדויק שנמצא בתיקיית ה-assets שלך
+        Image bg = new Image();
+        try {
+            bg.read("board.png");// במקום "assets/board.png"
+            System.out.println("Board image loaded successfully.");
+        } catch (Exception e) {
+            System.err.println("Error loading board image: " + e.getMessage());
+            return; // עצירה אם התמונה לא נטענה
+        }
+
+        ImgRenderer renderer = new ImgRenderer(spriteLoader, bg, mapper);
+
+        // 3. יצירת החלון והרצתו
+        System.out.println("Initializing GameWindow...");
+        GameWindow window = new GameWindow(renderer, mapper, controller, gameManager);
+
+        // הגדרה שהחלון יציג את עצמו
+        window.setVisible(true);
+        System.out.println("Window set to visible.");
     }
 }

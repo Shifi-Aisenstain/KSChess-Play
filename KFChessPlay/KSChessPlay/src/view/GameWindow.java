@@ -1,37 +1,49 @@
 package view;
-import javax.swing.*;
 
-import graphics.Image;
+import view.*;
+import engine.GameManager;
+import controller.GameController; // וודאי שזה הייבוא הנכון!
 import input.BoardMapper;
-import controller.  GameController; // ה-Controller שלך
+import graphics.Image;
+
+import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class GameWindow extends JFrame {
     private ImgRenderer renderer;
     private BoardMapper mapper;
     private GameController controller;
-    private graphics.Image canvas; // ה-Canvas שעליו את מציירת
+    private GameManager engine;
+    private graphics.Image canvas;
 
-    public GameWindow(ImgRenderer renderer, BoardMapper mapper, GameController controller) {
+    public GameWindow(ImgRenderer renderer, BoardMapper mapper, GameController controller, GameManager engine) {
         this.renderer = renderer;
         this.mapper = mapper;
         this.controller = controller;
-        this.canvas = new Image();            // 1. יצירת אובייקט ריק
-        this.canvas.read("assets/board_layout.png");/ דוגמה ל-Canvas התחלתי
+        this.engine = engine;
 
-        // לופ המשחק: ריענון כל 16ms (כ-60 FPS)
+        // אתחול הקנבס
+        this.canvas = new graphics.Image();
+        this.canvas.read("assets/board_layout.png");
+
+        setTitle("Kung Fu Chess");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        add(new JLabel(new ImageIcon(canvas.get())));
+        pack();
+
+        // לופ הרינדור (60 FPS)
         Timer timer = new Timer(16, e -> {
-            // כאן תשלפי את ה-Snapshot העדכני מה-Engine
             GameSnapshot snapshot = engine.createSnapshot();
             renderer.render(snapshot, canvas);
-            this.repaint(); // מרענן את החלון
+            this.repaint();
         });
         timer.start();
 
         // האזנה לקליקים
-        this.addMouseListener(new java.awt.event.MouseAdapter() {
+        this.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent e) {
-                // המרה למיקום לוגי ושליחה ל-Controller
+            public void mouseClicked(MouseEvent e) {
                 var position = mapper.pixelToPosition(e.getX(), e.getY());
                 controller.handleInput(position.getRow(), position.getCol());
             }

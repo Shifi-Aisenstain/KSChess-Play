@@ -6,6 +6,11 @@ import models.Piece;
 import models.Position;
 import rules.RuleEngine;
 import realtime.RealTimeArbiter;
+import view.GameSnapshot;
+import view.PieceSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameManager {
     private Board board;
@@ -96,4 +101,18 @@ public class GameManager {
     public Board getBoard() { return this.board; }
     public boolean isGameOver() { return this.isGameOver; }
     public String[][] getUpdatedBoardMatrix() { return board.getReadOnlyMatrixView(); }
+    // בתוך GameManager
+// בתוך GameManager.java
+    public GameSnapshot createSnapshot() {
+        List<view.PieceSnapshot> pieces = new ArrayList<>();
+        for (int r = 0; r < board.getLength(); r++) {
+            for (int c = 0; c < board.getCols(); c++) {
+                models.Piece p = board.getPieceAt(new models.Position(r, c));
+                if (p != null) {
+                    pieces.add(new view.PieceSnapshot(p.getType(), p.getColor(), "idle", c, r));
+                }
+            }
+        }
+        return new GameSnapshot(pieces, this.isGameOver);
+    }
 }
