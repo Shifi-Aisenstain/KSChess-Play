@@ -8,6 +8,7 @@ import engine.MoveEvent;
 import engine.JumpEvent;
 import engine.GameManager;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class RealTimeArbiter {
@@ -76,5 +77,16 @@ public class RealTimeArbiter {
                 e.getFromPosition().equals(checkPos) ||
                         (e instanceof MoveEvent && ((MoveEvent) e).getToPosition().equals(checkPos))
         );
+    }
+
+    // Needed by GameManager.createSnapshot() so the renderer can show pieces
+    // mid-travel (sliding/bouncing) instead of only ever at rest, and to
+    // compute animation progress against a single shared clock.
+    public long getClockMs() {
+        return gameClockMs;
+    }
+
+    public List<GameEvent> getActiveEvents() {
+        return Collections.unmodifiableList(activeEvents);
     }
 }
