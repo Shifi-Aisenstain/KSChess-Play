@@ -1,51 +1,47 @@
 package view;
 
-import view.*;
-import engine.GameManager;
-import controller.GameController; // וודאי שזה הייבוא הנכון!
-import input.BoardMapper;
 import graphics.Image;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.BiConsumer;
 
+/**
+ * Pure view: displays whatever is currently drawn on the shared canvas and
+ * forwards raw mouse clicks to whoever registers interest via onClick().
+ * It does NOT load assets, run the render loop, or interpret pixel
+ * coordinates - those jobs belong to Main, GameLoop, and CoordinateParser
+ * respectively. (Previously this one class did all four things.)
+ */
 public class GameWindow extends JFrame {
-    private ImgRenderer renderer;
-    private BoardMapper mapper;
-    private GameController controller;
-    private GameManager engine;
-    private graphics.Image canvas;
+    private final JLabel canvasLabel;
 
-    public GameWindow(ImgRenderer renderer, BoardMapper mapper, GameController controller, GameManager engine) {
-        this.renderer = renderer;
-        this.mapper = mapper;
-        this.controller = controller;
-        this.engine = engine;
-
-        // אתחול הקנבס
-        this.canvas = new graphics.Image();
-        this.canvas.read("assets/board_layout.png");
-
+    public GameWindow(Image canvas) {
         setTitle("Kung Fu Chess");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        add(new JLabel(new ImageIcon(canvas.get())));
+
+        this.canvasLabel = new JLabel(new ImageIcon(canvas.get()));
+        add(canvasLabel);
         pack();
+    }
 
-        // לופ הרינדור (60 FPS)
-        Timer timer = new Timer(16, e -> {
-            GameSnapshot snapshot = engine.createSnapshot();
-            renderer.render(snapshot, canvas);
-            this.repaint();
-        });
-        timer.start();
+    /** Call after the canvas image has been redrawn in place, to repaint the window. */
+    public void refresh() {
+        canvasLabel.repaint();
+    }
 
-        // האזנה לקליקים
-        this.addMouseListener(new MouseAdapter() {
+    /** Registers a callback that receives raw pixel coordinates on each click. */
+    public void onClick(BiConsumer<Integer, Integer> handler) {
+        // Listener must be attached to canvasLabel, not the JFrame itself.
+        // canvasLabel fully covers the frame's content pane, so it is the
+        // component that actually receives the mouse events; a listener on
+        // the frame never fires for clicks that land on a child component.
+        // This is why clicks previously did nothing at all.
+        canvasLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                var position = mapper.pixelToPosition(e.getX(), e.getY());
-                controller.handleInput(position.getRow(), position.getCol());
+                handler.accept(e.getX(), e.getY());
             }
         });
     }

@@ -1,16 +1,21 @@
 package input;
 
-import controller.MoveCommand;
-import models.Position;
-import models.Piece;
+import controller.GameController;
 import engine.GameManager;
+import models.Position;
 
+/**
+ * Adapts raw pixel clicks (from the console/script protocol) into board
+ * positions and delegates to GameController for the actual selection/move
+ * logic, instead of keeping its own duplicate copy of that state machine.
+ */
 public class InteractionManager {
     private final GameManager gameManager;
-    private Position selectedPosition = null;
+    private final GameController controller;
 
     public InteractionManager(GameManager gameManager) {
         this.gameManager = gameManager;
+        this.controller = new GameController(gameManager);
     }
 
     public void handleClick(int x, int y) {
@@ -19,33 +24,10 @@ public class InteractionManager {
                 gameManager.getBoard().getLength(),
                 gameManager.getBoard().getCols()
         );
-
         if (clickedPos == null) {
-            selectedPosition = null;
             return;
         }
-
-        Piece clickedPiece = gameManager.getBoard().getPieceAt(clickedPos);
-
-        // לחיצה ראשונה - בחירת כלי
-        if (selectedPosition == null) {
-            if (clickedPiece != null) {
-                selectedPosition = clickedPos;
-            }
-            return;
-        }
-
-        // 🔥 תיקון טסט 9: אם נבחר כלי, ולחצו על כלי אחר מאותו הצבע -> החלף את הבחירה!
-        Piece srcPiece = gameManager.getBoard().getPieceAt(selectedPosition);
-        if (clickedPiece != null && srcPiece != null && clickedPiece.getColor() == srcPiece.getColor()) {
-            selectedPosition = clickedPos; // החלפת הבחירה לכלי החדש
-            return;
-        }
-
-        // לחיצה שנייה - ביצוע המהלך
-        MoveCommand command = new MoveCommand(selectedPosition, clickedPos);
-        gameManager.requestMove(command);
-        selectedPosition = null;
+        controller.handleInput(clickedPos.getRow(), clickedPos.getCol());
     }
 
     public void handleJump(int x, int y) {
@@ -57,6 +39,5 @@ public class InteractionManager {
         if (clickedPos != null) {
             gameManager.requestJump(clickedPos);
         }
-        selectedPosition = null;
     }
 }

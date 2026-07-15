@@ -18,9 +18,9 @@ public class Image {
 
     /* ----------- load & optional resize ----------- */
     public Image read(String path,
-                    Dimension targetSize,
-                    boolean keepAspect,
-                    Object interpolation /*ignored*/) {
+                      Dimension targetSize,
+                      boolean keepAspect,
+                      Object interpolation /*ignored*/) {
 
         try {
             img = ImageIO.read(new File(path));                              // :contentReference[oaicite:0]{index=0}
@@ -58,6 +58,54 @@ public class Image {
 
     public Image read(String path) { return read(path, null, false, null); }
 
+    /* ----------- strip a flat background color to transparency ----------- */
+    /**
+     * Many of the sprite PNGs in assets/ have no alpha channel - they're a
+     * piece drawn on a flat white rectangle. Drawn as-is, that white
+     * rectangle covers the checkerboard square underneath it, which is why
+     * pieces looked like they were sitting on opaque white/gray tiles.
+     * This converts the image to ARGB and makes every pixel within
+     * `tolerance` of `keyColor` fully transparent, leaving the piece itself
+     * untouched (piece fill colors in these assets differ from the
+     * background by more than the tolerance used here).
+     */
+    public Image makeColorTransparent(Color keyColor, int tolerance) {
+        if (img == null) throw new IllegalStateException("Image not loaded.");
+
+        int w = img.getWidth(), h = img.getHeight();
+        BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+
+        int kr = keyColor.getRed(), kg = keyColor.getGreen(), kb = keyColor.getBlue();
+
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int rgb = img.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+
+                boolean isBackground = Math.abs(r - kr) <= tolerance
+                        && Math.abs(g - kg) <= tolerance
+                        && Math.abs(b - kb) <= tolerance;
+
+                out.setRGB(x, y, isBackground ? (rgb & 0x00FFFFFF) : (0xFF000000 | rgb));
+            }
+        }
+
+        img = out;
+        return this;
+    }
+
+    /* ----------- flat translucent rectangle (selection / move highlights) ----------- */
+    public void fillRectAlpha(int x, int y, int w, int h, Color color) {
+        if (img == null) throw new IllegalStateException("Image not loaded.");
+
+        Graphics2D g = img.createGraphics();
+        g.setColor(color); // an ARGB Color's alpha is honored automatically
+        g.fillRect(x, y, w, h);
+        g.dispose();
+    }
+
     /* ----------- draw this image onto another ----------- */
     public void drawOn(Image other, int x, int y) {
         if (img == null || other.img == null)
@@ -68,7 +116,7 @@ public class Image {
             throw new IllegalArgumentException("Patch exceeds destination bounds.");
 
         Graphics2D g = other.img.createGraphics();
-        g.setComposite(AlphaComposite.SrcOver);                               // handles alpha channel :contentReference[oaicite:3]{index=3}
+        g.setComposite(AlphaComposite.SrcOver);                               // handles alpha channel :contentReference[oaicite:3]{index=3}
         g.drawImage(img, x, y, null);                                        // :contentReference[oaicite:4]{index=4}
         g.dispose();
     }

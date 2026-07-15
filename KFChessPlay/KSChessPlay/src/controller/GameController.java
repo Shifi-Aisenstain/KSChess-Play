@@ -1,8 +1,15 @@
 package controller;
 
 import engine.GameManager;
+import models.Piece;
 import models.Position;
 
+/**
+ * The single owner of the "select a piece, then click a destination" state
+ * machine. Both the GUI (via mouse clicks) and the console (via
+ * InteractionManager, after it turns pixels into a Position) route through
+ * here, so there is exactly one place that knows the selection rules.
+ */
 public class GameController {
     private final GameManager gameManager;
     private Position selectedPosition = null;
@@ -14,29 +21,36 @@ public class GameController {
     public void handleInput(int row, int col) {
         Position targetPos = new Position(row, col);
 
-        // 1. האם המשתמש כבר בחר כלי (לחיצה שנייה)?
         if (selectedPosition != null) {
-            // אם לחץ שוב על אותו כלי -> ביטול בחירה
+            // Clicked the already-selected square again -> cancel selection.
             if (selectedPosition.equals(targetPos)) {
                 selectedPosition = null;
-                System.out.println("Selection cancelled.");
-            } else {
-                // נסיון ביצוע מהלך
-                // כאן אנו יוצרים את ה-MoveCommand כפי שהדיזיין דורש
-                MoveCommand command = new MoveCommand(selectedPosition, targetPos);
-                gameManager.requestMove(command);
-
-                // איפוס בחירה אחרי ניסיון מהלך
-                selectedPosition = null;
+                return;
             }
+
+            Piece selectedPiece = gameManager.getBoard().getPieceAt(selectedPosition);
+            Piece targetPiece = gameManager.getBoard().getPieceAt(targetPos);
+
+            // Clicked another piece of the same color -> switch selection to it.
+            if (selectedPiece != null && targetPiece != null
+                    && selectedPiece.getColor() == targetPiece.getColor()) {
+                selectedPosition = targetPos;
+                return;
+            }
+
+            // Otherwise, attempt the move.
+            MoveCommand command = new MoveCommand(selectedPosition, targetPos);
+            gameManager.requestMove(command);
+            selectedPosition = null;
             return;
         }
 
-        // 2. לחיצה ראשונה: ניסיון לבחור כלי
-        // בדיקה מול ה-Board דרך ה-GameManager
+        // First click: try to select a piece.
         if (gameManager.getBoard().getPieceAt(targetPos) != null) {
             selectedPosition = targetPos;
-            System.out.println("Piece selected at: " + row + "," + col);
         }
+    }
+    public Position getSelectedPosition() {
+        return selectedPosition;
     }
 }
