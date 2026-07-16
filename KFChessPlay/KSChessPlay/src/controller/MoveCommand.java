@@ -2,7 +2,6 @@ package controller;
 
 import models.Position;
 
-// אובייקט פקודה פשוט המייצג את כוונת המשתמש
 public class MoveCommand {
     private final Position source;
     private final Position destination;

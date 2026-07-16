@@ -68,10 +68,9 @@ public class ConsoleIO {
                         System.exit(0);
                     }
 
-                    char color = token.charAt(0); // 'w' או 'b'
-                    char type = token.charAt(1);  // 'R', 'K', 'P', 'Q', 'B', 'N'
+                    char color = token.charAt(0);
+                    char type = token.charAt(1);
 
-                    // 🔥 עודכן: תמיכה מלאה בכל סוגי הכלים בטסטים
                     if ((color != 'w' && color != 'b') ||
                             (type != 'R' && type != 'K' && type != 'P' && type != 'Q' && type != 'B' && type != 'N')) {
                         System.out.println("ERROR UNKNOWN_TOKEN");

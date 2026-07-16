@@ -149,6 +149,8 @@ public class Image {
             f.setVisible(true);
         });
     }
+    public int getWidth() { return img.getWidth(); }
+    public int getHeight() { return img.getHeight(); }
 
     /* ----------- access (optional) ----------- */
     public BufferedImage get() { return img; }
