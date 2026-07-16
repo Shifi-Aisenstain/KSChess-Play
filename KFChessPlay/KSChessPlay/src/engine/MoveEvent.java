@@ -25,25 +25,62 @@ public class MoveEvent extends GameEvent {
         for (GameEvent event : activeEvents) {
             if (event instanceof JumpEvent
                     && event.getFromPosition().equals(this.toPosition)
-                    && event.getPiece().getColor() != this.piece.getColor()) { // רק צבע אויב!
+                    && event.getPiece().getColor() != this.piece.getColor()) {
                 capturedByJumper = true;
                 break;
             }
         }
 
         if (capturedByJumper) {
-            // הכלי נתפס באוויר על ידי אויב - הוא נמחק ממשבצת המקור ולא מגיע ליעד
             gameManager.clearPosition(this.fromPosition);
-        } else {
-            Piece pieceToPlace = this.piece;
-            if (this.piece.getType() == 'P') {
-                int promotionRow = (this.piece.getColor() == 'w') ? 0 : board.getLength() - 1;
-                if (this.toPosition.getRow() == promotionRow) {
-                    pieceToPlace = new Piece(this.piece.getColor(), 'Q');
-                }
+            return;
+        }
+
+        Position blocker = findFirstBlockingSquare(board);
+        Position effectiveDestination = this.toPosition;
+
+        if (blocker != null) {
+            Piece occupant = board.getPieceAt(blocker);
+            if (occupant.getColor() == this.piece.getColor()) {
+                return;
             }
-            // מזיז ליעד ומנקה את המקור בצורה אטומית בסיום התנועה
-            gameManager.executeActualMove(this.fromPosition, this.toPosition, pieceToPlace);
+            effectiveDestination = blocker;
+        }
+
+        Piece pieceToPlace = this.piece;
+        if (this.piece.getType() == 'P') {
+            int promotionRow = (this.piece.getColor() == 'w') ? 0 : board.getLength() - 1;
+            if (effectiveDestination.getRow() == promotionRow) {
+                pieceToPlace = new Piece(this.piece.getColor(), 'Q');
+            }
+        }
+        gameManager.executeActualMove(this.fromPosition, effectiveDestination, pieceToPlace);
+        gameManager.registerLongRestCooldown(pieceToPlace, effectiveDestination);
+    }
+
+    private Position findFirstBlockingSquare(Board board) {
+        char type = this.piece.getType();
+        boolean isRayPiece = (type == 'R' || type == 'B' || type == 'Q');
+
+        if (!isRayPiece) {
+            return (board.getPieceAt(this.toPosition) != null) ? this.toPosition : null;
+        }
+
+        int dr = Integer.signum(toPosition.getRow() - fromPosition.getRow());
+        int dc = Integer.signum(toPosition.getCol() - fromPosition.getCol());
+        int r = fromPosition.getRow() + dr;
+        int c = fromPosition.getCol() + dc;
+
+        while (true) {
+            Position current = new Position(r, c);
+            if (board.getPieceAt(current) != null) {
+                return current;
+            }
+            if (current.equals(toPosition)) {
+                return null;
+            }
+            r += dr;
+            c += dc;
         }
     }
 }

@@ -29,7 +29,6 @@ public class Board {
         }
     }
 
-    // הדפסה בטוחה: מחזירה מטריצת מחרוזות חדשה לחלוטין לצורכי renderer בלבד
     public String[][] getReadOnlyMatrixView() {
         String[][] view = new String[rows][cols];
         for (int i = 0; i < rows; i++) {

@@ -6,6 +6,7 @@ import models.Position;
 import engine.GameEvent;
 import engine.MoveEvent;
 import engine.JumpEvent;
+import engine.CooldownEvent;
 import engine.GameManager;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +14,9 @@ import java.util.List;
 
 public class RealTimeArbiter {
     public static final long TIME_PER_CELL_MS = 1000L;
-    public static final long JUMP_DURATION_MS = 1000L;
+    public static final long JUMP_DURATION_MS  = 1000L;
+    public static final long LONG_REST_MS      = 3000L;
+    public static final long SHORT_REST_MS     = 1000L;
 
     private Board board;
     private final List<GameEvent> activeEvents = new ArrayList<>();
@@ -26,23 +29,28 @@ public class RealTimeArbiter {
     public void registerMove(Piece piece, Position src, Position dest) {
         if (board == null) return;
 
-        int deltaRow = Math.abs(dest.getRow() - src.getRow());
-        int deltaCol = Math.abs(dest.getCol() - src.getCol());
-        int distance = Math.max(deltaRow, deltaCol);
+        int distance = Math.max(
+            Math.abs(dest.getRow() - src.getRow()),
+            Math.abs(dest.getCol() - src.getCol())
+        );
+        long moveDuration = distance * TIME_PER_CELL_MS;
+        long moveEnd = gameClockMs + moveDuration;
 
-        long duration = distance * TIME_PER_CELL_MS;
-
-        activeEvents.add(new MoveEvent(piece, src, dest, gameClockMs + duration));
-        // 🔥 תיקון טסט 25+26: מחקנו את board.setPieceAt(src, null);
-        // הכלי נשאר במקור שלו עד שהוא מגיע ליעד!
+        activeEvents.add(new MoveEvent(piece, src, dest, moveEnd));
     }
 
     public void registerJump(Piece piece, Position pos) {
         if (board == null) return;
 
-        activeEvents.add(new JumpEvent(piece, pos, gameClockMs + JUMP_DURATION_MS));
-        // 🔥 תיקון טסט 51: מחקנו את board.setPieceAt(pos, null);
-        // הכלי נשאר על הלוח ומגן על עצמו מפני כלים ידידותיים
+        long jumpEnd = gameClockMs + JUMP_DURATION_MS;
+        activeEvents.add(new JumpEvent(piece, pos, jumpEnd));
+        activeEvents.add(new CooldownEvent(piece, pos, gameClockMs + JUMP_DURATION_MS + SHORT_REST_MS,
+                CooldownEvent.Type.SHORT_REST));
+    }
+
+    public void registerLongRestCooldown(Piece piece, Position landingPos) {
+        activeEvents.add(new CooldownEvent(piece, landingPos,
+                gameClockMs + LONG_REST_MS, CooldownEvent.Type.LONG_REST));
     }
 
     public void advanceTime(int ms, GameManager gameManager) {
@@ -53,40 +61,42 @@ public class RealTimeArbiter {
     private void updateEvents(GameManager gameManager) {
         if (board == null) return;
 
-        List<GameEvent> triggeredEvents = new ArrayList<>();
+        List<GameEvent> triggered = new ArrayList<>();
         List<GameEvent> snapshot = new ArrayList<>(activeEvents);
 
         for (GameEvent event : snapshot) {
             if (gameClockMs >= event.getEndTime()) {
-                triggeredEvents.add(event);
+                triggered.add(event);
             }
         }
 
-        triggeredEvents.sort((e1, e2) -> Integer.compare(e1.getPriority(), e2.getPriority()));
+        triggered.sort((e1, e2) -> Integer.compare(e1.getPriority(), e2.getPriority()));
 
-        for (GameEvent event : triggeredEvents) {
+        for (GameEvent event : triggered) {
             event.execute(this.board, snapshot, gameManager);
         }
 
-        activeEvents.removeAll(triggeredEvents);
+        activeEvents.removeAll(triggered);
     }
 
     public boolean isPieceBusy(int row, int col) {
-        Position checkPos = new Position(row, col);
-        return activeEvents.stream().anyMatch(e ->
-                e.getFromPosition().equals(checkPos) ||
-                        (e instanceof MoveEvent && ((MoveEvent) e).getToPosition().equals(checkPos))
-        );
+        Position pos = new Position(row, col);
+        for (GameEvent e : activeEvents) {
+            if (e instanceof MoveEvent && e.getFromPosition().equals(pos)) return true;
+            if (e instanceof JumpEvent && e.getFromPosition().equals(pos)) return true;
+            if (e instanceof CooldownEvent && e.getFromPosition().equals(pos)) return true;
+        }
+        return false;
     }
 
-    // Needed by GameManager.createSnapshot() so the renderer can show pieces
-    // mid-travel (sliding/bouncing) instead of only ever at rest, and to
-    // compute animation progress against a single shared clock.
-    public long getClockMs() {
-        return gameClockMs;
-    }
+    public long getClockMs() { return gameClockMs; }
 
     public List<GameEvent> getActiveEvents() {
         return Collections.unmodifiableList(activeEvents);
+    }
+
+    public void reset() {
+        activeEvents.clear();
+        gameClockMs = 0;
     }
 }

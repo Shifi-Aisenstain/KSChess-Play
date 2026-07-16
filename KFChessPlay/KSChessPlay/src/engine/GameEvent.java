@@ -20,7 +20,6 @@ public abstract class GameEvent {
     public Position getFromPosition() { return fromPosition; }
     public long getEndTime() { return endTime; }
 
-    // 🔥 מתודה פולימורפית חדשה המגדירה את סדר העדיפות של האירוע
     public abstract int getPriority();
 
     public abstract void execute(Board board, List<GameEvent> activeEvents, GameManager gameManager);

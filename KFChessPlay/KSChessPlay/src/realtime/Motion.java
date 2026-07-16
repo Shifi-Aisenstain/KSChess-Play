@@ -18,14 +18,11 @@ public class Motion {
         this.duration = calculateDuration(from, to);
     }
 
-    /**
-     * חישוב משך התנועה האמיתי: 1.0 שנייה (1000ms) לכל משבצת, לפי הטסטים!
-     */
     private float calculateDuration(Position from, Position to) {
         int rowDiff = Math.abs(to.getRow() - from.getRow());
         int colDiff = Math.abs(to.getCol() - from.getCol());
-        int distance = Math.max(rowDiff, colDiff); // תנועה מקבילית או אלכסונית
-        return distance * 1.0f; // שנייה אחת למשבצת
+        int distance = Math.max(rowDiff, colDiff);
+        return distance * 1.0f;
     }
 
     public Piece getPiece() { return piece; }

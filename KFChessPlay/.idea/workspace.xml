@@ -7,383 +7,162 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="המשך נסיונות.&#10;בעיה בגישה אל ניתוב התמונות">
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/io/CsvBoardLoader.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameLoop.java" afterDir="false" />
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="UI &#10;הלוח עובד&#10;בעיה בקפיצה">
+      <change afterPath="$PROJECT_DIR$/KSChessPlay/src/view/JumpHighlight.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/BW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/1.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/2.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/3.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/4.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/KW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/NW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/PW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/QW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RB/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/idle/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/jump/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/long_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/move/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/1.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/2.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/3.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/4.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/5.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/RW/states/short_rest/sprites/5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/board.png" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/board.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/assets/board.csv" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/assets/board.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/ConsoleIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/ConsoleIO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/GameController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/GameEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameEvent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/GameManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/JumpEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/engine/MoveEvent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/graphics/Image.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/graphics/Image.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/BoardMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/CoordinateParser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Board.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/realtime/Motion.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/Motion.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/realtime/RealTimeArbiter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/rules/RuleEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/integration/ChessGameIntegrationTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardParserTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardPrinterTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/BoardTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ConsoleIOTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ControllerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/CoordinateParserTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameEventTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameManagerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/GameStateTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/InteractionManagerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/JumpEventTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MainTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MotionTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveCommandTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveEventTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/MoveValidationTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PieceRulesTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PieceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/PositionTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/RealTimeArbiterTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/RuleEngineTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/Test/unit/ViewTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/01_board_parsing" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/02_click_to_move" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/03_rook_moves" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/04_invalid_moves" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/05_capture" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/test/resources/scripts/06_game_over" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameLoop.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameLoop.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameSnapshot.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameSnapshot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/ImgRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/ImgRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/Renderer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/SpriteLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/SpriteLoader.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -419,6 +198,10 @@
     &quot;accountId&quot;: &quot;9968f3d2-db74-4bbd-a66a-d77a971707b5&quot;
   }
 }</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -445,32 +228,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Main.executor": "Run",
-    "Application.Unnamed.executor": "Run",
-    "Downloaded.Files.Path.Enabled": "false",
-    "JUnit.test in KFChess Play.executor": "Run",
-    "JUnit.test.Test in KFChess Play.executor": "Coverage",
-    "JUnit.test.Test.unit in KFChess Play.executor": "Coverage",
-    "JUnit.test1.executor": "Run",
-    "Maven.kschess-play [clean].executor": "Run",
-    "Maven.kschess-play [compile].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Repository.Attach.Annotations": "false",
-    "Repository.Attach.JavaDocs": "false",
-    "Repository.Attach.Sources": "false",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "copilot.chat.legacySessionMetadata.migrated": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/User/Desktop/studies/bootcamp/KSChess-Play/KFChessPlay",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
+    &quot;JUnit.test in KFChess Play.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.test.Test in KFChess Play.executor&quot;: &quot;Coverage&quot;,
+    &quot;JUnit.test.Test.unit in KFChess Play.executor&quot;: &quot;Coverage&quot;,
+    &quot;JUnit.test1.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.kschess-play [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.kschess-play [compile].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
+    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
+    &quot;RunOnceActivity.ChatTagsLlmMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ClientConfigCleanupMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyAccountHistoryMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyAccountsIdsRefresh&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyAssignOrphanedChatsToActiveAccount&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyConvertUrlToCodebaseName&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyHistoryLlmMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyMigrateChatHistory-v2&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.CodyProjectSettingsMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.DeprecatedChatLlmMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ToggleCodyToolWindowAfterMigration&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;copilot.chat.legacySessionMetadata.migrated&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/User/Desktop/studies/bootcamp/KSChess-Play/KFChessPlay&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Application.Unnamed">
     <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="ALTERNATIVE_JRE_PATH" value="23" />
@@ -625,7 +420,15 @@
       <option name="project" value="LOCAL‎" />
       <updated>1784105995867</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL‎-00010" summary="UI &#10;הלוח עובד&#10;בעיה בקפיצה">
+      <option name="closed" value="true" />
+      <created>1784126568684</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL‎-00010" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1784126568684</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -649,7 +452,8 @@
     <MESSAGE value="טסטים רצים עם כיסוי של 95%&#10;לא כולל טסט למיין" />
     <MESSAGE value="הוספת גרפיקה - שלב ראשון.&#10;לא רץ - בעיות דיזיין" />
     <MESSAGE value="המשך נסיונות.&#10;בעיה בגישה אל ניתוב התמונות" />
-    <option name="LAST_COMMIT_MESSAGE" value="המשך נסיונות.&#10;בעיה בגישה אל ניתוב התמונות" />
+    <MESSAGE value="UI &#10;הלוח עובד&#10;בעיה בקפיצה" />
+    <option name="LAST_COMMIT_MESSAGE" value="UI &#10;הלוח עובד&#10;בעיה בקפיצה" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
