@@ -6,6 +6,10 @@ import models.Piece;
 import models.Position;
 import rules.RuleEngine;
 import realtime.RealTimeArbiter;
+import shared.eventbus.Event;
+import shared.eventbus.EventBus;
+import shared.eventbus.events.MoveExecutedEvent;
+import shared.eventbus.events.PieceJumpedEvent;
 import view.CooldownHighlight;
 import view.GameSnapshot;
 import view.PieceSnapshot;
@@ -14,6 +18,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Core real-time chess engine. Unchanged in behaviour from the single-player
+ * version - the only addition is an {@link EventBus} hook so that server-side
+ * code (scoreboards, move logs, sound cues, animations - see the course spec's
+ * "pub/sub bus" requirement) can react to what happens on the board without
+ * GameManager needing to know who's listening.
+ *
+ * <p>The no-arg constructor is preserved (and used by the existing unit/
+ * integration tests) - it just wires up a private, unshared bus so nothing
+ * publishes anywhere visible. Server code uses {@link #GameManager(String, EventBus)}
+ * so the events end up on the shared per-room bus instead.
+ */
 public class GameManager {
     private static final double JUMP_BOUNCE_HEIGHT = 0.3;
 
@@ -21,9 +37,25 @@ public class GameManager {
     private final RuleEngine ruleEngine = new RuleEngine();
     private final RealTimeArbiter arbiter = new RealTimeArbiter();
     private final MoveLogger moveLogger = new MoveLogger();
+    private final EventBus eventBus;
+    private final String roomId;
     private boolean isGameOver = false;
 
-    public GameManager() {}
+    public GameManager() {
+        this(null, new EventBus());
+    }
+
+    /**
+     * @param roomId   identifies which game session published events belong to
+     *                 (a single server process can host many concurrent rooms
+     *                 sharing handler/logger classes, so events are tagged).
+     * @param eventBus the bus events are published on; pass the same instance
+     *                 used elsewhere in the room/session so subscribers see them.
+     */
+    public GameManager(String roomId, EventBus eventBus) {
+        this.roomId = roomId;
+        this.eventBus = eventBus;
+    }
 
     public void initializeBoard(int rows, int cols) {
         this.board = new Board(rows, cols);
@@ -52,6 +84,7 @@ public class GameManager {
         if (arbiter.isPieceBusy(pos.getRow(), pos.getCol())) return;
         Piece piece = board.getPieceAt(pos);
         arbiter.registerJump(piece, pos);
+        publish(new PieceJumpedEvent(roomId, piece, pos));
     }
 
     public void handleWait(int ms) {
@@ -67,6 +100,11 @@ public class GameManager {
         moveLogger.recordMove(src, dest, pieceToPlace, target, board);
         board.setPieceAt(dest, pieceToPlace);
         board.setPieceAt(src, null);
+
+        String notation = lastNotation(pieceToPlace.getColor());
+        String logEntry = moveLogger.getLastEntry(pieceToPlace.getColor());
+        publish(new MoveExecutedEvent(roomId, pieceToPlace, src, dest, target, notation,
+                moveLogger.getScoreWhite(), moveLogger.getScoreBlack(), logEntry));
     }
 
     public void registerLongRestCooldown(Piece piece, Position pos) {
@@ -103,6 +141,13 @@ public class GameManager {
     public Board getBoard() { return this.board; }
     public boolean isGameOver() { return this.isGameOver; }
     public String[][] getUpdatedBoardMatrix() { return board.getReadOnlyMatrixView(); }
+
+    /** Which color owns the piece currently sitting on {@code pos}, or {@code '\0'} if empty. Used server-side for ownership checks. */
+    public char colorAt(Position pos) {
+        if (board == null) return '\0';
+        Piece p = board.getPieceAt(pos);
+        return p == null ? '\0' : p.getColor();
+    }
 
     public List<Position> getLegalDestinations(Position src) {
         List<Position> result = new ArrayList<>();
@@ -209,6 +254,18 @@ public class GameManager {
             if (event instanceof JumpEvent && event.getFromPosition().equals(from)) return (JumpEvent) event;
         }
         return null;
+    }
+
+    private String lastNotation(char color) {
+        List<String> history = (color == 'w') ? moveLogger.getWhiteMoveHistory() : moveLogger.getBlackMoveHistory();
+        if (history.isEmpty()) return "";
+        String entry = history.get(history.size() - 1);
+        int sep = entry.indexOf('|');
+        return sep >= 0 ? entry.substring(sep + 1) : entry;
+    }
+
+    private <T extends Event> void publish(T event) {
+        if (eventBus != null) eventBus.publish(event);
     }
 
     private static double clamp01(double v) {

@@ -29,6 +29,10 @@ public class GameWindow extends JFrame {
 
     private Runnable restartCallback;
 
+    private final JLabel bannerLabel;
+    private final JLabel countdownLabel;
+    private javax.swing.Timer bannerTimer;
+
     private static String[] askPlayerNames() {
         JTextField blackField = new JTextField("Black");
         JTextField whiteField = new JTextField("White");
@@ -46,15 +50,35 @@ public class GameWindow extends JFrame {
     }
 
     public GameWindow(Image canvas) {
+        this(canvas, deriveNames());
+    }
+
+    private static String[] deriveNames() {
         String[] names = askPlayerNames();
         String blackName = names[0].isEmpty() ? "Black" : names[0];
         String whiteName = names[1].isEmpty() ? "White" : names[1];
+        return new String[]{whiteName, blackName};
+    }
 
+    private GameWindow(Image canvas, String[] whiteThenBlack) {
+        this(canvas, whiteThenBlack[0], whiteThenBlack[1]);
+    }
+
+    /** Networked-play entry point: names are already known from login/matchmaking/room join, so no dialog pops up. */
+    public GameWindow(Image canvas, String whiteName, String blackName) {
         setTitle("Kung Fu Chess");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         this.canvasLabel = new JLabel(new ImageIcon(canvas.get()));
+        // JLabel centers its icon by default. The side history panels keep a fixed
+        // preferred height (set once from the unzoomed board), so once zoomFactor
+        // shrinks the board image below that height, BorderLayout stretches this
+        // label taller than its icon - and centering would draw the image away from
+        // (0,0), while onClick/onRightClick below assume raw pixel (0,0) is the
+        // image's top-left corner. Pin it there so that assumption always holds.
+        canvasLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        canvasLabel.setVerticalAlignment(SwingConstants.TOP);
 
         canvasLabel.addMouseWheelListener((MouseWheelEvent e) -> {
             double delta = -e.getPreciseWheelRotation() * ZOOM_STEP;
@@ -89,12 +113,49 @@ public class GameWindow extends JFrame {
         JPanel blackPanel = buildHistoryPanel(blackName + " (Black)", blackTableModel, canvas.getHeight());
         JPanel whitePanel = buildHistoryPanel(whiteName + " (White)", whiteTableModel, canvas.getHeight());
 
-        add(scorePanel, BorderLayout.NORTH);
+        bannerLabel = new JLabel("", SwingConstants.CENTER);
+        bannerLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        bannerLabel.setOpaque(true);
+        bannerLabel.setVisible(false);
+
+        countdownLabel = new JLabel("", SwingConstants.CENTER);
+        countdownLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        countdownLabel.setForeground(Color.RED);
+        countdownLabel.setVisible(false);
+
+        JPanel northStack = new JPanel();
+        northStack.setLayout(new BoxLayout(northStack, BoxLayout.Y_AXIS));
+        northStack.add(bannerLabel);
+        northStack.add(countdownLabel);
+        northStack.add(scorePanel);
+
+        add(northStack, BorderLayout.NORTH);
         add(canvasLabel, BorderLayout.CENTER);
         add(blackPanel, BorderLayout.WEST);
         add(whitePanel, BorderLayout.EAST);
 
         pack();
+    }
+
+    /** Networked-play addition: brief on-screen banner for game start/end/capture cues from the server's event bus. */
+    public void flashBanner(String text, Color background) {
+        bannerLabel.setText(text);
+        bannerLabel.setBackground(background);
+        bannerLabel.setVisible(true);
+        if (bannerTimer != null) bannerTimer.stop();
+        bannerTimer = new javax.swing.Timer(2200, e -> bannerLabel.setVisible(false));
+        bannerTimer.setRepeats(false);
+        bannerTimer.start();
+    }
+
+    /** Networked-play addition: spec's "auto-resign after 20 sec, make a count down on the screen". */
+    public void showDisconnectCountdown(String playerColorLabel, int secondsRemaining) {
+        countdownLabel.setText(playerColorLabel + " disconnected - auto-resign in " + secondsRemaining + "s");
+        countdownLabel.setVisible(true);
+    }
+
+    public void hideDisconnectCountdown() {
+        countdownLabel.setVisible(false);
     }
 
     private JPanel buildHistoryPanel(String title, DefaultTableModel model, int height) {
@@ -149,34 +210,57 @@ public class GameWindow extends JFrame {
         canvasLabel.repaint();
     }
 
+    /**
+     * One-time reconciliation for a client that didn't observe every {@code GAME_EVENT} on the bus
+     * from the start (e.g. a spectator joining mid-game) - backfills score/history from the first
+     * full snapshot received. Ongoing updates during play come from {@link #updateScore} and
+     * {@link #appendMoveLogEntry}, driven by the event bus (see {@code client.ui.ScoreboardSubscriber}).
+     */
     public void updateSidePanel(GameSnapshot snapshot) {
-        String wText = whiteScoreLabel.getText();
-        String wName = wText.contains("Score:") ? wText.substring(0, wText.indexOf("Score:")) : wText;
-        whiteScoreLabel.setText(wName + "Score: " + snapshot.getScoreWhite());
-
-        String bText = blackScoreLabel.getText();
-        String bName = bText.contains("Score:") ? bText.substring(0, bText.indexOf("Score:")) : bText;
-        blackScoreLabel.setText(bName + "Score: " + snapshot.getScoreBlack());
+        updateScore(snapshot.getScoreWhite(), snapshot.getScoreBlack());
 
         List<String> whiteHistory = snapshot.getWhiteMoveHistory();
         if (whiteHistory.size() != lastWhiteSize) {
             whiteTableModel.setRowCount(0);
-            for (String entry : whiteHistory) {
-                String[] parts = entry.split("\\|", 2);
-                whiteTableModel.addRow(parts.length == 2 ? parts : new String[]{entry, ""});
-            }
+            for (String entry : whiteHistory) whiteTableModel.addRow(splitLogEntry(entry));
             lastWhiteSize = whiteHistory.size();
         }
 
         List<String> blackHistory = snapshot.getBlackMoveHistory();
         if (blackHistory.size() != lastBlackSize) {
             blackTableModel.setRowCount(0);
-            for (String entry : blackHistory) {
-                String[] parts = entry.split("\\|", 2);
-                blackTableModel.addRow(parts.length == 2 ? parts : new String[]{entry, ""});
-            }
+            for (String entry : blackHistory) blackTableModel.addRow(splitLogEntry(entry));
             lastBlackSize = blackHistory.size();
         }
+    }
+
+    /** Bus-driven score update - see {@code client.ui.ScoreboardSubscriber}. */
+    public void updateScore(int scoreWhite, int scoreBlack) {
+        setScoreLabelText(whiteScoreLabel, scoreWhite);
+        setScoreLabelText(blackScoreLabel, scoreBlack);
+    }
+
+    /** Bus-driven move-log append - see {@code client.ui.ScoreboardSubscriber}. */
+    public void appendMoveLogEntry(char color, String logEntry) {
+        if (logEntry == null || logEntry.isEmpty()) return;
+        if (color == 'w') {
+            whiteTableModel.addRow(splitLogEntry(logEntry));
+            lastWhiteSize = whiteTableModel.getRowCount();
+        } else {
+            blackTableModel.addRow(splitLogEntry(logEntry));
+            lastBlackSize = blackTableModel.getRowCount();
+        }
+    }
+
+    private static String[] splitLogEntry(String entry) {
+        String[] parts = entry.split("\\|", 2);
+        return parts.length == 2 ? parts : new String[]{entry, ""};
+    }
+
+    private static void setScoreLabelText(JLabel label, int score) {
+        String text = label.getText();
+        String name = text.contains("Score:") ? text.substring(0, text.indexOf("Score:")) : text;
+        label.setText(name + "Score: " + score);
     }
 
     public void onClick(BiConsumer<Integer, Integer> handler) {
