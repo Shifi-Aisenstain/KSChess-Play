@@ -1,33 +1,29 @@
 package view;
 
-import controller.GameController;
-import engine.GameManager;
-import models.Position;
-
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.util.Collections;
-import java.util.List;
 
+/**
+ * Networked-play version: no longer owns simulation time. Each tick just
+ * asks {@link SnapshotSource} for whatever the server last pushed and
+ * repaints the board - all the real-time cooldown/move math now happens
+ * server-side inside {@code server.game.GameSession}, once per room instead
+ * of once per client. Score and move-log updates are NOT driven from here:
+ * per the bus requirement, those flow from discrete {@code GAME_EVENT}s via
+ * {@code client.ui.ScoreboardSubscriber} instead of being re-derived from
+ * every polled snapshot.
+ */
 public class GameLoop {
     private final Timer timer;
 
-    public GameLoop(GameManager engine, GameController controller, ImgRenderer renderer,
-                    GameWindow window, int fps) {
+    public GameLoop(SnapshotSource snapshotSource, ImgRenderer renderer, GameWindow window, int fps) {
         int delayMs = 1000 / fps;
         this.timer = new Timer(delayMs, e -> {
-            engine.handleWait(delayMs);
+            GameSnapshot snapshot = snapshotSource.getLatestSnapshot();
+            if (snapshot == null) return;
 
-            Position selected = controller.getSelectedPosition();
-            List<Position> legalMoves = (selected != null)
-                    ? engine.getLegalDestinations(selected)
-                    : Collections.emptyList();
-
-            GameSnapshot snapshot = engine.createSnapshot(selected, legalMoves);
             BufferedImage frame = renderer.render(snapshot, window.getZoomFactor());
-
             window.updateCanvas(frame);
-            window.updateSidePanel(snapshot);
             window.refresh();
         });
     }
