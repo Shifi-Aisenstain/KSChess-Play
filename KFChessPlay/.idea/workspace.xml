@@ -7,8 +7,9 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="UI מושלם &#10;כולל מהלכים וניקוד&#10;לא כולל טסטים על UI">
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="הוספת סרבר - עובד מצוין">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -281,7 +282,15 @@
       <option name="project" value="LOCAL‎" />
       <updated>1784218715625</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL‎-00012" summary="הוספת סרבר - עובד מצוין">
+      <option name="closed" value="true" />
+      <created>1784563913346</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL‎-00012" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1784563913346</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -307,7 +316,8 @@
     <MESSAGE value="המשך נסיונות.&#10;בעיה בגישה אל ניתוב התמונות" />
     <MESSAGE value="UI &#10;הלוח עובד&#10;בעיה בקפיצה" />
     <MESSAGE value="UI מושלם &#10;כולל מהלכים וניקוד&#10;לא כולל טסטים על UI" />
-    <option name="LAST_COMMIT_MESSAGE" value="UI מושלם &#10;כולל מהלכים וניקוד&#10;לא כולל טסטים על UI" />
+    <MESSAGE value="הוספת סרבר - עובד מצוין" />
+    <option name="LAST_COMMIT_MESSAGE" value="הוספת סרבר - עובד מצוין" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
