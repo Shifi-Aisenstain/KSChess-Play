@@ -1,5 +1,6 @@
 package shared.protocol.payload;
 
+import lombok.AllArgsConstructor;
 import view.GameSnapshot;
 
 /**
@@ -9,6 +10,7 @@ import view.GameSnapshot;
  * thing that hands GameSnapshot to the renderer instead of GameManager
  * doing it locally.
  */
+@AllArgsConstructor
 public final class StateUpdatePayload {
     public final String roomId;
     public final char yourColor;   // 'w', 'b', or 's' for spectators
@@ -17,15 +19,4 @@ public final class StateUpdatePayload {
     public final GameSnapshot snapshot;
     public final String whiteUsername;
     public final String blackUsername;
-
-    public StateUpdatePayload(String roomId, char yourColor, int boardRows, int boardCols, GameSnapshot snapshot,
-                               String whiteUsername, String blackUsername) {
-        this.roomId = roomId;
-        this.yourColor = yourColor;
-        this.boardRows = boardRows;
-        this.boardCols = boardCols;
-        this.snapshot = snapshot;
-        this.whiteUsername = whiteUsername;
-        this.blackUsername = blackUsername;
-    }
 }

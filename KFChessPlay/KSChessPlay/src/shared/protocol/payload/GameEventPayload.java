@@ -1,5 +1,6 @@
 package shared.protocol.payload;
 
+import lombok.AllArgsConstructor;
 import shared.eventbus.Event;
 
 /**
@@ -8,6 +9,7 @@ import shared.eventbus.Event;
  * which carries the full render-ready board state on every tick.
  */
 /** Doubles as a client-local {@link Event} once decoded, so it can be published straight onto the client EventBus - see client.bridge.NetworkGameController. */
+@AllArgsConstructor
 public final class GameEventPayload implements Event {
     public enum Kind { GAME_STARTED, GAME_ENDED, MOVE_EXECUTED, PIECE_CAPTURED, PIECE_JUMPED }
 
@@ -19,16 +21,4 @@ public final class GameEventPayload implements Event {
     public final int scoreWhite;    // only meaningful for MOVE_EXECUTED/PIECE_CAPTURED
     public final int scoreBlack;    // only meaningful for MOVE_EXECUTED/PIECE_CAPTURED
     public final String logEntry;   // "MM:SS.mmm|Notation" row for the move-log table; "" if not a move event
-
-    public GameEventPayload(Kind kind, char color, char pieceType, char capturedType, String message,
-                             int scoreWhite, int scoreBlack, String logEntry) {
-        this.kind = kind;
-        this.color = color;
-        this.pieceType = pieceType;
-        this.capturedType = capturedType;
-        this.message = message;
-        this.scoreWhite = scoreWhite;
-        this.scoreBlack = scoreBlack;
-        this.logEntry = logEntry;
-    }
 }

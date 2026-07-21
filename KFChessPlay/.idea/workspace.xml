@@ -7,9 +7,59 @@
     <option name="selectedModelId" value="auto" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="הוספת סרבר - עובד מצוין">
+    <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="הוספת שם משתמש">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ARCHITECTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/ARCHITECTURE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/creds1.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/creds2.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/kungfu_chess.db" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/kungfu_chess.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/ConsoleIO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/GameController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/controller/MoveCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/input/InteractionManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/io/BoardParser.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/io/BoardPrinter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/GameState.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/Piece.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Piece.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/models/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/realtime/Motion.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/GameEndedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/GameEndedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/GameStartedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/GameStartedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/MoveExecutedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/MoveExecutedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/PieceJumpedEvent.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/eventbus/events/PieceJumpedEvent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/CountdownPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/CountdownPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/ErrorPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/ErrorPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/GameEventPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/GameEventPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/GameOverPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/GameOverPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/JumpCommandPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/JumpCommandPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/LoginPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/LoginPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/LoginResultPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/LoginResultPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/MatchFoundPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/MatchFoundPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/MoveCommandPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/MoveCommandPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomActionPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomActionPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomStatusPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomStatusPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/SelectPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/SelectPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/StateUpdatePayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/StateUpdatePayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/CooldownHighlight.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/CooldownHighlight.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/GameWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/ImageView.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/JumpHighlight.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/view/PieceSnapshot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/BoardPrinterTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ConsoleIOTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ControllerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameStateTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/InteractionManagerTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MainTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MotionTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ViewTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/01_board_parsing" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/02_click_to_move" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/03_rook_moves" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/04_invalid_moves" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/05_capture" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/resources/scripts/06_game_over" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,6 +151,7 @@
     &quot;RunOnceActivity.DeprecatedChatLlmMigration&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ToggleCodyToolWindowAfterMigration&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
@@ -290,7 +341,15 @@
       <option name="project" value="LOCAL‎" />
       <updated>1784563913346</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL‎-00013" summary="הוספת שם משתמש">
+      <option name="closed" value="true" />
+      <created>1784616946806</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL‎-00013" />
+      <option name="project" value="LOCAL‎" />
+      <updated>1784616946806</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -317,7 +376,8 @@
     <MESSAGE value="UI &#10;הלוח עובד&#10;בעיה בקפיצה" />
     <MESSAGE value="UI מושלם &#10;כולל מהלכים וניקוד&#10;לא כולל טסטים על UI" />
     <MESSAGE value="הוספת סרבר - עובד מצוין" />
-    <option name="LAST_COMMIT_MESSAGE" value="הוספת סרבר - עובד מצוין" />
+    <MESSAGE value="הוספת שם משתמש" />
+    <option name="LAST_COMMIT_MESSAGE" value="הוספת שם משתמש" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
