@@ -133,9 +133,7 @@ public class Main {
         SpriteLoader spriteLoader = new SpriteLoader();
         ImgRenderer renderer = new ImgRenderer(spriteLoader, background, mapper);
 
-        String whiteLabel = "White";
-        String blackLabel = "Black";
-        GameWindow window = new GameWindow(background, whiteLabel, blackLabel);
+        GameWindow window = new GameWindow(background, controller.getWhiteUsername(), controller.getBlackUsername());
         localEventBus.subscribe(shared.protocol.payload.GameEventPayload.class, new AnimationSubscriber(window));
         localEventBus.subscribe(shared.protocol.payload.GameEventPayload.class, new ScoreboardSubscriber(window));
 
@@ -169,7 +167,9 @@ public class Main {
 
     private static java.util.function.Consumer<GameOverPayload> describeGameOver(GameWindow window) {
         return payload -> {
-            String winner = payload.winnerColor == null ? "Draw" : payload.winnerColor;
+            String winner = "WHITE".equals(payload.winnerColor) ? payload.whiteUsername
+                    : "BLACK".equals(payload.winnerColor) ? payload.blackUsername
+                    : "Draw";
             String message = "Game Over - " + winner
                     + "\nReason: " + payload.reason
                     + "\nWhite ELO: " + payload.whiteEloNew + " (" + signed(payload.whiteEloDelta) + ")"
