@@ -1,9 +1,8 @@
 package shared.protocol.payload;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public final class ErrorPayload {
     public final String message;
-
-    public ErrorPayload(String message) {
-        this.message = message;
-    }
 }

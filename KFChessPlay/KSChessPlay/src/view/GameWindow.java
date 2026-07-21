@@ -33,38 +33,7 @@ public class GameWindow extends JFrame {
     private final JLabel countdownLabel;
     private javax.swing.Timer bannerTimer;
 
-    private static String[] askPlayerNames() {
-        JTextField blackField = new JTextField("Black");
-        JTextField whiteField = new JTextField("White");
-        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
-        panel.add(new JLabel("Black player name:"));
-        panel.add(blackField);
-        panel.add(new JLabel("White player name:"));
-        panel.add(whiteField);
-        int result = JOptionPane.showConfirmDialog(null, panel, "Enter Player Names",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        if (result == JOptionPane.OK_OPTION) {
-            return new String[]{blackField.getText().trim(), whiteField.getText().trim()};
-        }
-        return new String[]{"Black", "White"};
-    }
-
-    public GameWindow(Image canvas) {
-        this(canvas, deriveNames());
-    }
-
-    private static String[] deriveNames() {
-        String[] names = askPlayerNames();
-        String blackName = names[0].isEmpty() ? "Black" : names[0];
-        String whiteName = names[1].isEmpty() ? "White" : names[1];
-        return new String[]{whiteName, blackName};
-    }
-
-    private GameWindow(Image canvas, String[] whiteThenBlack) {
-        this(canvas, whiteThenBlack[0], whiteThenBlack[1]);
-    }
-
-    /** Networked-play entry point: names are already known from login/matchmaking/room join, so no dialog pops up. */
+    /** Names are already known from login/matchmaking/room join by the time this is constructed. */
     public GameWindow(Image canvas, String whiteName, String blackName) {
         setTitle("Kung Fu Chess");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

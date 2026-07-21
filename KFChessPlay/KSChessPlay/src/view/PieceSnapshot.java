@@ -1,5 +1,8 @@
 package view;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class PieceSnapshot {
     public final char type;
     public final char color;
@@ -7,13 +10,4 @@ public class PieceSnapshot {
     public final double x;
     public final double y;
     public final boolean isCaptured;
-
-    public PieceSnapshot(char type, char color, String state, double x, double y, boolean isCaptured) {
-        this.type = type;
-        this.color = color;
-        this.state = state;
-        this.x = x;
-        this.y = y;
-        this.isCaptured = isCaptured;
-    }
 }

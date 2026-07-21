@@ -6,7 +6,12 @@ Verify specifics with Read/Grep before relying on them for anything destructive 
 line numbers) — this doc can drift from the code over time.
 
 **Written:** 2026-07-19, based on the working tree at that time (mid-refactor from single-player to
-networked client/server — see §9).
+networked client/server — see §9). **Updated:** 2026-07-21 — the local single-player code path
+(`controller.GameController`, `controller.ConsoleIO`, `input.InteractionManager`, `io.BoardParser`) and
+other confirmed-dead classes (`models.GameState`, `realtime.Motion`, `view.ImageView`,
+`view.JumpHighlight`, `io.BoardPrinter`) were **deleted outright**, along with their dedicated tests —
+this is no longer "dead code to be aware of," it's gone from the tree. Lombok was also added (see §1,
+§11).
 
 ## 0. Project identity & repo layout
 
@@ -30,6 +35,23 @@ networked client/server — see §9).
   `new GsonBuilder().create()`, no custom adapters/naming policy.
 - `org.xerial:sqlite-jdbc:3.44.1.0` — user accounts / auth / Elo persistence.
 - `org.junit.jupiter:junit-jupiter:5.10.1` — test scope only.
+- `org.projectlombok:lombok:1.18.46` — `provided` scope. Used conservatively: `@AllArgsConstructor` on
+  simple public-final-field DTOs (all of `shared/protocol/payload/*`, `shared/eventbus/events/*`,
+  `view.PieceSnapshot`) to replace hand-written boilerplate constructors *without changing the public
+  field-access API* (call sites still do `payload.username`, not `payload.getUsername()`); `@Getter` +
+  `@AllArgsConstructor` on the two classes that already used private-field/getter style
+  (`controller.MoveCommand`, `view.CooldownHighlight`) — a 1:1 behavior-preserving swap; and `@Value`
+  (full immutable value semantics: private final fields, getters, constructor, `equals`/`hashCode`,
+  `toString`) on `models.Position` and `models.Piece`, verified safe by grepping for any
+  identity-based (`==`) or default-`equals` comparisons on `Piece` before applying — there were none.
+  **Manual `javac` builds need explicit flags** — plain `-cp <lombok.jar>` does *not* trigger annotation
+  processing on this environment's JDK (23); it silently no-ops (classes compile but Lombok-generated
+  members never materialize, which then fails downstream with "cannot find symbol"/"actual and formal
+  argument lists differ in length" everywhere Lombok output was expected). The fix:
+  `-processorpath <lombok.jar> -processor "lombok.launch.AnnotationProcessorHider$AnnotationProcessor"`
+  in addition to putting the jar on `-cp`. This is **only a manual-`javac` workaround** — a real
+  `mvn compile`, or IntelliJ with the Lombok plugin + annotation processing enabled
+  (Preferences → Build → Compiler → Annotation Processors), does not need these flags.
 - `maven-shade-plugin` builds two fat jars at `package`: classifier `client` (main class `Main`) and
   classifier `server` (main class `server.ServerMain`).
 
@@ -37,33 +59,32 @@ networked client/server — see §9).
 
 | Package | Responsibility |
 |---|---|
-| `models` | Pure domain data: `Position`, `Piece`, `Board`. (`GameState` is dead — see §9.) |
-| `controller` | Local/offline click-driven play: `GameController`, `ConsoleIO`, `MoveCommand`. Not used by the networked client. |
+| `models` | Pure domain data: `Position`, `Piece` (both `@Value` — Lombok), `Board`. |
+| `controller` | Just `MoveCommand` now (`@Getter @AllArgsConstructor`) — the request DTO `GameManager.requestMove` takes. The local-play classes that used to live here (`GameController`, `ConsoleIO`) were deleted 2026-07-21 — see §9. |
 | `engine` | The real-time simulation core: `GameManager` (orchestrator), `GameEvent`/`MoveEvent`/`JumpEvent`/`CooldownEvent`, `MoveLogger`. |
-| `realtime` | `RealTimeArbiter` (the concurrency/cooldown scheduler) and `Motion` (dead — see §9). |
+| `realtime` | `RealTimeArbiter` (the concurrency/cooldown scheduler). |
 | `rules` | Stateless move validation: `RuleEngine`, `PieceRules`, `MoveValidation`. No board mutation. |
 | `graphics` | `Image` — JDK `ImageIO`/`Graphics2D` wrapper (sprite loading, transparency, drawing). |
-| `input` | Click→board-coordinate mapping: `CoordinateParser`, `BoardMapper`, `InteractionManager` (local mode only). |
-| `io` | Board loading/printing: `BoardParser` (console script format), `CsvBoardLoader` (real game format, `assets/board.csv`), `BoardPrinter` (stub, dead). |
-| `view` | Rendering only, no simulation: `GameWindow`, `GameLoop`, `ImgRenderer`, `SpriteLoader`, `GameSnapshot`/`PieceSnapshot`/`SnapshotSource`, `CooldownHighlight`. (`ImageView`, `JumpHighlight` are dead — see §9.) |
-| `client` | Networked client composition: `client.net` (`ServerConnection`, `ServerMessageListener`), `client.bridge` (`NetworkGameController`), `client.ui` (`HomeScreen`, `RoomDialog`, `LoginConsolePrompt`, `AnimationSubscriber`), `client.audio` (`SoundSubscriber`), `client.logging` (`ClientActivityLogger`). |
+| `input` | Click→board-coordinate mapping: `CoordinateParser`, `BoardMapper`. (`InteractionManager`, local-mode-only, was deleted 2026-07-21 — see §9.) |
+| `io` | Board loading: just `CsvBoardLoader` now (real game format, `assets/board.csv`). `BoardParser`/`BoardPrinter` were deleted 2026-07-21 — see §9. |
+| `view` | Rendering only, no simulation: `GameWindow`, `GameLoop`, `ImgRenderer`, `SpriteLoader`, `GameSnapshot`/`PieceSnapshot`/`SnapshotSource`, `CooldownHighlight`. (`ImageView`/`JumpHighlight` deleted 2026-07-21 — see §9.) |
+| `client` | Networked client composition: `client.net` (`ServerConnection`, `ServerMessageListener`), `client.bridge` (`NetworkGameController`), `client.ui` (`HomeScreen`, `RoomDialog`, `LoginConsolePrompt`, `AnimationSubscriber`, `ScoreboardSubscriber`), `client.audio` (`SoundSubscriber`), `client.logging` (`ClientActivityLogger`). |
 | `server` | Everything server-side — see §5 for the full subpackage breakdown. |
 | `shared` | The wire contract and pub/sub bus used by both sides: `shared.protocol` (+`payload`), `shared.eventbus` (+`events`). |
 | `Main` (default package) | Client composition root / entry point. |
 
 ## 3. Core domain model (`models`)
 
-- **`Position`** — immutable `{int row, int col}`, value equality. No bounds validation of its own.
-- **`Piece`** — immutable `{char color ('w'/'b'), char type ('R','K','P','Q','B','N')}`. No identity/ID:
-  two same-color-and-type pieces are indistinguishable by value. Engine code tracks pieces by board
-  position, not piece identity.
+- **`Position`** — `@Value`: immutable `{int row, int col}`, value equality (Lombok-generated). No
+  bounds validation of its own.
+- **`Piece`** — `@Value`: immutable `{char color ('w'/'b'), char type ('R','K','P','Q','B','N')}`.
+  Value-equal now (Lombok-generated `equals`/`hashCode`), but engine code still tracks pieces by board
+  position rather than relying on that — nothing depends on two same-color-same-type pieces being
+  distinguishable.
 - **`Board`** — wraps `Piece[rows][cols]`. `getPieceAt`/`setPieceAt` are bounds-checked;
   **`setPieceAt` on an out-of-bounds `Position` silently no-ops** (used deliberately, e.g. by
   `GameManager.clearPosition`). `getReadOnlyMatrixView()` returns `String[][]` (`"<color><type>"` or
   `"."`) for console printing/tests.
-- **`GameState`** — **dead code**: models turn-based play (`currentTurn`, `switchTurn()`), which
-  contradicts the turnless design. Not used by `engine`/`server`/`client`, only by `GameStateTest`.
-  Treat as a leftover from an earlier turn-based prototype; do not build on it without confirming.
 
 ## 4. Real-time engine mechanics — how "no turns, cooldowns" works
 
@@ -96,10 +117,11 @@ Nothing inside `engine`/`realtime` runs on its own thread. Something external ca
 3. Call `event.execute(board, activeEventsSnapshot, gameManager)` on each in order, then remove them
    from `activeEvents`.
 
-**Who drives the clock:** in networked play, `server.game.GameSession.tick()` calls
-`gameManager.handleWait(50)` every `TICK_MS = 50ms` on a dedicated `ScheduledExecutorService` — the
-server is the single authoritative clock, ticking 20×/sec per room. In local/console mode,
-`controller.ConsoleIO` reads `wait <ms>` lines directly from a script and calls the same method.
+**Who drives the clock:** `server.game.GameSession.tick()` calls `gameManager.handleWait(50)` every
+`TICK_MS = 50ms` on a dedicated `ScheduledExecutorService` — the server is the single authoritative
+clock, ticking 20×/sec per room. (There used to be a second, local/console-driven caller —
+`controller.ConsoleIO` reading `wait <ms>` lines from a script — but that whole code path was deleted
+2026-07-21; `GameSession` is the only caller now.)
 
 ### Example move trace (networked)
 1. **Client** — two clicks: `GameWindow` → click handler in `Main.launchGameWindow` →
@@ -168,11 +190,10 @@ clicks through `CoordinateParser.parseClick` → `controller.handleBoardClick`/`
 wires disconnect-countdown/game-over callbacks, subscribes an `AnimationSubscriber` to a local
 `EventBus`, and starts a `view.GameLoop(controller, renderer, window, 60)`.
 
-**Local/offline single-player has no live entry point today.** `controller.GameController`,
-`controller.ConsoleIO`, `input.InteractionManager` (the local, `GameManager`-owning stack) are only
-reachable via unit tests and console-script fixtures (`test/resources/scripts/`) — `Main.java`
-unconditionally requires a server connection. Don't assume local play works without checking `Main.java`
-first.
+**Local/offline single-player doesn't exist anymore.** `controller.GameController`, `controller.ConsoleIO`,
+`input.InteractionManager`, and `io.BoardParser` (the local, `GameManager`-owning stack, plus their
+dedicated tests and the `test/resources/scripts/` fixtures) were deleted 2026-07-21 since nothing
+reachable from `Main.java` used them. `Main.java` has only ever supported the networked path.
 
 ### Rendering loop
 - **`view/GameLoop.java`** — a `javax.swing.Timer(1000/fps, ...)` (fps=60 from `Main`). Each tick: pulls
@@ -189,11 +210,21 @@ first.
   (`BoardMapper.PIXELS_PER_TILE`), cached by `"folder/state/frame"`. **Ignores each state's
   `config.json`** entirely — frame timing/loop metadata in the assets is currently unused; timing is
   hard-coded (`FRAME_DURATION_MS = 150` in `ImgRenderer`).
-- **`view/GameWindow`** — Swing `JFrame`: board canvas (`JLabel` + `ImageIcon`), mouse-wheel zoom
+- **`view/GameWindow`** — Swing `JFrame`: board canvas (`JLabel` + `ImageIcon`, pinned to
+  `SwingConstants.LEFT/TOP` alignment — see the zoom/click-mapping note below), mouse-wheel zoom
   (0.5–2.0×), left/right move-history `JTable`s, a banner label (start/end/capture flash messages,
   auto-hides after 2.2s), a countdown label (disconnect auto-resign countdown), score panel + "New
-  Game" button. Two constructors: `GameWindow(Image)` (legacy local-play name-entry dialog) vs.
-  `GameWindow(Image, whiteName, blackName)` (networked path, used by `Main`).
+  Game" button. One constructor now: `GameWindow(Image, whiteName, blackName)` — the old single-arg
+  constructor (a name-entry dialog for local play) was deleted 2026-07-21 along with the local-play
+  code path that was its only caller.
+  **Click-mapping fix (2026-07-21):** `canvasLabel` used to default to `JLabel`'s centered icon
+  alignment. The side history panels keep a fixed preferred height set once from the *unzoomed* board,
+  so zooming out (mouse wheel) shrank the rendered board image below that fixed height —
+  `BorderLayout` then stretched the label taller than its icon, and centered icon placement meant the
+  image no longer started at pixel `(0,0)` of the label. `GameWindow.onClick`/`onRightClick` divide raw
+  `MouseEvent` coordinates by `zoomFactor` assuming `(0,0)` *is* the image's top-left corner — so clicks
+  landed on the wrong square at any zoom level below 1.0. Fixed by pinning the label to
+  `LEFT`/`TOP` alignment so that assumption always holds, regardless of window/zoom size.
 
 ### Networked bridge
 - **`client/net/ServerConnection`** (`extends WebSocketClient`) — `send(type, payload)` encodes via
@@ -333,10 +364,19 @@ Server→client: `LOGIN_RESULT, PLAY_WAITING, MATCH_FOUND, PLAY_NOT_FOUND, ROOM_
 | SELECT | `SelectPayload` | selected, row, col |
 | MOVE | `MoveCommandPayload` | command (e.g. `"WQe2e5"`) |
 | JUMP | `JumpCommandPayload` | row, col |
-| STATE_UPDATE | `StateUpdatePayload` | roomId, yourColor, boardRows, boardCols, `view.GameSnapshot snapshot` (a client-view type serialized directly over the wire) |
-| GAME_EVENT | `GameEventPayload` | kind (GAME_STARTED/GAME_ENDED/MOVE_EXECUTED/PIECE_CAPTURED/PIECE_JUMPED), color, pieceType, capturedType, message — also `implements shared.eventbus.Event` so it can be republished directly onto the client's local bus |
+| STATE_UPDATE | `StateUpdatePayload` | roomId, yourColor, boardRows, boardCols, `view.GameSnapshot snapshot` (a client-view type serialized directly over the wire), whiteUsername, blackUsername |
+| GAME_EVENT | `GameEventPayload` | kind (GAME_STARTED/GAME_ENDED/MOVE_EXECUTED/PIECE_CAPTURED/PIECE_JUMPED), color, pieceType, capturedType, message, scoreWhite, scoreBlack, logEntry — also `implements shared.eventbus.Event` so it can be republished directly onto the client's local bus |
 | DISCONNECT_COUNTDOWN | `CountdownPayload` | roomId, disconnectedColor, secondsRemaining |
-| GAME_OVER | `GameOverPayload` | roomId, winnerColor, reason, white/blackEloDelta, white/blackEloNew |
+| GAME_OVER | `GameOverPayload` | roomId, winnerColor, reason, white/blackEloDelta, white/blackEloNew, whiteUsername, blackUsername |
+
+**Note on `GameEventPayload`/`StateUpdatePayload`/`GameOverPayload` usernames (added 2026-07-20):**
+`GameWindow` used to be built with hardcoded `"White"`/`"Black"` labels, and the win banner/dialog showed
+the raw color string instead of a name. Fixed by threading `whiteUsername`/`blackUsername` through
+`StateUpdatePayload` (cached in `NetworkGameController`, read when `Main.launchGameWindow` constructs the
+window) and through `GameOverPayload` (read directly in `Main.describeGameOver`). `GameEventPayload`'s
+`scoreWhite`/`scoreBlack`/`logEntry` fields (only meaningful for `MOVE_EXECUTED`/`PIECE_CAPTURED`) exist
+so `client.ui.ScoreboardSubscriber` can update the score labels and move-log table from bus events
+instead of the old per-tick snapshot-polling approach — see the bus note below.
 
 **`AlgebraicNotation`** — encodes/decodes `"<COLOR><PIECE><fromSquare><toSquare>"`, e.g. `WQe2e5`.
 Rank counting depends on `boardRows`, so conversions need board height to invert correctly.
@@ -352,64 +392,84 @@ CopyOnWriteArrayList<Subscriber<?>>>`, thread-safe `subscribe`/`unsubscribe`/`pu
 `MoveExecutedEvent`, `PieceJumpedEvent`) are published **only server-side** by `GameManager`, consumed
 server-side by `ServerActivityLogger` and `GameEventBroadcaster`. The client never sees these classes
 directly — `NetworkGameController` decodes incoming `GAME_EVENT` messages to `GameEventPayload` and
-publishes *that* onto the client's local bus, which is what `SoundSubscriber`/`AnimationSubscriber`
-listen for. The bus decouples `GameManager` from logging/broadcasting server-side, and network
-deserialization from sound/animation client-side.
+publishes *that* onto the client's local bus, which is what
+`SoundSubscriber`/`AnimationSubscriber`/`ScoreboardSubscriber` listen for. The bus decouples
+`GameManager` from logging/broadcasting server-side, and network deserialization from sound/animation
+client-side.
+
+**All four of the spec's required bus consumers are now actually bus-driven (fixed 2026-07-20).**
+Previously only sound and animation went through the bus — score and move-log updates were done by
+`GameLoop` directly polling the snapshot every tick and pushing into `GameWindow.updateSidePanel`,
+bypassing the bus entirely. Fixed by adding `client.ui.ScoreboardSubscriber`, which updates the score
+labels and appends move-log rows in reaction to `MOVE_EXECUTED`/`PIECE_CAPTURED` bus events (using the
+`scoreWhite`/`scoreBlack`/`logEntry` fields on `GameEventPayload`), the same way `SoundSubscriber` and
+`AnimationSubscriber` already worked. `GameLoop` no longer touches the side panel at all — it only
+renders the board now. `GameWindow.updateSidePanel(snapshot)` still exists but is now called exactly
+once, as a one-time backfill in `Main.launchGameWindow`, so a spectator joining mid-game isn't stuck
+showing "Score: 0" (bus events only fire going forward, there's no replay for a late joiner).
 
 ## 8. `io` package & assets
 
-- **Console/script format** (`io/BoardParser.java`) — `Board:` header + rows of
-  `<color><type>` tokens (lowercase color, e.g. `wR`) or `.`. Used by `ConsoleIO` and test script
-  fixtures only.
-- **CSV format** (`io/CsvBoardLoader.java`, used by the real server via `GameSession`) —
-  `assets/board.csv`, comma-separated `<TYPE><COLOR>` tokens (uppercase type first, e.g. `RB` = black
-  rook) or `.`. **Note the token order/case is the opposite of `BoardParser`'s** — kept as two separate
-  classes deliberately (per the class's own doc comment). `assets/board.csv` currently holds a standard
-  8×8 opening position.
-- **`io/BoardPrinter.java`** is a non-functional stub (see §9) — not the real console-printing path
-  (that logic lives inline in `ConsoleIO.printBoardToConsole`).
+- **CSV format** (`io/CsvBoardLoader.java`, used by the real server via `GameSession`) — the only
+  loader left in `io` now. Reads `assets/board.csv`, comma-separated `<TYPE><COLOR>` tokens (uppercase
+  type first, e.g. `RB` = black rook) or `.`. `assets/board.csv` currently holds a standard 8×8 opening
+  position. (`io.BoardParser`, an alternate text format used only by the now-deleted console/script
+  path, and `io.BoardPrinter`, a non-functional stub, were both deleted 2026-07-21 — see §9.)
 - **Assets layout** — one folder per `<type><color>` combo (`assets/BB, BW, KB, KW, NB, NW, PB, PW,
   QB, QW, RB, RW`), each with `states/{idle,jump,long_rest,move,short_rest}/` (matching the 5 states
   the engine models), each state folder with `config.json` (physics/timing/loop metadata) and
   `sprites/1.png`..`5.png`. **`SpriteLoader` ignores `config.json`** — see §9.
 - `assets/board.png` — static background board image.
 
-## 9. Known rough edges / dead code (check before assuming these are load-bearing)
+## 9. Known rough edges (resolved items removed 2026-07-21 — see git history if you need the old text)
 
-- **`models/GameState.java`** — turn-based, contradicts the turnless design. Unused outside
-  `GameStateTest`. Don't build on it.
-- **`realtime/Motion.java`** — an earlier float-seconds animation model, superseded by
-  `MoveEvent` + `GameSnapshot` interpolation. Unused outside `MotionTest`.
-- **`view/ImageView.java`** — empty stub (`public class ImageView {}`), superseded by `graphics.Image`.
-- **`view/JumpHighlight.java`** — complete but unreferenced; superseded by `CooldownHighlight.Type.JUMP`.
-- **`io/BoardPrinter.java`** — non-functional stub; `BoardPrinterTest` actually tests `Board`, not this class.
-- **`test/Test/unit/MainTest.java`** and **`ViewTest.java`** — fully commented out, reference stale
-  APIs (`Main.main` console mode; a `view.Renderer` class that no longer exists — replaced by
-  `ImgRenderer`).
-- **Local/offline single-player has no live entry point** from `Main.java` — only reachable via unit
-  tests / script fixtures. Verify against `Main.java` before claiming "the client supports local play."
 - **`SpriteLoader` ignores each state's `config.json`** — frame timing (`FRAME_DURATION_MS = 150`,
   `FRAME_COUNT = 5`) is hard-coded in `ImgRenderer`/`SpriteLoader` instead of data-driven from the
-  asset metadata.
+  asset metadata. Still true, not touched by the 2026-07-21 cleanup.
 - **Maven test-source wiring is unresolved**: tests live in `test/Test/unit`, not Maven's default
   `src/test/java`, and `pom.xml` has no `testSourceDirectory` override. It's unclear whether `mvn test`
-  currently runs any of the 21 unit tests, versus them only running via IDE (`.idea/`) run
-  configurations. **Verify with an actual `mvn test` run before asserting current test coverage.**
-- **No `TODO`/`FIXME`/`XXX` comments exist anywhere in `src/`** (confirmed via grep) — rough edges are
-  structural/dead-code, not inline-flagged.
+  currently runs any of the unit tests, versus them only running via IDE (`.idea/`) run configurations.
+  **Verify with an actual `mvn test` run before asserting current test coverage.**
 - Minor: `shared/protocol/MessageType.java`'s Javadoc references a nonexistent `MessageDispatcherKeys`
   class (real class is `server.dispatch.MessageDispatcher`) — harmless stale comment.
-- The working tree is mid-refactor from a single-player build into the networked client/server split
-  (per recent Hebrew commit messages: UI/graphics-routing issues, jump bugs). Expect rendering/UI code
-  in `view/` to be the least stable area.
+- **Manual `javac` + Lombok gotcha** — see §1. Only matters if you're compiling outside Maven/an IDE.
+- The following were confirmed dead and **deleted outright** on 2026-07-21 (no longer in the tree, so
+  no longer "rough edges" — listed here only so you don't go looking for them):
+  `models.GameState`, `realtime.Motion`, `view.ImageView`, `view.JumpHighlight`, `io.BoardPrinter`,
+  `controller.GameController`, `controller.ConsoleIO`, `input.InteractionManager`, `io.BoardParser`,
+  plus their dedicated tests (`GameStateTest`, `MotionTest`, `BoardPrinterTest`, `ControllerTest`,
+  `ConsoleIOTest`, `InteractionManagerTest`) and the fully-commented-out `MainTest`/`ViewTest`, and the
+  orphaned `test/resources/scripts/` fixtures. `GameWindow`'s single-arg constructor (a local-play
+  name-entry dialog) went with them, since it had no remaining caller.
 
-## 10. Tests (`test/Test/unit`, 21 files)
+## 10. Tests (`test/Test/unit`)
 
-Covers: `Board`, `Position`, `Piece` (value objects) · `BoardMapper`, `CoordinateParser` (pixel/tile
-mapping) · `ConsoleIO` (console script parsing) · `GameController`, `InteractionManager` (local
-click-driven play) · `GameEvent`, `MoveEvent`, `JumpEvent`, `RealTimeArbiter` (core engine mechanics,
-including capture-by-jumper) · `MoveCommand`, `MoveValidation`, `PieceRules`, `RuleEngine` (validation)
-· `GameManager` (board init/ownership/busy-state) · `GameState` (dead code, see §9) · `Motion` (dead
-code, see §9). `MainTest`/`ViewTest` are inert (fully commented out, stale APIs).
-`test/Test/integration/` currently has no files. `test/resources/scripts/` has 6 console-protocol
-fixture files (`01_board_parsing` .. `06_game_over`) consumed by `ConsoleIO`-driven tests.
+After the 2026-07-21 cleanup: `Board`, `Position`, `Piece` (value objects — `Position`/`Piece` are now
+Lombok `@Value`, tests still pass since Lombok's generated `equals`/`hashCode` match what was
+hand-written before) · `BoardMapper`, `CoordinateParser` (pixel/tile mapping) · `GameEvent`, `MoveEvent`,
+`JumpEvent`, `RealTimeArbiter` (core engine mechanics, including capture-by-jumper) · `MoveCommand`,
+`MoveValidation`, `PieceRules`, `RuleEngine` (validation) · `GameManager` (board init/ownership/busy-state).
+`test/Test/integration/` currently has no files. `test/resources/scripts/` no longer exists (it only
+fed the now-deleted `ConsoleIO`-driven tests).
+
+## 11. Lombok usage (added 2026-07-21)
+
+See §1 for the dependency and the manual-`javac` build gotcha. Scope, deliberately conservative:
+- **`@AllArgsConstructor` only, public fields untouched**: all of `shared/protocol/payload/*` (except
+  `EmptyPayload`, a singleton with no fields — left alone) and `shared/eventbus/events/*`, plus
+  `view.PieceSnapshot`. Zero call sites changed — code everywhere still reads `payload.username`,
+  `event.roomId`, etc. directly. `LoginResultPayload` uses
+  `@AllArgsConstructor(access = AccessLevel.PRIVATE)` to preserve its private-constructor +
+  `ok(...)`/`fail(...)` static-factory pattern exactly.
+- **`@Getter @AllArgsConstructor`**: `controller.MoveCommand`, `view.CooldownHighlight` — both already
+  used private-field/hand-written-getter style, so this is a 1:1 boilerplate swap with no API change
+  (`getSource()`/`getDestination()`, `getPosition()`/`getRemainingFraction()`/`getType()` all still work
+  identically).
+- **`@Value`**: `models.Position`, `models.Piece` — full immutable value semantics (private final
+  fields, getters, constructor, `equals`/`hashCode`/`toString`). `Position` already had hand-written
+  value-equality `equals`/`hashCode`; `Piece` didn't (relied on default identity equality) — verified via
+  grep that nothing in the codebase depends on `Piece` identity comparison before adding value equality.
+- **Deliberately NOT converted**: `engine.GameEvent` and its subclasses (`MoveEvent`/`JumpEvent`/
+  `CooldownEvent`) — these have real behavior beyond data-holding (`execute()`, `getPriority()`) and
+  participate in an inheritance hierarchy, where Lombok's `@AllArgsConstructor` doesn't cleanly handle
+  `super(...)` chaining. Not worth the risk for the boilerplate saved.
