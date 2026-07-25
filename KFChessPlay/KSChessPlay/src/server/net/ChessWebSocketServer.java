@@ -97,7 +97,7 @@ public final class ChessWebSocketServer extends WebSocketServer {
 
         room.detachMember(user.getId());
         DisconnectWatchdog watchdog = new DisconnectWatchdog(room, gameSession, user.getId(), color);
-        session.setActiveWatchdog(watchdog);
+        gameSession.registerWatchdog(user.getId(), watchdog);
         watchdog.start();
     }
 }

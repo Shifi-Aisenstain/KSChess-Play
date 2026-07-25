@@ -14,6 +14,7 @@ import shared.eventbus.EventBus;
 import shared.eventbus.events.GameEndedEvent;
 import shared.eventbus.events.GameStartedEvent;
 import shared.protocol.MessageType;
+import shared.protocol.payload.CountdownPayload;
 import shared.protocol.payload.GameOverPayload;
 import shared.protocol.payload.StateUpdatePayload;
 import view.GameSnapshot;
@@ -54,6 +55,7 @@ public final class GameSession {
     private final UserRepository userRepository;
 
     private final Map<Long, Position> selections = new ConcurrentHashMap<>();
+    private final Map<Long, DisconnectWatchdog> watchdogsByUserId = new ConcurrentHashMap<>();
     private final Object lifecycleLock = new Object();
     private ScheduledExecutorService ticker;
     private volatile boolean over = false;
@@ -117,6 +119,24 @@ public final class GameSession {
 
     public void forceResignDueToDisconnect(long userId) {
         finishGame(opponentColorOf(userId), "disconnect_timeout");
+    }
+
+    /** Called by {@code ChessWebSocketServer} right after starting a watchdog, so a later reconnect can find and cancel it. */
+    public void registerWatchdog(long userId, DisconnectWatchdog watchdog) {
+        watchdogsByUserId.put(userId, watchdog);
+    }
+
+    /**
+     * Called by {@code LoginHandler} when a user who was mid-game reconnects within the 20s window -
+     * spec: "if reconnect in time, cancel the auto-resign timer, it isn't a loss." Stops the ticking
+     * watchdog and clears its countdown from every client's screen.
+     */
+    public void cancelWatchdogIfPresent(long userId) {
+        DisconnectWatchdog watchdog = watchdogsByUserId.remove(userId);
+        if (watchdog == null) return;
+        watchdog.cancel();
+        char color = colorOf(userId);
+        room.broadcastToAll(MessageType.DISCONNECT_COUNTDOWN, new CountdownPayload(roomId, color, 0));
     }
 
     public char colorOf(long userId) {

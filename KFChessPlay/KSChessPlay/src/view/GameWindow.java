@@ -35,7 +35,7 @@ public class GameWindow extends JFrame {
 
     /** Names are already known from login/matchmaking/room join by the time this is constructed. */
     public GameWindow(Image canvas, String whiteName, String blackName) {
-        setTitle("Kung Fu Chess");
+        setTitle("Kung Fu Chess - " + whiteName + " (White) vs " + blackName + " (Black)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 

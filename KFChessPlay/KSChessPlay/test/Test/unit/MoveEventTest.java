@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import engine.MoveEvent;
 import engine.GameManager;

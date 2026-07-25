@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import rules.RuleEngine;
 import models.Board;
@@ -130,5 +130,11 @@ public class RuleEngineTest {
     @Test
     public void testValidateJumpNoPiece() {
         assertFalse(engine.validateJump(board, new Position(3, 3)).isValid());
+    }
+
+    @Test
+    public void testUnknownPieceTypeIsInvalid() {
+        board.setPieceAt(new Position(4, 4), new Piece('w', 'X'));
+        assertFalse(engine.validateMove(board, new Position(4, 4), new Position(4, 5)).isValid());
     }
 }

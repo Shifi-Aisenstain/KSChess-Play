@@ -6,7 +6,10 @@ import server.net.PlayerSession;
 import server.rooms.Room;
 import server.rooms.RoomManager;
 import shared.protocol.Message;
+import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
+import shared.protocol.payload.ErrorPayload;
+import shared.protocol.payload.RoomActionPayload;
 import shared.protocol.payload.RoomStatusPayload;
 
 public final class RoomCreateHandler implements MessageHandler {
@@ -21,8 +24,14 @@ public final class RoomCreateHandler implements MessageHandler {
         User user = HandlerSupport.requireUser(session);
         if (user == null) return;
 
-        Room room = roomManager.createRoom(user, session);
-        session.setCurrentRoomId(room.getId());
-        session.send(MessageType.ROOM_CREATED, new RoomStatusPayload(room.getId(), Room.Role.WHITE.name()));
+        RoomActionPayload payload = MessageCodec.decodePayload(message, RoomActionPayload.class);
+        RoomManager.CreateResult result = roomManager.createRoom(user, session, payload.roomId);
+        if (!result.success) {
+            session.send(MessageType.ERROR, new ErrorPayload(result.errorMessage));
+            return;
+        }
+
+        session.setCurrentRoomId(result.room.getId());
+        session.send(MessageType.ROOM_CREATED, new RoomStatusPayload(result.room.getId(), Room.Role.WHITE.name()));
     }
 }

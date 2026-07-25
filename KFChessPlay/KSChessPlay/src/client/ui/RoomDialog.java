@@ -5,8 +5,9 @@ import java.awt.*;
 
 /**
  * Spec 1.a: "Button: Room - Open a windows message with text box and
- * buttons: Create / Join / Cancel". Create ignores the text box; Join reads
- * the room code from it.
+ * buttons: Create / Join / Cancel". Join requires the room code in the text
+ * box; Create treats it as an optional custom room ID/name (blank = server
+ * auto-generates one, same as before).
  */
 public final class RoomDialog extends JDialog {
     public enum Outcome { CREATE, JOIN, CANCEL }
@@ -20,14 +21,14 @@ public final class RoomDialog extends JDialog {
 
         JTextField roomIdField = new JTextField(10);
         JPanel inputPanel = new JPanel(new FlowLayout());
-        inputPanel.add(new JLabel("Room ID (for Join):"));
+        inputPanel.add(new JLabel("Room ID (required for Join, optional for Create):"));
         inputPanel.add(roomIdField);
 
         JButton createBtn = new JButton("Create");
         JButton joinBtn = new JButton("Join");
         JButton cancelBtn = new JButton("Cancel");
 
-        createBtn.addActionListener(e -> { outcome = Outcome.CREATE; dispose(); });
+        createBtn.addActionListener(e -> { outcome = Outcome.CREATE; roomIdText = roomIdField.getText().trim(); dispose(); });
         joinBtn.addActionListener(e -> { outcome = Outcome.JOIN; roomIdText = roomIdField.getText().trim(); dispose(); });
         cancelBtn.addActionListener(e -> { outcome = Outcome.CANCEL; dispose(); });
 

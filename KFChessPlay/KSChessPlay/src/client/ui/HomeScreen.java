@@ -62,7 +62,7 @@ public final class HomeScreen extends JFrame {
         RoomDialog dialog = new RoomDialog(this);
         dialog.setVisible(true);
         switch (dialog.getOutcome()) {
-            case CREATE -> listener.onRoomCreateRequested();
+            case CREATE -> listener.onRoomCreateRequested(dialog.getRoomIdText());
             case JOIN -> {
                 String roomId = dialog.getRoomIdText();
                 if (!roomId.isEmpty()) listener.onRoomJoinRequested(roomId);

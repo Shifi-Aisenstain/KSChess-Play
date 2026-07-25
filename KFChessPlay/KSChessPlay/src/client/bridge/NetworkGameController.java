@@ -4,7 +4,6 @@ import client.net.ServerConnection;
 import client.net.ServerMessageListener;
 import models.Position;
 import shared.eventbus.EventBus;
-import shared.protocol.AlgebraicNotation;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -14,8 +13,6 @@ import shared.protocol.payload.ErrorPayload;
 import shared.protocol.payload.GameEventPayload;
 import shared.protocol.payload.GameOverPayload;
 import shared.protocol.payload.JumpCommandPayload;
-import shared.protocol.payload.LoginPayload;
-import shared.protocol.payload.LoginResultPayload;
 import shared.protocol.payload.MatchFoundPayload;
 import shared.protocol.payload.MoveCommandPayload;
 import shared.protocol.payload.RoomActionPayload;
@@ -23,7 +20,6 @@ import shared.protocol.payload.RoomStatusPayload;
 import shared.protocol.payload.SelectPayload;
 import shared.protocol.payload.StateUpdatePayload;
 import view.GameSnapshot;
-import view.PieceSnapshot;
 import view.SnapshotSource;
 
 import java.util.function.Consumer;
@@ -48,7 +44,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
     private volatile String blackUsername = "Black";
     private volatile Position selectedPosition;
 
-    private Consumer<LoginResultPayload> onLoginResult;
     private Runnable onPlayWaiting;
     private Consumer<MatchFoundPayload> onMatchFound;
     private Consumer<String> onPlayNotFound;
@@ -65,7 +60,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
         this.localEventBus = localEventBus;
     }
 
-    public void setOnLoginResult(Consumer<LoginResultPayload> cb) { this.onLoginResult = cb; }
     public void setOnPlayWaiting(Runnable cb) { this.onPlayWaiting = cb; }
     public void setOnMatchFound(Consumer<MatchFoundPayload> cb) { this.onMatchFound = cb; }
     public void setOnPlayNotFound(Consumer<String> cb) { this.onPlayNotFound = cb; }
@@ -78,10 +72,7 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
     public void setOnServerError(Consumer<String> cb) { this.onServerError = cb; }
 
     // ---- outgoing requests -------------------------------------------------
-
-    public void requestLogin(String username, String password) {
-        connection.send(MessageType.LOGIN, new LoginPayload(username, password));
-    }
+    // (LOGIN itself is handled by client.bridge.LoginController, before this class even exists)
 
     public void requestPlay() {
         connection.send(MessageType.PLAY_REQUEST, EmptyPayload.INSTANCE);
@@ -91,8 +82,8 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
         connection.send(MessageType.PLAY_CANCEL, EmptyPayload.INSTANCE);
     }
 
-    public void requestCreateRoom() {
-        connection.send(MessageType.ROOM_CREATE, EmptyPayload.INSTANCE);
+    public void requestCreateRoom(String desiredRoomId) {
+        connection.send(MessageType.ROOM_CREATE, new RoomActionPayload(desiredRoomId));
     }
 
     public void requestJoinRoom(String roomId) {
@@ -118,9 +109,8 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
             return;
         }
 
-        char pieceType = findPieceTypeAt(selectedPosition);
-        String command = AlgebraicNotation.format(yourColor, pieceType, selectedPosition, clicked, boardRows);
-        connection.send(MessageType.MOVE, new MoveCommandPayload(command));
+        connection.send(MessageType.MOVE, new MoveCommandPayload(
+                selectedPosition.getRow(), selectedPosition.getCol(), clicked.getRow(), clicked.getCol()));
 
         selectedPosition = null;
         connection.send(MessageType.SELECT, new SelectPayload(false, 0, 0));
@@ -136,7 +126,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
     @Override
     public void onMessage(Message message) {
         switch (message.getType()) {
-            case LOGIN_RESULT -> deliver(onLoginResult, MessageCodec.decodePayload(message, LoginResultPayload.class));
             case PLAY_WAITING -> { if (onPlayWaiting != null) onPlayWaiting.run(); }
             case MATCH_FOUND -> deliver(onMatchFound, MessageCodec.decodePayload(message, MatchFoundPayload.class));
             case PLAY_NOT_FOUND -> deliver(onPlayNotFound, MessageCodec.decodePayload(message, ErrorPayload.class).message);
@@ -161,14 +150,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
         this.blackUsername = payload.blackUsername;
         this.latestSnapshot = payload.snapshot;
         if (firstUpdate && onFirstStateUpdate != null) onFirstStateUpdate.run();
-    }
-
-    private char findPieceTypeAt(Position pos) {
-        if (latestSnapshot == null) return 'P';
-        for (PieceSnapshot p : latestSnapshot.getPieces()) {
-            if (Math.round(p.x) == pos.getCol() && Math.round(p.y) == pos.getRow()) return p.type;
-        }
-        return 'P';
     }
 
     private <T> void deliver(Consumer<T> callback, T value) {

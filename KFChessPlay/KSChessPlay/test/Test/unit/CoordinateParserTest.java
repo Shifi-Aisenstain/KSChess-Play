@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import input.CoordinateParser;
 import models.Position;
@@ -24,5 +24,27 @@ public class CoordinateParserTest {
 
         // הלוגיקה שלך צריכה להחזיר null במקרה כזה
         assertNull(pos);
+    }
+
+    @Test
+    public void testNegativeCoordinatesReturnNull() {
+        // Integer division truncates toward zero, so anything within one cell-width of the origin
+        // (e.g. -10/100 == 0) still maps to a valid cell - go far enough negative to actually land
+        // on a negative row/col index.
+        assertNull(CoordinateParser.parseClick(-150, 50, 8, 8));
+        assertNull(CoordinateParser.parseClick(50, -150, 8, 8));
+    }
+
+    @Test
+    public void testRowOutOfBoundsReturnsNull() {
+        assertNull(CoordinateParser.parseClick(50, 900, 8, 8));
+    }
+
+    @Test
+    public void testClickOnLastValidCellIsAccepted() {
+        Position pos = CoordinateParser.parseClick(799, 799, 8, 8);
+        assertNotNull(pos);
+        assertEquals(7, pos.getRow());
+        assertEquals(7, pos.getCol());
     }
 }

@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import models.Piece;
 import org.junit.jupiter.api.Test;

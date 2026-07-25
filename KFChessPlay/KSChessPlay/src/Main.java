@@ -1,7 +1,9 @@
 import client.audio.SoundSubscriber;
+import client.bridge.LoginController;
 import client.bridge.NetworkGameController;
 import client.logging.ClientActivityLogger;
 import client.net.ServerConnection;
+import client.net.ServerMessageListener;
 import client.ui.AnimationSubscriber;
 import client.ui.HomeScreen;
 import client.ui.HomeScreenListener;
@@ -12,6 +14,7 @@ import input.BoardMapper;
 import input.CoordinateParser;
 import models.Position;
 import shared.eventbus.EventBus;
+import shared.protocol.payload.GameEventPayload;
 import shared.protocol.payload.GameOverPayload;
 import shared.protocol.payload.LoginResultPayload;
 import view.GameLoop;
@@ -19,10 +22,12 @@ import view.GameWindow;
 import view.ImgRenderer;
 import view.SpriteLoader;
 
+import javax.swing.SwingUtilities;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 /**
  * Client bootstrap for the networked build: console login, then a Swing
@@ -43,7 +48,7 @@ public class Main {
 
         ClientActivityLogger activityLogger = new ClientActivityLogger("client_activity.log");
         EventBus localEventBus = new EventBus();
-        localEventBus.subscribe(shared.protocol.payload.GameEventPayload.class, new SoundSubscriber());
+        localEventBus.subscribe(GameEventPayload.class, new SoundSubscriber());
 
         LoginSession session = connectAndLogin(serverUri, activityLogger, localEventBus);
         if (session == null) return; // login failed / server unreachable, message already printed
@@ -73,17 +78,19 @@ public class Main {
         try {
             LoginConsolePrompt.Credentials credentials = new LoginConsolePrompt().prompt();
 
-            CompletableFuture<LoginResultPayload> loginFuture = new CompletableFuture<>();
-
-            NetworkGameController[] controllerHolder = new NetworkGameController[1];
+            // The connection needs a listener before either exists, so route through a holder;
+            // LoginController owns the socket until login succeeds, then NetworkGameController
+            // takes over for the rest of the session - each request type has its own controller.
+            ServerMessageListener[] listenerHolder = new ServerMessageListener[1];
             ServerConnection connection = new ServerConnection(new URI(serverUri),
-                    message -> controllerHolder[0].onMessage(message), activityLogger);
-            NetworkGameController controller = new NetworkGameController(connection, localEventBus);
-            controllerHolder[0] = controller;
-            controller.setOnLoginResult(loginFuture::complete);
+                    message -> listenerHolder[0].onMessage(message), activityLogger);
+
+            LoginController loginController = new LoginController(connection);
+            listenerHolder[0] = loginController;
 
             connection.connectBlocking();
-            controller.requestLogin(credentials.username, credentials.password);
+            CompletableFuture<LoginResultPayload> loginFuture =
+                    loginController.login(credentials.username, credentials.password);
 
             LoginResultPayload result = loginFuture.get(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (!result.success) {
@@ -91,6 +98,9 @@ public class Main {
                 return null;
             }
             System.out.println("Logged in as " + result.username + " (ELO " + result.elo + ")");
+
+            NetworkGameController controller = new NetworkGameController(connection, localEventBus);
+            listenerHolder[0] = controller;
             return new LoginSession(controller, result);
         } catch (TimeoutException e) {
             System.err.println("Server did not respond to login in time. Is it running at " + serverUri + "?");
@@ -108,7 +118,7 @@ public class Main {
         homeScreen.setListener(new HomeScreenListener() {
             @Override public void onPlayRequested() { controller.requestPlay(); }
             @Override public void onPlayCancelled() { controller.cancelPlay(); }
-            @Override public void onRoomCreateRequested() { controller.requestCreateRoom(); }
+            @Override public void onRoomCreateRequested(String desiredRoomId) { controller.requestCreateRoom(desiredRoomId); }
             @Override public void onRoomJoinRequested(String roomId) { controller.requestJoinRoom(roomId); }
         });
         return homeScreen;
@@ -122,7 +132,7 @@ public class Main {
         controller.setOnRoomError(homeScreen::showRoomError);
         controller.setOnServerError(msg -> System.err.println("[server error] " + msg));
 
-        controller.setOnFirstStateUpdate(() -> javax.swing.SwingUtilities.invokeLater(() -> {
+        controller.setOnFirstStateUpdate(() -> SwingUtilities.invokeLater(() -> {
             homeScreen.setVisible(false);
             launchGameWindow(controller, background, localEventBus);
         }));
@@ -134,8 +144,8 @@ public class Main {
         ImgRenderer renderer = new ImgRenderer(spriteLoader, background, mapper);
 
         GameWindow window = new GameWindow(background, controller.getWhiteUsername(), controller.getBlackUsername());
-        localEventBus.subscribe(shared.protocol.payload.GameEventPayload.class, new AnimationSubscriber(window));
-        localEventBus.subscribe(shared.protocol.payload.GameEventPayload.class, new ScoreboardSubscriber(window));
+        localEventBus.subscribe(GameEventPayload.class, new AnimationSubscriber(window));
+        localEventBus.subscribe(GameEventPayload.class, new ScoreboardSubscriber(window));
 
         // One-time backfill for a client that joins mid-game (e.g. a spectator) and so missed
         // earlier GAME_EVENTs; ongoing score/move-log updates come from ScoreboardSubscriber above.
@@ -165,7 +175,7 @@ public class Main {
         window.setVisible(true);
     }
 
-    private static java.util.function.Consumer<GameOverPayload> describeGameOver(GameWindow window) {
+    private static Consumer<GameOverPayload> describeGameOver(GameWindow window) {
         return payload -> {
             String winner = "WHITE".equals(payload.winnerColor) ? payload.whiteUsername
                     : "BLACK".equals(payload.winnerColor) ? payload.blackUsername
@@ -174,7 +184,7 @@ public class Main {
                     + "\nReason: " + payload.reason
                     + "\nWhite ELO: " + payload.whiteEloNew + " (" + signed(payload.whiteEloDelta) + ")"
                     + "\nBlack ELO: " + payload.blackEloNew + " (" + signed(payload.blackEloDelta) + ")";
-            javax.swing.SwingUtilities.invokeLater(() -> window.showGameOver(message));
+            SwingUtilities.invokeLater(() -> window.showGameOver(message));
         };
     }
 

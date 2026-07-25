@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import engine.GameManager;
 import controller.MoveCommand;
@@ -287,5 +287,18 @@ public class GameManagerTest {
         gm.handleWait(1000);
         GameSnapshot snap = gm.createSnapshot();
         assertFalse(snap.getCooldownHighlights().isEmpty());
+    }
+
+    @Test
+    public void testColorAtReturnsPieceColorOrNulChar() {
+        gm.addPieceToBoard(0, 0, new Piece('w', 'R'));
+        assertEquals('w', gm.colorAt(new Position(0, 0)));
+        assertEquals('\0', gm.colorAt(new Position(1, 1)));
+    }
+
+    @Test
+    public void testColorAtOnUninitializedBoardReturnsNulChar() {
+        GameManager empty = new GameManager();
+        assertEquals('\0', empty.colorAt(new Position(0, 0)));
     }
 }

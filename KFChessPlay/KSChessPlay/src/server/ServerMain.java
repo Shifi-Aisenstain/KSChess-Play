@@ -76,7 +76,7 @@ public final class ServerMain {
                                                        MatchmakingService matchmakingService,
                                                        RoomManager roomManager) {
         MessageDispatcher dispatcher = new MessageDispatcher();
-        dispatcher.register(MessageType.LOGIN, new LoginHandler(authService));
+        dispatcher.register(MessageType.LOGIN, new LoginHandler(authService, roomManager));
         dispatcher.register(MessageType.PLAY_REQUEST, new PlayRequestHandler(matchmakingService, roomManager));
         dispatcher.register(MessageType.PLAY_CANCEL, new PlayCancelHandler(matchmakingService));
         dispatcher.register(MessageType.ROOM_CREATE, new RoomCreateHandler(roomManager));

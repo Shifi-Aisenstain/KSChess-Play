@@ -1,10 +1,10 @@
 package server.dispatch.handlers;
 
+import models.Position;
 import server.dispatch.MessageHandler;
 import server.game.GameSession;
 import server.net.PlayerSession;
 import server.rooms.RoomManager;
-import shared.protocol.AlgebraicNotation;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -25,15 +25,10 @@ public final class MoveHandler implements MessageHandler {
         if (gameSession == null) return;
 
         MoveCommandPayload payload = MessageCodec.decodePayload(message, MoveCommandPayload.class);
-        AlgebraicNotation.ParsedCommand parsed;
-        try {
-            parsed = AlgebraicNotation.parse(payload.command, gameSession.getBoardRows());
-        } catch (RuntimeException e) {
-            session.send(MessageType.ERROR, new ErrorPayload("Malformed move command: " + payload.command));
-            return;
-        }
+        Position from = new Position(payload.fromRow, payload.fromCol);
+        Position to = new Position(payload.toRow, payload.toCol);
 
-        boolean accepted = gameSession.handleMove(session.getUser().getId(), parsed.from, parsed.to);
+        boolean accepted = gameSession.handleMove(session.getUser().getId(), from, to);
         if (!accepted) {
             session.send(MessageType.ERROR, new ErrorPayload("Move rejected - not your piece, or square is invalid."));
         }

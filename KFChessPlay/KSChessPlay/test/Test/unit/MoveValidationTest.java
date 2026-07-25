@@ -1,4 +1,4 @@
-package test.Test.unit;
+package Test.unit;
 
 import rules.MoveValidation;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,7 @@
-package test.Test.unit;
+package Test.unit;
 
 import realtime.RealTimeArbiter;
+import controller.MoveCommand;
 import engine.GameManager;
 import models.Board;
 import models.Piece;
@@ -61,13 +62,17 @@ public class RealTimeArbiterTest {
 
     @Test
     public void testCooldownAfterMoveKeepsPieceBusy() {
+        // Driven through GameManager's public API (like production GameSession does), not the
+        // standalone `arbiter` field: MoveEvent.execute() registers the post-move cooldown via
+        // gameManager.registerLongRestCooldown, which lands on GameManager's *own* internal
+        // RealTimeArbiter - a separately-constructed arbiter here would never see it.
         Piece rook = new Piece('w', 'R');
         gm.addPieceToBoard(0, 0, rook);
-        arbiter.registerMove(rook, new Position(0, 0), new Position(0, 1));
-        arbiter.advanceTime(1000, gm);
-        assertTrue(arbiter.isPieceBusy(0, 1));
-        arbiter.advanceTime(3000, gm);
-        assertFalse(arbiter.isPieceBusy(0, 1));
+        gm.requestMove(new MoveCommand(new Position(0, 0), new Position(0, 1)));
+        gm.handleWait(1000);
+        assertTrue(gm.isPieceBusy(0, 1));
+        gm.handleWait(3000);
+        assertFalse(gm.isPieceBusy(0, 1));
     }
 
     @Test

@@ -53,6 +53,9 @@
     <build>
         <finalName>kungfu-chess</finalName>
         <sourceDirectory>src</sourceDirectory>
+        <!-- Tests live in test/Test/{unit,integration} (package Test.unit / Test.integration), a
+             sibling of src/, not Maven's default src/test/java - point Maven at it directly. -->
+        <testSourceDirectory>test</testSourceDirectory>
 
         <plugins>
             <plugin>
@@ -65,6 +68,61 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.2</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <!-- Excludes Swing UI (needs GUI automation, not plain JUnit), raw WebSocket
+                     transport (needs a live socket), and composition-root entry points from the
+                     coverage target - see ARCHITECTURE.md §13/§14 for the full rationale. Applies
+                     to both `report` and `check` below; `prepare-agent` still instruments/records
+                     everything, this only filters what counts toward the reported/enforced ratio. -->
+                <configuration>
+                    <excludes>
+                        <exclude>Main.class</exclude>
+                        <exclude>server/ServerMain.class</exclude>
+                        <exclude>view/GameWindow*.class</exclude>
+                        <exclude>client/ui/HomeScreen*.class</exclude>
+                        <exclude>client/ui/RoomDialog*.class</exclude>
+                        <exclude>view/GameLoop*.class</exclude>
+                        <exclude>client/ui/AnimationSubscriber*.class</exclude>
+                        <exclude>client/ui/ScoreboardSubscriber*.class</exclude>
+                        <exclude>server/net/ChessWebSocketServer*.class</exclude>
+                        <exclude>client/net/ServerConnection*.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals><goal>prepare-agent</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals><goal>report</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>test</phase>
+                        <goals><goal>check</goal></goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

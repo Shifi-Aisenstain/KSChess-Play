@@ -1,4 +1,5 @@
-Set-Location "c:\Users\User\Desktop\studies\bootcamp\KSChess-Play\KFChessPlay\KSChessPlay"
-$cp = "target\classes;C:\Users\User\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar;C:\Users\User\.m2\repository\org\java-websocket\Java-WebSocket\1.5.4\Java-WebSocket-1.5.4.jar;C:\Users\User\.m2\repository\org\xerial\sqlite-jdbc\3.44.1.0\sqlite-jdbc-3.44.1.0.jar;C:\Users\User\.m2\repository\org\slf4j\slf4j-api\2.0.6\slf4j-api-2.0.6.jar"
-Write-Host "=== KUNGFU CHESS SERVER ===" -ForegroundColor Green
-java -cp $cp server.ServerMain
+# Starts the KungFu Chess WebSocket server. Portable: locates the project via $PSScriptRoot
+# (not a hardcoded absolute path) and prefers a real `mvn package` build; falls back to a plain
+# javac compile (using jars already cached in the local ~/.m2/repository) if Maven isn't on PATH.
+. "$PSScriptRoot\build-and-run.ps1"
+Invoke-KungFuChess -MainClass "server.ServerMain" -JarClassifier "server" -Title "KUNGFU CHESS SERVER" -Color Green

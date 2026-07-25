@@ -1,44 +1,32 @@
-//package test.Test.unit;
-//
-//import input.BoardMapper;
-//import models.Position;
-//import org.junit.jupiter.api.Test;
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//public class BoardMapperTest {
-//
-//    private final BoardMapper mapper = new BoardMapper();
-//
-//    @Test
-//    public void testValidStringMapping() {
-//        // a1 -> row=0, col=0
-//        Position p1 = mapper.mapStringToPosition("a1");
-//        assertEquals(0, p1.getRow());
-//        assertEquals(0, p1.getCol());
-//
-//        // b3 -> row=2, col=1
-//        Position p2 = mapper.mapStringToPosition("b3");
-//        assertEquals(2, p2.getRow());
-//        assertEquals(1, p2.getCol());
-//
-//        // בדיקת אותיות גדולות (Case Insensitivity)
-//        Position p3 = mapper.mapStringToPosition("A1");
-//        assertEquals(0, p3.getRow());
-//        assertEquals(0, p3.getCol());
-//    }
-//
-//    @Test
-//    public void testInvalidNullOrEmptyInput() {
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            mapper.mapStringToPosition(null);
-//        });
-//
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            mapper.mapStringToPosition("");
-//        });
-//
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            mapper.mapStringToPosition("a");
-//        });
-//    }
-//}
+package Test.unit;
+
+import input.BoardMapper;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class BoardMapperTest {
+
+    private final BoardMapper mapper = new BoardMapper();
+
+    @Test
+    public void testToPixelXScalesByTileSize() {
+        assertEquals(0, mapper.toPixelX(0));
+        assertEquals(BoardMapper.PIXELS_PER_TILE, mapper.toPixelX(1));
+        assertEquals(BoardMapper.PIXELS_PER_TILE * 3, mapper.toPixelX(3));
+    }
+
+    @Test
+    public void testToPixelYScalesByTileSize() {
+        assertEquals(0, mapper.toPixelY(0));
+        assertEquals(BoardMapper.PIXELS_PER_TILE, mapper.toPixelY(1));
+        assertEquals(BoardMapper.PIXELS_PER_TILE * 7, mapper.toPixelY(7));
+    }
+
+    @Test
+    public void testFractionalTilePositionTruncates() {
+        // 2.9 tiles in should still fall short of pixel column 3 * PIXELS_PER_TILE.
+        int x = mapper.toPixelX(2.9);
+        assertTrue(x < BoardMapper.PIXELS_PER_TILE * 3);
+        assertTrue(x >= BoardMapper.PIXELS_PER_TILE * 2);
+    }
+}

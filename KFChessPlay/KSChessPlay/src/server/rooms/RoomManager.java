@@ -6,6 +6,7 @@ import server.game.GameSession;
 import server.net.MessageSink;
 import server.rating.RatingService;
 import shared.eventbus.EventBus;
+import shared.eventbus.events.GameEndedEvent;
 
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class RoomManager {
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final Map<Long, String> activeRoomByUserId = new ConcurrentHashMap<>();
     private final RoomIdGenerator idGenerator = new RoomIdGenerator();
     private final EventBus eventBus;
     private final RatingService ratingService;
@@ -30,6 +32,17 @@ public final class RoomManager {
         this.eventBus = eventBus;
         this.ratingService = ratingService;
         this.userRepository = userRepository;
+        // Spec: "disconnection is not immediate loss" - a reconnecting user's LOGIN needs to find
+        // their in-progress game, so track it here until the game actually ends.
+        eventBus.subscribe(GameEndedEvent.class, e -> getRoom(e.roomId).ifPresent(room -> {
+            activeRoomByUserId.remove(room.getUser('w').getId());
+            activeRoomByUserId.remove(room.getUser('b').getId());
+        }));
+    }
+
+    /** Used by {@code LoginHandler} to detect "this user was mid-game and is reconnecting." */
+    public Optional<String> getActiveRoomForUser(long userId) {
+        return Optional.ofNullable(activeRoomByUserId.get(userId));
     }
 
     public static final class JoinResult {
@@ -49,12 +62,35 @@ public final class RoomManager {
         static JoinResult fail(String message) { return new JoinResult(false, null, null, message); }
     }
 
-    public Room createRoom(User creator, MessageSink sink) {
-        Room room = new Room(uniqueId());
+    public static final class CreateResult {
+        public final boolean success;
+        public final Room room;
+        public final String errorMessage;
+
+        private CreateResult(boolean success, Room room, String errorMessage) {
+            this.success = success;
+            this.room = room;
+            this.errorMessage = errorMessage;
+        }
+
+        static CreateResult ok(Room room) { return new CreateResult(true, room, null); }
+        static CreateResult fail(String message) { return new CreateResult(false, null, message); }
+    }
+
+    /**
+     * {@code desiredRoomId} lets the creator pick a room name/ID instead of always getting a
+     * generated one; blank/null still auto-generates. Room IDs are unique - {@link ConcurrentHashMap#putIfAbsent}
+     * makes the check-and-reserve atomic, so two creators racing for the same custom ID can't both win.
+     */
+    public CreateResult createRoom(User creator, MessageSink sink, String desiredRoomId) {
+        String id = (desiredRoomId == null || desiredRoomId.isBlank()) ? uniqueId() : desiredRoomId.trim();
+        Room room = new Room(id);
+        if (rooms.putIfAbsent(id, room) != null) {
+            return CreateResult.fail("Room ID already taken: " + id);
+        }
         room.reserveRole(creator);
         room.attachSink(creator.getId(), sink);
-        rooms.put(room.getId(), room);
-        return room;
+        return CreateResult.ok(room);
     }
 
     public JoinResult joinRoom(String roomId, User user, MessageSink sink) {
@@ -103,6 +139,8 @@ public final class RoomManager {
         User black = room.getUser('b');
         GameSession session = new GameSession(room.getId(), room, white, black, eventBus, ratingService, userRepository);
         room.setGameSession(session);
+        activeRoomByUserId.put(white.getId(), room.getId());
+        activeRoomByUserId.put(black.getId(), room.getId());
         session.start();
     }
 

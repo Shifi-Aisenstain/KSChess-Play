@@ -2,7 +2,6 @@ package server.net;
 
 import org.java_websocket.WebSocket;
 import server.auth.User;
-import server.game.DisconnectWatchdog;
 import server.logging.ServerActivityLogger;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -17,7 +16,6 @@ public final class PlayerSession implements MessageSink {
     private final ServerActivityLogger activityLogger;
     private volatile User user;
     private volatile String currentRoomId;
-    private volatile DisconnectWatchdog activeWatchdog;
 
     public PlayerSession(WebSocket connection, ServerActivityLogger activityLogger) {
         this.connection = connection;
@@ -37,9 +35,6 @@ public final class PlayerSession implements MessageSink {
 
     public String getCurrentRoomId() { return currentRoomId; }
     public void setCurrentRoomId(String roomId) { this.currentRoomId = roomId; }
-
-    public DisconnectWatchdog getActiveWatchdog() { return activeWatchdog; }
-    public void setActiveWatchdog(DisconnectWatchdog watchdog) { this.activeWatchdog = watchdog; }
 
     public WebSocket getConnection() { return connection; }
 }
