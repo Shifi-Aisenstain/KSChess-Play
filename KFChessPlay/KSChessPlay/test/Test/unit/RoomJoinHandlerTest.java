@@ -61,7 +61,7 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testJoinExistingRoomAssignsBlackAndStartsGame() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCreateHandler createHandler = new RoomCreateHandler(roomManager);
         RoomJoinHandler joinHandler = new RoomJoinHandler(roomManager);
 
@@ -74,7 +74,13 @@ public class RoomJoinHandlerTest {
         joinHandler.handle(bobSession, roomMessage(MessageType.ROOM_JOIN, "GAMEROOM"));
 
         assertEquals("GAMEROOM", bobSession.getCurrentRoomId());
-        assertTrue(bobSent.get(0).contains("BLACK"));
+        // Not necessarily bobSent.get(0): starting the game session now also synchronously relays a
+        // GAME_STARTED GAME_EVENT to every room member (server.shard.ShardGameEventRelay, via the
+        // local Shard this test runs against - see TestSupport.newRoomManagerWithLocalShard) before
+        // RoomJoinHandler gets to send its own ROOM_JOINED confirmation. Both arrive; order between
+        // them isn't a contract worth asserting on, so check "was it sent at all" instead of "was it first".
+        assertTrue(bobSent.stream().anyMatch(s -> s.contains("BLACK")),
+                "expected a ROOM_JOINED message containing the assigned role somewhere in what bob received: " + bobSent);
 
         startedRoom = roomManager.getRoom("GAMEROOM").orElseThrow();
         assertNotNull(startedRoom.getGameSession());
@@ -82,7 +88,7 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testJoinUnknownRoomSendsError() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomJoinHandler joinHandler = new RoomJoinHandler(roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -96,7 +102,7 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testRoomCancelBeforeGameStartsDetachesCreator() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCreateHandler createHandler = new RoomCreateHandler(roomManager);
         RoomCancelHandler cancelHandler = new RoomCancelHandler(roomManager);
 
@@ -111,7 +117,7 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testRoomCancelWithNoCurrentRoomIsANoOp() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCancelHandler cancelHandler = new RoomCancelHandler(roomManager);
 
         User alice = new User(1, "alice", 1200);

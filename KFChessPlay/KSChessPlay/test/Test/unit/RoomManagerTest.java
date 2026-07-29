@@ -49,7 +49,7 @@ public class RoomManagerTest {
     @BeforeEach
     public void setUp() {
         EventBus eventBus = new EventBus();
-        roomManager = new RoomManager(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(eventBus, new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1210);
     }

@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
   * an actually-open socket to exercise (ServerConnection.send delegates to WebSocketClient.send,
   * which throws on an unconnected client) - see NetworkGameControllerTest for the incoming-message
   * half, which doesn't need one. Uses TestSupport.LoopbackServer (a minimal real WebSocket server)
-  * rather than the production server.ServerMain, so this stays independent of SQLite/matchmaking. */
+  * rather than the production server.ServerController, so this stays independent of SQLite/matchmaking. */
 public class NetworkGameControllerOutgoingTest {
 
     private TestSupport.LoopbackServer server;

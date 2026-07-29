@@ -57,6 +57,12 @@ public final class ServerActivityLogger {
         writeLine(direction + " user=" + (userId == null ? "anonymous" : userId) + " type=" + messageType + " payload=" + json);
     }
 
+    /** For unrecoverable startup/infrastructure failures (e.g. the database can't be opened) that
+     *  aren't wire traffic but still need a clear, timestamped trail in the activity log. */
+    public void logFatal(String context, String message) {
+        writeLine("FATAL [" + context + "] " + message);
+    }
+
     private synchronized void writeLine(String line) {
         writer.println("[" + LocalDateTime.now().format(TIMESTAMP) + "] " + line);
     }

@@ -2,7 +2,7 @@ package server.dispatch.handlers;
 
 import server.auth.AuthService;
 import server.dispatch.MessageHandler;
-import server.game.GameSession;
+import server.game.GameSessionHandle;
 import server.net.PlayerSession;
 import server.rooms.RoomManager;
 import shared.protocol.Message;
@@ -45,7 +45,7 @@ public final class LoginHandler implements MessageHandler {
     private void reattachToActiveGameIfAny(PlayerSession session, long userId) {
         roomManager.getActiveRoomForUser(userId).ifPresent(roomId ->
                 roomManager.getRoom(roomId).ifPresent(room -> {
-                    GameSession gameSession = room.getGameSession();
+                    GameSessionHandle gameSession = room.getGameSession();
                     if (gameSession == null || gameSession.isOver()) return;
                     room.attachSink(userId, session);
                     session.setCurrentRoomId(roomId);

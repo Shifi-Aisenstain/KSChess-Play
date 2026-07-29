@@ -1,28 +1,31 @@
 package server.rooms;
 
 import server.auth.User;
-import server.game.GameSession;
-import server.net.MessageSink;
-import shared.protocol.MessageType;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A room is the meeting point of up to two players and any number of
- * spectators (spec 1.d). It owns member bookkeeping and broadcast; the
- * actual chess simulation lives in the attached {@link GameSession} so a
- * room without two players yet (waiting for a Join) simply has none.
+ * spectators (spec 1.d). It owns member bookkeeping only - who has which role.
+ *
+ * <p>Until PLAN_split_6_services.md §3.2, this class also owned a live socket per member
+ * ({@code sinks}) and the attached {@code GameSessionHandle}, because the monolith held both the
+ * room bookkeeping and the client sockets in the same process. Since §3.2 (the WS Gateway
+ * extraction), the sockets live in a separate process entirely, and gameplay traffic flows directly
+ * between the WS Gateway and the Game Server Shard over the bus (see
+ * {@code server.gateway.GatewayRoomSession}) - the monolith (still hosting this class, per §3.2's
+ * scope) is never on that path anymore, so there is nothing here left to send messages *to*.
+ * {@link #started} is the one bit of state {@code RoomManager} still needs: whether this room's game
+ * has already been allocated to a Shard, so a second reconnect-as-BLACK doesn't re-allocate it.
  */
 public final class Room {
     public enum Role { WHITE, BLACK, SPECTATOR }
 
     private final String id;
-    private final Map<Long, MessageSink> sinks = new ConcurrentHashMap<>();
-    private final Map<Long, Role> roles = new LinkedHashMap<>();
+    private final Map<Long, Role> roles = new ConcurrentHashMap<>();
     private final Map<Long, User> users = new ConcurrentHashMap<>();
-    private volatile GameSession gameSession;
+    private volatile boolean started;
 
     public Room(String id) {
         this.id = id;
@@ -39,14 +42,6 @@ public final class Room {
         return role;
     }
 
-    public void attachSink(long userId, MessageSink sink) {
-        sinks.put(userId, sink);
-    }
-
-    public void detachMember(long userId) {
-        sinks.remove(userId);
-    }
-
     public boolean isFull() {
         return roles.containsValue(Role.WHITE) && roles.containsValue(Role.BLACK);
     }
@@ -60,18 +55,9 @@ public final class Room {
                 .orElse(null);
     }
 
-    public void broadcastToAll(MessageType type, Object payload) {
-        for (MessageSink sink : sinks.values()) sink.send(type, payload);
-    }
-
-    public void sendTo(long userId, MessageType type, Object payload) {
-        MessageSink sink = sinks.get(userId);
-        if (sink != null) sink.send(type, payload);
-    }
-
     public Map<Long, Role> getRoles() { return roles; }
     public User getUser(long userId) { return users.get(userId); }
     public String getId() { return id; }
-    public GameSession getGameSession() { return gameSession; }
-    public void setGameSession(GameSession gameSession) { this.gameSession = gameSession; }
+    public boolean isStarted() { return started; }
+    public void markStarted() { started = true; }
 }

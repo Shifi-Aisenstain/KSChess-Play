@@ -6,7 +6,7 @@ import org.java_websocket.server.WebSocketServer;
 import server.auth.User;
 import server.dispatch.MessageDispatcher;
 import server.game.DisconnectWatchdog;
-import server.game.GameSession;
+import server.game.GameSessionHandle;
 import server.logging.ServerActivityLogger;
 import server.matchmaking.MatchmakingService;
 import server.rooms.Room;
@@ -89,7 +89,7 @@ public final class ChessWebSocketServer extends WebSocketServer {
         if (maybeRoom.isEmpty()) return;
 
         Room room = maybeRoom.get();
-        GameSession gameSession = room.getGameSession();
+        GameSessionHandle gameSession = room.getGameSession();
         if (gameSession == null || gameSession.isOver()) return;
 
         char color = gameSession.colorOf(user.getId());

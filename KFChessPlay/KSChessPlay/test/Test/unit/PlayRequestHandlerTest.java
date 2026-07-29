@@ -60,7 +60,7 @@ public class PlayRequestHandlerTest {
     @Test
     public void testPlayRequestSendsWaitingAndEnqueues() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -75,7 +75,7 @@ public class PlayRequestHandlerTest {
     @Test
     public void testPlayRequestWithoutLoginIsRejected() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -89,7 +89,7 @@ public class PlayRequestHandlerTest {
     @Test
     public void testMatchFoundCallbackSendsMatchFoundAndAttachesSink() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -106,7 +106,7 @@ public class PlayRequestHandlerTest {
     @Test
     public void testNotFoundCallbackSendsPlayNotFound() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
 
         List<String> sent = new ArrayList<>();

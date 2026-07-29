@@ -66,4 +66,19 @@ public class MessageCodecTest {
             assertEquals(type, envelope.getType());
         }
     }
+
+    /** {@code encodeInnerPayload}/{@code decodeInnerPayload} (PLAN_split_6_services.md §3.1) encode
+     *  a payload on its own, without the outer {@link Message} envelope - used to nest an arbitrary
+     *  inner payload inside a routing wrapper like {@code RoutedCommandPayload}/{@code RoutedUpdatePayload}. */
+    @Test
+    public void testInnerPayloadRoundTripsWithoutEnvelope() {
+        MoveCommandPayload move = new MoveCommandPayload(1, 2, 3, 4);
+        String json = MessageCodec.encodeInnerPayload(move);
+
+        assertFalse(json.contains("payloadJson"), "should be the bare payload, not wrapped in a Message envelope");
+
+        MoveCommandPayload decoded = MessageCodec.decodeInnerPayload(json, MoveCommandPayload.class);
+        assertEquals(1, decoded.fromRow);
+        assertEquals(4, decoded.toCol);
+    }
 }

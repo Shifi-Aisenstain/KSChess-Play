@@ -68,23 +68,33 @@ public class GameManager {
         }
     }
 
-    public void requestMove(MoveCommand command) {
-        if (isGameOver || board == null) return;
+    /** Returns true iff a move was actually registered (false for any rejection reason). */
+    public boolean requestMove(MoveCommand command) {
+        if (isGameOver || board == null) return false;
         var validation = ruleEngine.validateMove(board, command.getSource(), command.getDestination());
-        if (!validation.isValid()) return;
-        if (arbiter.isPieceBusy(command.getSource().getRow(), command.getSource().getCol())) return;
+        if (!validation.isValid()) return false;
+        if (arbiter.isPieceBusy(command.getSource().getRow(), command.getSource().getCol())) return false;
         Piece piece = board.getPieceAt(command.getSource());
         arbiter.registerMove(piece, command.getSource(), command.getDestination());
+        return true;
     }
 
-    public void requestJump(Position pos) {
-        if (isGameOver || board == null) return;
+    /** Returns true iff a jump was actually registered (false for any rejection reason). */
+    public boolean requestJump(Position pos) {
+        if (isGameOver || board == null) return false;
         var validation = ruleEngine.validateJump(board, pos);
-        if (!validation.isValid()) return;
-        if (arbiter.isPieceBusy(pos.getRow(), pos.getCol())) return;
+        if (!validation.isValid()) return false;
+        if (arbiter.isPieceBusy(pos.getRow(), pos.getCol())) return false;
         Piece piece = board.getPieceAt(pos);
         arbiter.registerJump(piece, pos);
         publish(new PieceJumpedEvent(roomId, piece, pos));
+        return true;
+    }
+
+    /** Whether any move/jump/cooldown is still in flight - used server-side to decide whether a
+     *  tick needs to keep broadcasting (for smooth in-progress animation) even with no new input. */
+    public boolean hasActiveEvents() {
+        return !arbiter.getActiveEvents().isEmpty();
     }
 
     public void handleWait(int ms) {

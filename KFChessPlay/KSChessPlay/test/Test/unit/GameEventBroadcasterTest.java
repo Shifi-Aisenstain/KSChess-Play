@@ -56,7 +56,7 @@ public class GameEventBroadcasterTest {
 
     private void setUp() {
         eventBus = new EventBus();
-        roomManager = new RoomManager(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(eventBus, new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
         sink = new RecordingSink();

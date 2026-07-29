@@ -35,6 +35,14 @@
             <version>3.44.1.0</version>
         </dependency>
 
+        <!-- Internal service-to-service bus for the 6-way split (Server_Design.md §3.3) -
+             WS Gateway <-> Game Server Shards, Matchmaker <-> Game Allocator, etc. -->
+        <dependency>
+            <groupId>io.nats</groupId>
+            <artifactId>jnats</artifactId>
+            <version>2.26.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -62,6 +70,27 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
+                <!-- Explicit annotationProcessorPaths for Lombok. Without this, a *clean* `mvn
+                     compile`/`mvn test` from the command line silently skips annotation processing
+                     on this plugin/JDK combo (implicit classpath-based auto-discovery of Lombok's
+                     processor doesn't trigger) - every @Getter/@AllArgsConstructor-generated
+                     method/constructor then "doesn't exist" and the build fails with a wall of
+                     "cannot find symbol" errors across every Lombok-annotated class (Piece,
+                     Position, MoveCommand, the eventbus events, CooldownHighlight, etc.). This was
+                     masked as long as target/classes still had stale-but-present classes compiled
+                     by IntelliJ's own (correctly Lombok-aware) incremental compiler; it surfaces the
+                     moment Maven actually has to recompile from scratch. build-and-run.ps1's manual
+                     javac fallback already carried the equivalent fix (see its own comment) - this
+                     applies the same fix to the real `mvn compile`/`package`/`test` path. -->
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.46</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -73,7 +102,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.11</version>
+                <version>0.8.14</version>
                 <!-- Excludes Swing UI (needs GUI automation, not plain JUnit), raw WebSocket
                      transport (needs a live socket), and composition-root entry points from the
                      coverage target - see ARCHITECTURE.md §13/§14 for the full rationale. Applies
@@ -82,7 +111,17 @@
                 <configuration>
                     <excludes>
                         <exclude>Main.class</exclude>
-                        <exclude>server/ServerMain.class</exclude>
+                        <exclude>server/ServerController.class</exclude>
+                        <!-- Composition-root wiring extracted out of ServerController (renamed
+                             from ServerMain; see fix for CR feedback: it used to inline SQL/
+                             service/dispatcher/network wiring directly, now split into these) -
+                             same rationale as ServerController itself: only exercised by a real
+                             main()/live SQLite file/live socket, and otherwise plain constructor-
+                             wiring with no branching logic worth unit testing. -->
+                        <exclude>server/config/PersistenceConfig*.class</exclude>
+                        <exclude>server/config/GameServicesConfig*.class</exclude>
+                        <exclude>server/config/DispatcherFactory*.class</exclude>
+                        <exclude>server/config/NetworkConfig*.class</exclude>
                         <exclude>view/GameWindow*.class</exclude>
                         <exclude>client/ui/HomeScreen*.class</exclude>
                         <exclude>client/ui/RoomDialog*.class</exclude>
@@ -91,6 +130,15 @@
                         <exclude>client/ui/ScoreboardSubscriber*.class</exclude>
                         <exclude>server/net/ChessWebSocketServer*.class</exclude>
                         <exclude>client/net/ServerConnection*.class</exclude>
+                        <!-- Needs a live NATS server to exercise for real; InMemoryMessageBus (the
+                             test double implementing the same MessageBus interface) is what's
+                             actually unit tested - see MessageBusTest. -->
+                        <exclude>shared/bus/NatsMessageBus*.class</exclude>
+                        <!-- Game Server Shard composition root (PLAN_split_6_services.md §3.1) - same
+                             rationale as server/ServerController above: only exercised by a real
+                             main()/live NATS connection/live SQLite file. Its actual logic lives in
+                             GameShardRuntime, which *is* unit tested (against InMemoryMessageBus). -->
+                        <exclude>server/shard/GameServerShardMain*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -153,7 +201,28 @@
                             <shadedClassifierName>server</shadedClassifierName>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>server.ServerMain</mainClass>
+                                    <mainClass>server.ServerController</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- Game Server Shard (PLAN_split_6_services.md §3.1) - the first of the 6
+                         components in Server_Design.md §1 to get its own runnable jar/mainClass.
+                         The other 4 (WS Gateway/Matchmaker/Allocator/API Gateway) get theirs, plus a
+                         single build-arg-driven Dockerfile replacing the current per-role copies, in
+                         §3.7 ("wiring build/deploy") - not here, to keep this sub-step's diff scoped
+                         to what §3.1 actually needs to be runnable/testable. -->
+                    <execution>
+                        <id>shard-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>shard</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.shard.GameServerShardMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

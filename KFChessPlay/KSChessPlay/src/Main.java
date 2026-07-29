@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  * Client bootstrap for the networked build: console login, then a Swing
  * home screen (Play / Room), then a live {@link GameWindow} driven entirely
  * by {@code STATE_UPDATE} messages from the server. This class is the
- * client's composition root - see {@code server.ServerMain} for its
+ * client's composition root - see {@code server.ServerController} for its
  * server-side counterpart. No gameplay logic lives here; it only wires
  * collaborators together.
  */

@@ -50,7 +50,7 @@ public class JumpHandlerTest {
     }
 
     private void startGame() {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1200);
         room = roomManager.createRoomForMatch(alice, bob);

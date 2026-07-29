@@ -50,7 +50,7 @@ public class ResignHandlerTest {
 
     @Test
     public void testResignEndsTheGame() throws Exception {
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         User alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
         Room room = roomManager.createRoomForMatch(alice, bob);
@@ -63,7 +63,7 @@ public class ResignHandlerTest {
 
     @Test
     public void testResignWithoutActiveGameSendsError() throws Exception {
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         ResignHandler handler = new ResignHandler(roomManager);
 
         List<String> sent = new ArrayList<>();

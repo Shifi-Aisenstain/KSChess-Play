@@ -54,7 +54,7 @@ public class LoginHandlerTest {
     public void testSuccessfulLoginSendsLoginResultAndSetsUser() throws Exception {
         StubAuthService auth = new StubAuthService();
         auth.nextResult = AuthService.Result.ok(new User(1, "alice", 1200));
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         LoginHandler handler = new LoginHandler(auth, roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -77,7 +77,7 @@ public class LoginHandlerTest {
     public void testFailedLoginDoesNotSetUser() throws Exception {
         StubAuthService auth = new StubAuthService();
         auth.nextResult = AuthService.Result.fail("bad password");
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         LoginHandler handler = new LoginHandler(auth, roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -91,7 +91,7 @@ public class LoginHandlerTest {
     @Test
     public void testLoginReattachesToActiveGameAfterDisconnect() throws Exception {
         EventBus eventBus = new EventBus();
-        RoomManager roomManager = new RoomManager(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(eventBus, new EloRatingService(), new InMemoryUserRepository());
         User alice = new User(10, "alice", 1200);
         User bob = new User(11, "bob", 1200);
         Room room = roomManager.createRoomForMatch(alice, bob);

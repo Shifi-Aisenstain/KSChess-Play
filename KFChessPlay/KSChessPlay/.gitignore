@@ -28,3 +28,14 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Build output ###
+build/
+target/
+src.zip
+
+### Runtime data / secrets (should never be committed) ###
+logs/
+creds/
+*.db
+*.log

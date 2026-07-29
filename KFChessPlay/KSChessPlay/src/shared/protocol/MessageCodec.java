@@ -26,4 +26,19 @@ public final class MessageCodec {
     public static <T> T decodePayload(Message message, Class<T> payloadClass) {
         return GSON.fromJson(message.getPayloadJson(), payloadClass);
     }
+
+    /**
+     * Encodes a payload to JSON on its own, without wrapping it in a {@link Message} envelope.
+     * Used by the internal bus routing payloads ({@code RoutedCommandPayload}/{@code RoutedUpdatePayload},
+     * see PLAN_split_6_services.md §3.1) to carry an arbitrary inner payload as a nested JSON string
+     * alongside routing metadata (target userId, inner {@link MessageType}) - decode the nested
+     * string back with {@link #decodeInnerPayload}.
+     */
+    public static String encodeInnerPayload(Object payload) {
+        return GSON.toJson(payload);
+    }
+
+    public static <T> T decodeInnerPayload(String json, Class<T> payloadClass) {
+        return GSON.fromJson(json, payloadClass);
+    }
 }

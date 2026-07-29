@@ -1,8 +1,4 @@
-package server.game;
-
-import server.rooms.Room;
-import shared.protocol.MessageType;
-import shared.protocol.payload.CountdownPayload;
+package server.gateway;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,19 +10,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * down' on the screen." One watchdog instance is created per disconnect
  * event; if the same socket comes back before the countdown reaches zero,
  * whoever detected the reconnect calls {@link #cancel()}.
+ *
+ * <p>Moved here from {@code server.game.DisconnectWatchdog} as part of PLAN_split_6_services.md
+ * §3.2: it's a per-socket concern, so it follows the sockets to the WS Gateway. It no longer talks
+ * to a {@code Room} or a game-engine handle directly - both the countdown broadcast and the eventual
+ * auto-resign now go through {@link GatewayRoomSession}, which is what actually reaches the room
+ * (over the bus) and the Shard (also over the bus) respectively.
  */
 public final class DisconnectWatchdog {
     private static final int TOTAL_SECONDS = 20;
 
-    private final Room room;
-    private final GameSession session;
+    private final GatewayRoomSession session;
     private final long disconnectedUserId;
     private final char disconnectedColor;
     private final AtomicInteger remaining = new AtomicInteger(TOTAL_SECONDS);
     private ScheduledExecutorService scheduler;
 
-    public DisconnectWatchdog(Room room, GameSession session, long disconnectedUserId, char disconnectedColor) {
-        this.room = room;
+    public DisconnectWatchdog(GatewayRoomSession session, long disconnectedUserId, char disconnectedColor) {
         this.session = session;
         this.disconnectedUserId = disconnectedUserId;
         this.disconnectedColor = disconnectedColor;
@@ -34,7 +34,7 @@ public final class DisconnectWatchdog {
 
     public void start() {
         scheduler = Executors.newSingleThreadScheduledExecutor(
-                r -> new Thread(r, "disconnect-watchdog-" + room.getId()));
+                r -> new Thread(r, "disconnect-watchdog-" + session.getRoomId()));
         scheduler.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
 
@@ -48,8 +48,7 @@ public final class DisconnectWatchdog {
             return;
         }
         int secondsLeft = remaining.getAndDecrement();
-        room.broadcastToAll(MessageType.DISCONNECT_COUNTDOWN,
-                new CountdownPayload(room.getId(), disconnectedColor, Math.max(secondsLeft, 0)));
+        session.broadcastDisconnectCountdown(disconnectedColor, Math.max(secondsLeft, 0));
 
         if (secondsLeft <= 0) {
             session.forceResignDueToDisconnect(disconnectedUserId);

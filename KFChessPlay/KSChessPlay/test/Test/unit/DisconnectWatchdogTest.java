@@ -61,7 +61,7 @@ public class DisconnectWatchdogTest {
 
     @Test
     public void testStartBroadcastsDecreasingCountdown() throws Exception {
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
         room = roomManager.createRoomForMatch(alice, bob);
@@ -80,7 +80,7 @@ public class DisconnectWatchdogTest {
 
     @Test
     public void testCancelStopsFurtherTicks() throws Exception {
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
         room = roomManager.createRoomForMatch(alice, bob);
@@ -99,7 +99,7 @@ public class DisconnectWatchdogTest {
 
     @Test
     public void testWatchdogOnAlreadyOverGameNeverBroadcasts() throws Exception {
-        RoomManager roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
         room = roomManager.createRoomForMatch(alice, bob);

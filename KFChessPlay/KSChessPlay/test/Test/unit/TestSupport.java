@@ -3,7 +3,13 @@ package Test.unit;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import server.auth.UserRepository;
 import server.logging.ServerActivityLogger;
+import server.rating.RatingService;
+import server.rooms.RoomManager;
+import server.shard.GameShardRuntime;
+import shared.bus.InMemoryMessageBus;
+import shared.bus.MessageBus;
 import shared.eventbus.EventBus;
 
 import java.lang.reflect.InvocationHandler;
@@ -47,9 +53,29 @@ final class TestSupport {
                 Files.createTempFile("kfchess-test-server-", ".log").toString(), new EventBus());
     }
 
+    /**
+     * Builds a {@link RoomManager} wired to a fresh {@link InMemoryMessageBus} that already has a
+     * {@link GameShardRuntime} listening on it - i.e. exactly the "monolith talks to a single
+     * external Shard over NATS" setup PLAN_split_6_services.md §3.1 calls for as the sub-step's own
+     * verification, just with {@code InMemoryMessageBus} standing in for a live NATS connection (the
+     * same substitution {@code MessageBusTest} already makes - see its javadoc). Every test that
+     * used to construct {@code new RoomManager(eventBus, ratingService, userRepository)} and rely on
+     * real move/jump acceptance semantics needs a real engine to talk to now that
+     * {@code GameSession} runs "elsewhere" (a {@code RemoteGameSessionHandle} with nobody listening
+     * would just time out and always report moves as rejected) - this gives every such test its own
+     * private, in-process Shard.
+     */
+    static RoomManager newRoomManagerWithLocalShard(EventBus monolithEventBus, RatingService ratingService,
+                                                     UserRepository userRepository) {
+        MessageBus bus = new InMemoryMessageBus();
+        GameShardRuntime shard = new GameShardRuntime(bus, new EventBus(), ratingService, userRepository);
+        shard.start();
+        return new RoomManager(monolithEventBus, ratingService, userRepository, bus);
+    }
+
     /** A minimal real (loopback) WebSocket server, so client-side outgoing code that needs an
       * actually-open socket (ServerConnection/NetworkGameController's requestPlay/handleBoardClick/etc,
-      * LoginController.login) can be exercised end-to-end without touching the real server.ServerMain
+      * LoginController.login) can be exercised end-to-end without touching the real server.ServerController
       * or its SQLite/matchmaking dependencies. */
     static final class LoopbackServer extends WebSocketServer {
         final List<String> received = new CopyOnWriteArrayList<>();

@@ -24,7 +24,7 @@ This compiles everything, runs the unit tests (`test/Test/unit`), and produces t
 ("shaded") jars under `target/`:
 
 - `target/kungfu-chess-client.jar` — the Swing client (main class `Main`).
-- `target/kungfu-chess-server.jar` — the WebSocket server (main class `server.ServerMain`).
+- `target/kungfu-chess-server.jar` — the WebSocket server (main class `server.ServerController`).
 
 To skip tests while iterating: `mvn -q package -DskipTests`.
 
@@ -65,12 +65,28 @@ Nothing is externally configurable via a config file today — the relevant cons
 
 | Setting | Value | Where |
 |---|---|---|
-| Server port | `8887` | `server.ServerMain` |
+| Server port | `8887` | `server.ServerController` |
 | Default client server URI | `ws://localhost:8887` | `Main.DEFAULT_SERVER_URI` (override via CLI arg) |
-| SQLite DB file | `kungfu_chess.db` (created in the working directory) | `server.ServerMain` |
-| Server/client activity logs | `server_activity.log` / `client_activity.log` | `server.ServerMain` / `Main` |
-| Elo matchmaking range | ±100 | `server.ServerMain` |
+| SQLite DB file | `kungfu_chess.db` (created in the working directory) | `server.ServerController` |
+| Server/client activity logs | `server_activity.log` / `client_activity.log` | `server.ServerController` / `Main` |
+| Elo matchmaking range | ±100 | `server.ServerController` |
 | Tick rate | 50ms (20/sec) | `server.game.GameSession.TICK_MS` |
+
+## Docker
+
+Steps 1-2 of `Server_Design.md`'s build-out plan: a `Dockerfile` (server only -
+the Swing client isn't a fit for a headless container) and a
+`docker-compose.yml` that also brings up real Redis and Postgres containers.
+
+```powershell
+docker compose up --build
+```
+
+Starts the server on `ws://localhost:8887`. **Redis and Postgres are present
+but unused so far** - `server.ServerController` still persists to SQLite
+(`kungfu_chess.db`) inside its own container. Wiring the app into Redis/Postgres
+is a later step in `Server_Design.md` (§3.4-5), after the real service split
+(§3.3).
 
 ## Tests
 

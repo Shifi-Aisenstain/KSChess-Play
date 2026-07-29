@@ -1,0 +1,70 @@
+# Step 2 of Server_Design.md's build order (§3.2): a small local stack with
+# real Redis + Postgres, so the compose orchestration itself is proven before
+# any code changes. NOTE: server.ServerController does not talk to redis/postgres
+# yet - it still uses SQLite (kungfu_chess.db) inside its own container.
+# Wiring the app into these two is deliberately left for later steps in the
+# plan (§3.4 Redis for matchmaking/registry/presence, §3.5 PostgresUserRepository),
+# which themselves depend on the real 6-service split in §3.3.
+#
+# `nats` was added as part of §3.3 itself (see PLAN_split_6_services.md, sub-phase
+# 3.0): it's the internal service-to-service bus (WS Gateway <-> Game Server Shards,
+# Matchmaker <-> Game Allocator, etc.) - not the same role as redis, which stays
+# reserved for registry/queue/session state per §3.4.
+#
+# `shard` was added as part of §3.1 (PLAN_split_6_services.md, sub-phase 3.1): the first Game
+# Server Shard, running the real GameSession(s) out of process from `server` now. `server` (still
+# the monolith for everything else - WS handling, RoomManager, Matchmaker, Auth, per §3.1's scope)
+# hands rooms off to it over `nats` via room.allocated instead of running GameSession itself. Both
+# share the same SQLite file/volume for now (see GameServerShardMain's javadoc) - that's fixed
+# properly in §3.5, not here.
+services:
+  server:
+    build: .
+    ports:
+      - "8887:8887"
+    environment:
+      DB_FILE: "/data/kungfu_chess.db"
+      NATS_URL: "nats://nats:4222"
+    volumes:
+      - sqlite-data:/data
+    depends_on:
+      - redis
+      - postgres
+      - nats
+
+  shard:
+    build:
+      context: .
+      dockerfile: Dockerfile.shard
+    environment:
+      DB_FILE: "/data/kungfu_chess.db"
+      NATS_URL: "nats://nats:4222"
+    volumes:
+      - sqlite-data:/data
+    depends_on:
+      - nats
+
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "4222:4222"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kungfu_chess
+      POSTGRES_USER: kungfu
+      POSTGRES_PASSWORD: kungfu
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+  sqlite-data:

@@ -49,7 +49,7 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testCreateRoomSendsRoomCreatedAndSetsSessionRoomId() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCreateHandler handler = new RoomCreateHandler(roomManager);
 
         List<String> sent = new ArrayList<>();
@@ -64,7 +64,7 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testDuplicateCustomIdSendsError() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCreateHandler handler = new RoomCreateHandler(roomManager);
 
         User alice = new User(1, "alice", 1200);
@@ -79,7 +79,7 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testCreateRoomWithoutLoginIsRejected() throws Exception {
-        roomManager = new RoomManager(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         RoomCreateHandler handler = new RoomCreateHandler(roomManager);
 
         List<String> sent = new ArrayList<>();

@@ -37,6 +37,12 @@ tests across previously-untested packages (`shared.protocol`, `shared.eventbus`,
 - Assets live in `KSChessPlay\assets\` (piece sprites, board image, board.csv starting position).
 - Build: Maven, Java 17, produces two shaded jars (client + server) from one codebase — see §8.
 - No pre-existing README/CLAUDE.md existed before this doc was written.
+- **`KSChessPlay\Dockerfile` / `KSChessPlay\docker-compose.yml`** (added 2026-07-29) — steps 1-2 of
+  `Server_Design.md`'s build-out plan (§3): containerize the current monolith server as-is, and a
+  compose stack that also runs real Redis + Postgres containers alongside it. The app itself is
+  **not** wired into Redis/Postgres yet (still SQLite) — that's a later step in the plan (§3.4-5),
+  which depends on the actual service split (§3.3) that hasn't happened yet. See `README.md`'s
+  "Docker" section.
 
 ## 1. Tech stack & key dependencies (`pom.xml`)
 

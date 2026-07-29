@@ -27,10 +27,15 @@ function Invoke-KungFuChess {
             if ($LASTEXITCODE -ne 0) {
                 throw "mvn package failed (exit $LASTEXITCODE)."
             }
-            $jarPath = Join-Path $projectRoot "target\kungfu-chess-$JarClassifier.jar"
-            if (-not (Test-Path $jarPath)) {
-                throw "Build succeeded but $jarPath was not produced - check the shade-plugin config in pom.xml."
+            # maven-shade-plugin's shadedArtifactAttached uses the standard Maven attached-artifact
+            # naming (artifactId-version-classifier.jar), e.g. "kungfu-chess-2.0.0-server.jar" - NOT
+            # the plain <finalName> ("kungfu-chess.jar") that the default jar:jar goal produces.
+            # Glob instead of hardcoding the version so a version bump in pom.xml doesn't break this.
+            $jarMatches = Get-ChildItem -Path (Join-Path $projectRoot "target") -Filter "kungfu-chess-*-$JarClassifier.jar" -ErrorAction SilentlyContinue
+            if (-not $jarMatches) {
+                throw "Build succeeded but no target\kungfu-chess-*-$JarClassifier.jar was produced - check the shade-plugin config in pom.xml."
             }
+            $jarPath = $jarMatches[0].FullName
             & java -jar $jarPath @AppArgs
             return
         }
