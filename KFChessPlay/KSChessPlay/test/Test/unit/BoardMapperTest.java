@@ -24,7 +24,7 @@ public class BoardMapperTest {
 
     @Test
     public void testFractionalTilePositionTruncates() {
-        // 2.9 tiles in should still fall short of pixel column 3 * PIXELS_PER_TILE.
+
         int x = mapper.toPixelX(2.9);
         assertTrue(x < BoardMapper.PIXELS_PER_TILE * 3);
         assertTrue(x >= BoardMapper.PIXELS_PER_TILE * 2);

@@ -3,7 +3,6 @@ package view;
 import graphics.Image;
 import input.BoardMapper;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;

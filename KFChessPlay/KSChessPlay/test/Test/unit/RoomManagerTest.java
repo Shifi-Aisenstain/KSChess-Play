@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RoomManagerTest {
 
-    /** Enough to satisfy GameSession's userRepository.updateElo(...) calls on finishGame - no DB needed. */
     private static final class InMemoryUserRepository implements UserRepository {
         private final Map<Long, StoredUser> byId = new HashMap<>();
         private final AtomicLong nextId = new AtomicLong(1);
@@ -52,8 +51,7 @@ public class RoomManagerTest {
 
     @AfterEach
     public void tearDown() {
-        // A started GameSession spins up a background ticking thread (see GameSession.start()) -
-        // resign it so the test doesn't leak a running ScheduledExecutorService.
+
         if (startedRoomId != null) {
             harness.forceResign(startedRoomId, alice.getId());
         }

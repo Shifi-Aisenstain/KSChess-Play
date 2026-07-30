@@ -18,11 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Covers NetworkGameController's *outgoing* half (requestPlay/handleBoardClick/etc), which needs
-  * an actually-open socket to exercise (ServerConnection.send delegates to WebSocketClient.send,
-  * which throws on an unconnected client) - see NetworkGameControllerTest for the incoming-message
-  * half, which doesn't need one. Uses TestSupport.LoopbackServer (a minimal real WebSocket server)
-  * rather than the production server.ServerController, so this stays independent of SQLite/matchmaking. */
 public class NetworkGameControllerOutgoingTest {
 
     private TestSupport.LoopbackServer server;
@@ -48,8 +43,6 @@ public class NetworkGameControllerOutgoingTest {
         server.stop();
     }
 
-    // Tracks how many messages we've already consumed, so a second call after another send doesn't
-    // race the network and re-read the same (already-arrived) message before the new one lands.
     private int consumed = 0;
 
     private Message nextReceivedMessage() throws InterruptedException {
@@ -109,10 +102,10 @@ public class NetworkGameControllerOutgoingTest {
     @Test
     public void testSecondBoardClickOnDifferentSquareSendsMove() throws Exception {
         controller.handleBoardClick(6, 4);
-        nextReceivedMessage(); // consume the SELECT
+        nextReceivedMessage();
 
         controller.handleBoardClick(4, 4);
-        server.awaitReceived(3, 5); // MOVE, then a deselect SELECT(false)
+        server.awaitReceived(3, 5);
 
         boolean sawMove = server.received.stream()
                 .map(MessageCodec::decodeEnvelope)

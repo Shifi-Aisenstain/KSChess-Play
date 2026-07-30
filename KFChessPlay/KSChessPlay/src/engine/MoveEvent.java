@@ -71,8 +71,6 @@ public class MoveEvent extends GameEvent {
         int r = fromPosition.getRow() + dr;
         int c = fromPosition.getCol() + dc;
 
-        // Bounded by the known distance between the two squares, so this can never run away
-        // past the edge of the board even if toPosition somehow isn't reachable in a straight line.
         int steps = Math.max(
             Math.abs(toPosition.getRow() - fromPosition.getRow()),
             Math.abs(toPosition.getCol() - fromPosition.getCol())

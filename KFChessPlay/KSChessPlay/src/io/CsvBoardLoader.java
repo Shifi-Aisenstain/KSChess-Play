@@ -10,14 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Loads the initial board layout from a CSV file such as assets/board.csv.
- * Format: comma-separated cells, "." for empty, otherwise
- * "<TypeLetter><ColorLetter>" e.g. "RB" = black rook, "KW" = white king.
- * This is a different token order/case than the console protocol
- * (BoardParser expects "<color><type>", lowercase color), so it gets its
- * own loader rather than teaching BoardParser a second, incompatible format.
- */
 public class CsvBoardLoader {
 
     public Board load(String path) throws IOException {

@@ -1,6 +1,5 @@
 package server.auth;
 
-/** Immutable snapshot of a persisted account. */
 public final class User {
     private final long id;
     private final String username;

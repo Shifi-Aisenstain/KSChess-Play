@@ -9,22 +9,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Background matchmaking queue.
- * <p>Every {@link #SCAN_INTERVAL_MS} it scans the waiting list for a pair
- * satisfying {@link MatchCriteria} (Strategy pattern - see
- * {@link EloRangeMatchCriteria}), and separately expires anyone who has been
- * waiting longer than {@link #WAIT_TIMEOUT_MS} (spec: 1 minute) with a
- * "not found" notice.
- *
- * <p>Since Server_Design.md step 4, the queue's actual candidate data lives behind
- * {@link WaitingPlayersQueue} (in-memory by default - see the 2-arg constructor - or Redis in
- * production, see {@link RedisWaitingPlayersQueue}/{@code MatchmakerMain}), so it can be shared
- * across Matchmaker replicas. What can't move into that shared store is each request's
- * {@link MatchListener} (a Java callback, meaningless outside the process that created it) - those
- * stay in {@link #localRequestsByUserId}, keyed by userId, purely local bookkeeping. See
- * {@link WaitingPlayersQueue}'s javadoc for why that split is still correct under multiple replicas.
- */
 public final class MatchmakingServiceImpl implements MatchmakingService {
     private static final long SCAN_INTERVAL_MS = 500;
     private static final long WAIT_TIMEOUT_MS = 60_000;
@@ -78,7 +62,7 @@ public final class MatchmakingServiceImpl implements MatchmakingService {
         long now = System.currentTimeMillis();
         for (WaitingPlayer player : sharedQueue.snapshot()) {
             if (now - player.enqueuedAtMs() < WAIT_TIMEOUT_MS) continue;
-            if (!sharedQueue.remove(player.userId())) continue; // a racing caller already handled it
+            if (!sharedQueue.remove(player.userId())) continue;
 
             MatchRequest request = localRequestsByUserId.remove(player.userId());
             if (request != null) request.listener.onNotFound();
@@ -89,22 +73,21 @@ public final class MatchmakingServiceImpl implements MatchmakingService {
         List<WaitingPlayer> snapshot = sharedQueue.snapshot();
         for (int i = 0; i < snapshot.size(); i++) {
             MatchRequest a = localRequestsByUserId.get(snapshot.get(i).userId());
-            if (a == null) continue; // this replica never saw the original enqueue - see WaitingPlayersQueue's javadoc
+            if (a == null) continue;
             for (int j = i + 1; j < snapshot.size(); j++) {
                 MatchRequest b = localRequestsByUserId.get(snapshot.get(j).userId());
                 if (b == null) continue;
                 if (!criteria.matches(a, b)) continue;
 
-                if (!sharedQueue.remove(a.userId) || !sharedQueue.remove(b.userId)) break; // lost a race, bail out safely
+                if (!sharedQueue.remove(a.userId) || !sharedQueue.remove(b.userId)) break;
                 localRequestsByUserId.remove(a.userId);
                 localRequestsByUserId.remove(b.userId);
                 createMatch(a, b);
-                return; // restart scan cleanly next tick rather than mutate further mid-iteration
+                return;
             }
         }
     }
 
-    /** Whoever queued first plays White, mirroring the room feature's "creator" convention. */
     private void createMatch(MatchRequest first, MatchRequest second) {
         MatchRequest whiteReq = first.enqueuedAtMs <= second.enqueuedAtMs ? first : second;
         MatchRequest blackReq = whiteReq == first ? second : first;

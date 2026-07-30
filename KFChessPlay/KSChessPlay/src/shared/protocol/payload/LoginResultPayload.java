@@ -10,12 +10,13 @@ public final class LoginResultPayload {
     public final String username;
     public final int elo;
     public final String errorMessage;
+    public final String sessionToken;
 
-    public static LoginResultPayload ok(long userId, String username, int elo) {
-        return new LoginResultPayload(true, userId, username, elo, null);
+    public static LoginResultPayload ok(long userId, String username, int elo, String sessionToken) {
+        return new LoginResultPayload(true, userId, username, elo, null, sessionToken);
     }
 
     public static LoginResultPayload fail(String reason) {
-        return new LoginResultPayload(false, -1, null, 0, reason);
+        return new LoginResultPayload(false, -1, null, 0, reason, null);
     }
 }

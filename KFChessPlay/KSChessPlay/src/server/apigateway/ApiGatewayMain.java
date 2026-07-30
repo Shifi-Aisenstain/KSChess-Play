@@ -4,45 +4,52 @@ import com.sun.net.httpserver.HttpServer;
 import server.auth.AuthService;
 import server.auth.AuthServiceImpl;
 import server.auth.PasswordHasher;
+import server.auth.RedisSessionStore;
+import server.auth.SessionStore;
 import server.auth.UserRepository;
 import server.config.PersistenceConfig;
+import server.history.GameHistoryRepository;
 import server.logging.ServerActivityLogger;
 import shared.eventbus.EventBus;
 import shared.health.HealthRestHandler;
+import shared.metrics.MetricsRegistry;
+import shared.metrics.MetricsRestHandler;
+import shared.redis.RedisConnectionProvider;
+import shared.tracing.JaegerReporter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-/**
- * Composition root / entry point for the API Gateway (PLAN_split_6_services.md §3.5) - the one
- * process that owns {@link AuthService}/{@link UserRepository} now. Every other process that used to
- * keep its own copy (the WS Gateway since §3.2, this monolith originally) either never needed it for
- * anything but login (removed) or never actually used it (the old {@code server.ServerController}'s
- * copy, deleted in §3.3/§3.4). Exposes {@code POST /login} over plain {@code com.sun.net.httpserver}
- * (built into the JDK, no new dependency - matches this project's no-heavy-framework style) instead
- * of a NATS subject, since login is the one client-facing call the plan places on REST rather than
- * the WS protocol (see §5 of the design doc and §1's "API Gateway (REST/HTTP)" row).
- *
- * <p>Not unit tested directly for the same reason its sibling composition roots aren't (see pom.xml's
- * jacoco excludes) - it needs a real socket/HTTP server to run at all. {@link LoginRestHandler} *is*
- * unit tested, against a real loopback {@code HttpServer} (see {@link LoginRestHandler}'s javadoc).
- */
 public final class ApiGatewayMain {
     private static final int DEFAULT_PORT = 8080;
-    private static final String ACTIVITY_LOG_FILE = "apigateway_activity.log";
+    private static final String DEFAULT_REDIS_URL = "redis://redis:6379";
+    private static final String DEFAULT_JAEGER_URL = "http://jaeger:9411/api/v2/spans";
+    private static final String ACTIVITY_LOG_FILE = "logs/apigateway/activity.log";
 
     public static void main(String[] args) throws IOException {
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", String.valueOf(DEFAULT_PORT)));
+        String redisUrl = System.getenv().getOrDefault("REDIS_URL", DEFAULT_REDIS_URL);
+        String jaegerUrl = System.getenv().getOrDefault("JAEGER_URL", DEFAULT_JAEGER_URL);
 
         EventBus eventBus = new EventBus();
         ServerActivityLogger activityLogger = new ServerActivityLogger(ACTIVITY_LOG_FILE, eventBus);
-        UserRepository userRepository = PersistenceConfig.initialize(activityLogger);
+        PersistenceConfig.PersistenceBundle persistence = PersistenceConfig.initialize(activityLogger);
+        UserRepository userRepository = persistence.users;
+        GameHistoryRepository historyRepository = persistence.history;
         AuthService authService = new AuthServiceImpl(userRepository, new PasswordHasher());
+        MetricsRegistry metricsRegistry = new MetricsRegistry();
+
+        RedisConnectionProvider redis = new RedisConnectionProvider(redisUrl);
+        Runtime.getRuntime().addShutdownHook(new Thread(redis::close));
+        SessionStore sessionStore = new RedisSessionStore(redis);
+        JaegerReporter jaegerReporter = new JaegerReporter(jaegerUrl);
 
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/login", new LoginRestHandler(authService));
+        server.createContext("/login", new LoginRestHandler(authService, activityLogger, metricsRegistry, sessionStore, jaegerReporter));
+        server.createContext("/history", new HistoryRestHandler(historyRepository, activityLogger, metricsRegistry, jaegerReporter));
         server.createContext("/health", new HealthRestHandler());
-        server.setExecutor(null); // default executor is fine at this scale - see HealthRestHandler's javadoc
+        server.createContext("/metrics", new MetricsRestHandler(metricsRegistry));
+        server.setExecutor(null);
         server.start();
 
         System.out.println("[apigateway] KungFu Chess API Gateway started on port " + port);

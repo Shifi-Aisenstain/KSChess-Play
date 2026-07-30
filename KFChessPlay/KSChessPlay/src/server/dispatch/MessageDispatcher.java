@@ -8,12 +8,6 @@ import shared.protocol.payload.ErrorPayload;
 import java.util.EnumMap;
 import java.util.Map;
 
-/**
- * Routes an incoming {@link Message} to whichever {@link MessageHandler} was
- * registered for its type (Command pattern). This is the only class in the
- * server that needs to know the full set of message types exists - handlers
- * themselves stay single-purpose and testable in isolation.
- */
 public final class MessageDispatcher {
     private final Map<MessageType, MessageHandler> handlers = new EnumMap<>(MessageType.class);
 

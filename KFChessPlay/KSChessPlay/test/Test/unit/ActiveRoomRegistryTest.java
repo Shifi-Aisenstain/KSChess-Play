@@ -6,14 +6,6 @@ import server.allocator.InMemoryActiveRoomRegistry;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises the {@link ActiveRoomRegistry} contract (Server_Design.md step 4) against
- * {@link InMemoryActiveRoomRegistry} - {@code RedisActiveRoomRegistry} needs a live Redis server to
- * exercise for real (see pom.xml's jacoco excludes), the same reasoning {@code NatsMessageBus} is
- * excluded from unit tests in favor of {@code InMemoryMessageBus}. {@code RoomManagerTest}/
- * {@code GameShardRuntimeTest}/etc. already exercise this indirectly through {@code RoomManager}'s
- * default (in-memory) wiring - this test targets the registry contract directly and in isolation.
- */
 public class ActiveRoomRegistryTest {
 
     @Test

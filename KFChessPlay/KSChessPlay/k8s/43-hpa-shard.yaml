@@ -1,0 +1,33 @@
+# Server_Design.md step 7, second half: "HPA לפי מטריקה מותאמת-אישית של 'חדרים פעילים'... עבור
+# Game Server Shards." Provided per that requirement, but DO NOT apply this against 20-shard.yaml's
+# Deployment as it stands today - scaling it past 1 replica would run two pods with the identical
+# SHARD_ID (from the shared ConfigMap) both racing to own the same rooms, exactly the hazard
+# 20-shard.yaml's own header comment describes. This manifest is the correct K3s-side shape for
+# when the prerequisite exists: migrate the shard workload to a StatefulSet with an ordinal-derived
+# SHARD_ID (shard-$(POD ordinal)) and make the Allocator's SHARD_IDS list dynamic (read from the
+# StatefulSet's current replica count / a service-discovery lookup, not the static ConfigMap value
+# it reads today) - real application-level future work, not something changing this YAML file
+# alone can fix. See HPA_AUTOSCALING.md for the full explanation.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: shard
+  namespace: kungfu-chess
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: shard
+  minReplicas: 1
+  maxReplicas: 1
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: shard_active_games
+        target:
+          type: AverageValue
+          averageValue: "150"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300

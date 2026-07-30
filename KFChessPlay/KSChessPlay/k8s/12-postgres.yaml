@@ -1,0 +1,54 @@
+# Server_Design.md step 5: users, games, results, move history, Elo - same postgres:16-alpine
+# image and POSTGRES_DB/USER/PASSWORD as docker-compose.yml's `postgres` service, with the same
+# named-volume-for-durability intent (`postgres-data` there, a PVC here).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: kungfu-chess
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef: { name: postgres-credentials }
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "kungfu"] }
+            initialDelaySeconds: 5
+          livenessProbe:
+            exec: { command: ["pg_isready", "-U", "kungfu"] }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 1Gi }
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests: { storage: 5Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: kungfu-chess
+spec:
+  selector: { app: postgres }
+  ports:
+    - port: 5432
+      targetPort: 5432

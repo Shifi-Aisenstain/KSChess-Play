@@ -1,12 +1,15 @@
 package Test.unit;
 
 import org.junit.jupiter.api.Test;
+import server.auth.InMemorySessionStore;
+import server.auth.SessionStore;
 import server.auth.User;
 import server.dispatch.handlers.IdentifyHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
 import server.rooms.Room;
 import shared.eventbus.EventBus;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -35,8 +38,8 @@ public class IdentifyHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private Message identifyMessage(long userId, String username, int elo) {
-        return MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.IDENTIFY, new IdentifyPayload(userId, username, elo)));
+    private Message identifyMessage(String sessionToken) {
+        return MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.IDENTIFY, new IdentifyPayload(sessionToken)));
     }
 
     private PlayerSession session(List<String> sent) throws Exception {
@@ -47,23 +50,40 @@ public class IdentifyHandlerTest {
     public void testIdentifySetsUserAndSendsLoginResult() throws Exception {
         TestSupport.GatewayHarness harness =
                 TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry);
+        SessionStore sessionStore = new InMemorySessionStore();
+        String token = sessionStore.createSession(1, "alice", 1200);
+        IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry, sessionStore, new MetricsRegistry());
 
         List<String> sent = new ArrayList<>();
         PlayerSession session = session(sent);
-        handler.handle(session, identifyMessage(1, "alice", 1200));
+        handler.handle(session, identifyMessage(token));
 
         assertNotNull(session.getUser());
         assertEquals("alice", session.getUser().getUsername());
         assertEquals(1, sent.size());
-        // payloadJson is embedded as an escaped JSON *string* inside the envelope (see
-        // MessageCodec/ARCHITECTURE.md §7), so raw substring-matching quotes/colons on `sent` would
-        // need to account for that escaping - decoding properly avoids the trap entirely.
+
         var payload = MessageCodec.decodePayload(MessageCodec.decodeEnvelope(sent.get(0)),
                 shared.protocol.payload.LoginResultPayload.class);
         assertTrue(payload.success);
         assertEquals("alice", payload.username);
         assertEquals(1200, payload.elo);
+    }
+
+    @Test
+    public void testIdentifyWithUnknownTokenIsRejected() throws Exception {
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry, new InMemorySessionStore(),
+                new MetricsRegistry());
+
+        List<String> sent = new ArrayList<>();
+        PlayerSession session = session(sent);
+        handler.handle(session, identifyMessage("not-a-real-token"));
+
+        assertNull(session.getUser(), "an invalid session token must never establish an identity");
+        assertEquals(1, sent.size());
+        Message reply = MessageCodec.decodeEnvelope(sent.get(0));
+        assertEquals(MessageType.ERROR, reply.getType());
     }
 
     @Test
@@ -77,11 +97,13 @@ public class IdentifyHandlerTest {
         try {
             assertTrue(harness.roomManager.getActiveRoomForUser(alice.getId()).isPresent());
 
-            IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry);
+            SessionStore sessionStore = new InMemorySessionStore();
+            String token = sessionStore.createSession(alice.getId(), "alice", 1200);
+            IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry, sessionStore, new MetricsRegistry());
 
             List<String> sent = new ArrayList<>();
             PlayerSession newSession = session(sent);
-            handler.handle(newSession, identifyMessage(alice.getId(), "alice", 1200));
+            handler.handle(newSession, identifyMessage(token));
 
             assertEquals(room.getId(), newSession.getCurrentRoomId());
         } finally {

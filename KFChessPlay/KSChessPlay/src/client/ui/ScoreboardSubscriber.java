@@ -4,7 +4,6 @@ import shared.eventbus.Subscriber;
 import shared.protocol.payload.GameEventPayload;
 import view.GameWindow;
 
-/** "Update Scores" / "Update Move Logs" subscriber from the pub/sub-bus requirement - the counterpart to {@link client.audio.SoundSubscriber} and {@link AnimationSubscriber} for the other two required bus consumers. */
 public final class ScoreboardSubscriber implements Subscriber<GameEventPayload> {
     private final GameWindow window;
 

@@ -5,11 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * Salted SHA-256 hashing. Not meant to compete with bcrypt/argon2 in a
- * production system, but it means passwords are never stored (or logged)
- * in plaintext, which is the property that matters for this assignment.
- */
 public final class PasswordHasher {
     private final SecureRandom random = new SecureRandom();
 

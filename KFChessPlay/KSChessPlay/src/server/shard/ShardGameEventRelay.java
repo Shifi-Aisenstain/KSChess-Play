@@ -9,20 +9,6 @@ import shared.bus.MessageBus;
 import shared.protocol.MessageType;
 import shared.protocol.payload.GameEventPayload;
 
-/**
- * Shard-side analogue of {@code server.game.GameEventBroadcaster}: turns the same domain events
- * (published on this process's own {@link EventBus} by {@code GameManager}/{@code GameSession}
- * running inside this Shard) into {@code GAME_EVENT} pushes for spectators/players.
- *
- * <p>Needed because, after PLAN_split_6_services.md §3.1's split, {@code GameStartedEvent}/
- * {@code GameEndedEvent}/{@code MoveExecutedEvent}/{@code PieceJumpedEvent} are only ever published
- * on <i>this</i> process's EventBus now - the monolith's own EventBus (and its now-dormant
- * {@code GameEventBroadcaster} wiring) never sees them, since the real engine doesn't run there
- * anymore. Publishes via {@link BusUpdateSink#broadcastToAll} instead of
- * {@code Room.broadcastToAll} directly, since there's no {@code Room} object in this process -
- * {@code server.game.RemoteGameSessionHandle} on the other end relays it onward exactly like any
- * other {@code room.<roomId>.updates} traffic.
- */
 public final class ShardGameEventRelay {
 
     public ShardGameEventRelay(EventBus eventBus, MessageBus bus) {

@@ -6,7 +6,6 @@ import server.logging.ServerActivityLogger;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Identity-keyed map from a live socket to its {@link PlayerSession}. */
 public final class SessionRegistry {
     private final Map<WebSocket, PlayerSession> sessions = new ConcurrentHashMap<>();
     private final ServerActivityLogger activityLogger;

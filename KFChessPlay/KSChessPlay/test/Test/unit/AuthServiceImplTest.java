@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthServiceImplTest {
 
-    /** Plain in-memory stand-in for SqliteUserRepository - keeps this test independent of a DB file. */
     private static final class InMemoryUserRepository implements UserRepository {
         private final Map<String, StoredUser> byUsername = new HashMap<>();
         private final AtomicLong nextId = new AtomicLong(1);

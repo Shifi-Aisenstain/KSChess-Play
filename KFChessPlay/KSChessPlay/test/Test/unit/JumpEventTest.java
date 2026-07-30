@@ -17,7 +17,6 @@ public class JumpEventTest {
         Position pos = new Position(3, 3);
         long endTime = System.currentTimeMillis() + 1000;
 
-        // 1. יצירת האובייקט ובדיקת ה-Getters וה-Priority
         JumpEvent event = new JumpEvent(piece, pos, endTime);
 
         assertEquals(piece, event.getPiece());
@@ -25,18 +24,14 @@ public class JumpEventTest {
         assertEquals(endTime, event.getEndTime());
         assertEquals(2, event.getPriority());
 
-        // 2. בדיקת מתודת ה-execute שמחזירה את הכלי ללוח
         Board board = new Board(8, 8);
         GameManager gameManager = new GameManager();
         gameManager.initializeBoard(8, 8);
 
-        // ודאי שהמשבצת ריקה לפני נחיתת הקפיצה
         assertNull(board.getPieceAt(pos));
 
-        // הרצת האירוע
         event.execute(board, new ArrayList<>(), gameManager);
 
-        // וידוא שהכלי חזר ונחת בהצלחה על הלוח במשבצת המקורית
         assertEquals(piece, board.getPieceAt(pos));
     }
 }

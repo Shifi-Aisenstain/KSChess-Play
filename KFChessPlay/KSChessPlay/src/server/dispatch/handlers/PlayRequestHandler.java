@@ -32,10 +32,7 @@ public final class PlayRequestHandler implements MessageHandler {
             @Override
             public void onMatchFound(String roomId, char assignedColor, String opponentUsername, int opponentElo) {
                 session.setCurrentRoomId(roomId);
-                // Matchmaking always allocates a Shard immediately for both players (see
-                // RoomManager.createRoomForMatch) - by the time this callback fires, room.allocated
-                // has already been published (see GatewayRoomRegistry's javadoc for the exact
-                // ordering guarantee this relies on), so this always attaches immediately.
+
                 roomRegistry.registerPendingMember(roomId, user.getId(), session);
                 session.send(MessageType.MATCH_FOUND,
                         new MatchFoundPayload(roomId, assignedColor, opponentUsername, opponentElo));

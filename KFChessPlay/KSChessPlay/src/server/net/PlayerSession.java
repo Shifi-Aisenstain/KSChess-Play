@@ -6,11 +6,6 @@ import server.logging.ServerActivityLogger;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
 
-/**
- * Server-side handle for one connected socket. Implements {@link MessageSink}
- * so every other layer (rooms, game sessions, handlers) can push messages to
- * this specific client without ever importing the WebSocket library.
- */
 public final class PlayerSession implements MessageSink {
     private final WebSocket connection;
     private final ServerActivityLogger activityLogger;

@@ -1,12 +1,5 @@
 package server.auth;
 
-/**
- * Spec calls this "login with username + password (save at SQLite db on
- * server side)" with no separate registration step mentioned, so the
- * natural read is auto-register-on-first-login: an unknown username creates
- * an account (starting ELO 1200 per spec), a known username must match its
- * stored password.
- */
 public final class AuthServiceImpl implements AuthService {
     private static final int STARTING_ELO = 1200;
 

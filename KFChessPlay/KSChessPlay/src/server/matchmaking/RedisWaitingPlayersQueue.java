@@ -8,12 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Real {@link WaitingPlayersQueue} backed by a single Redis hash (Server_Design.md step 4) - field is
- * the userId, value is the JSON-encoded {@link WaitingPlayer}. {@code HSETNX} gives
- * {@link #addIfAbsent} its idempotency (see the interface javadoc for why that matters), and
- * {@code HDEL}'s return count gives {@link #remove} its race-safe "did I actually remove it" signal.
- */
 public final class RedisWaitingPlayersQueue implements WaitingPlayersQueue {
     private static final String KEY = "matchmaking:waiting";
     private static final Gson GSON = new Gson();

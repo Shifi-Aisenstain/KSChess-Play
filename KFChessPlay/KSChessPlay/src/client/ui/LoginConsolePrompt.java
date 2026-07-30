@@ -2,13 +2,6 @@ package client.ui;
 
 import java.util.Scanner;
 
-/**
- * Spec: "Login with username (just for presentation) ... Do it in a shell,
- * not via GUI" (later extended to "username + password, save at SQLite db
- * on server side"). This class owns only the console I/O; the network
- * round-trip to actually authenticate lives in {@code Main}, so this class
- * has nothing to do with sockets and is trivially testable.
- */
 public final class LoginConsolePrompt {
 
     public static final class Credentials {

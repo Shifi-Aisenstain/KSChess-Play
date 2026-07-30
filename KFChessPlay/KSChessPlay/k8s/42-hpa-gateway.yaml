@@ -1,0 +1,26 @@
+# Server_Design.md step 7, first half: "HPA לפי מספר חיבורים עבור WS Gateway." Target value is a
+# demo-scale number, not §4's production ~50,000-connections/pod assumption - see
+# HPA_AUTOSCALING.md for how the two relate and why they're deliberately different.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway
+  namespace: kungfu-chess
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: gateway_active_connections
+        target:
+          type: AverageValue
+          averageValue: "500"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 120

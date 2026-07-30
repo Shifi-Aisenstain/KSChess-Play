@@ -8,10 +8,21 @@ import shared.protocol.payload.IdentifyPayload;
 import shared.protocol.payload.MoveCommandPayload;
 import shared.protocol.payload.EmptyPayload;
 import shared.protocol.payload.ErrorPayload;
+import shared.tracing.TraceContext;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MessageCodecTest {
+
+    @org.junit.jupiter.api.BeforeEach
+    public void clearTraceBeforeEachTest() {
+        TraceContext.clear();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    public void clearTraceAfterEachTest() {
+        TraceContext.clear();
+    }
 
     @Test
     public void testEncodeDecodeRoundTripPreservesPayloadFields() {
@@ -30,13 +41,11 @@ public class MessageCodecTest {
 
     @Test
     public void testEnvelopeCarriesPayloadAsNestedJsonString() {
-        IdentifyPayload identify = new IdentifyPayload(1, "alice", 1200);
+        IdentifyPayload identify = new IdentifyPayload("tok-abc");
         String wire = MessageCodec.encode(MessageType.IDENTIFY, identify);
 
-        // The wire format is deliberately "envelope holds raw payload JSON" - the outer object's
-        // payloadJson field is itself a JSON string, not a nested object.
         assertTrue(wire.contains("\"payloadJson\":\""));
-        assertTrue(wire.contains("alice"));
+        assertTrue(wire.contains("tok-abc"));
     }
 
     @Test
@@ -67,9 +76,6 @@ public class MessageCodecTest {
         }
     }
 
-    /** {@code encodeInnerPayload}/{@code decodeInnerPayload} (PLAN_split_6_services.md §3.1) encode
-     *  a payload on its own, without the outer {@link Message} envelope - used to nest an arbitrary
-     *  inner payload inside a routing wrapper like {@code RoutedCommandPayload}/{@code RoutedUpdatePayload}. */
     @Test
     public void testInnerPayloadRoundTripsWithoutEnvelope() {
         MoveCommandPayload move = new MoveCommandPayload(1, 2, 3, 4);
@@ -80,5 +86,33 @@ public class MessageCodecTest {
         MoveCommandPayload decoded = MessageCodec.decodeInnerPayload(json, MoveCommandPayload.class);
         assertEquals(1, decoded.fromRow);
         assertEquals(4, decoded.toCol);
+    }
+
+    @Test
+    public void testEncodeCarriesTheCurrentTraceIdIntoTheEnvelope() {
+        TraceContext.set("trace-42");
+
+        String wire = MessageCodec.encode(MessageType.PING, EmptyPayload.INSTANCE);
+        Message envelope = MessageCodec.decodeEnvelope(wire);
+
+        assertEquals("trace-42", envelope.getTraceId());
+    }
+
+    @Test
+    public void testEncodeGeneratesAFreshTraceIdWhenNoneIsCurrent() {
+        String wire = MessageCodec.encode(MessageType.PING, EmptyPayload.INSTANCE);
+        Message envelope = MessageCodec.decodeEnvelope(wire);
+
+        assertNotNull(envelope.getTraceId());
+    }
+
+    @Test
+    public void testTwoMessagesEncodedUnderTheSameTraceShareTheSameTraceId() {
+        TraceContext.set("shared-trace");
+
+        Message first = MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.MOVE, new MoveCommandPayload(1, 2, 3, 4)));
+        Message second = MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.RESIGN, EmptyPayload.INSTANCE));
+
+        assertEquals(first.getTraceId(), second.getTraceId());
     }
 }

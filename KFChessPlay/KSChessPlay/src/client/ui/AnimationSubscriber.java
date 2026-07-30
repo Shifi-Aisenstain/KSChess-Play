@@ -6,7 +6,6 @@ import view.GameWindow;
 
 import java.awt.Color;
 
-/** "Game start/end animations" subscriber from the pub/sub-bus requirement. */
 public final class AnimationSubscriber implements Subscriber<GameEventPayload> {
     private final GameWindow window;
 

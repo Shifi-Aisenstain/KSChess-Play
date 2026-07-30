@@ -7,7 +7,6 @@ import view.SpriteLoader;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Loads real sprite PNGs from assets/ - headless-safe (ImageIO/BufferedImage, no display). */
 public class SpriteLoaderTest {
 
     @Test
@@ -28,7 +27,7 @@ public class SpriteLoaderTest {
     @Test
     public void testFrameWrapsAroundFrameCount() {
         SpriteLoader loader = new SpriteLoader();
-        // frame 0 and frame FRAME_COUNT both resolve to the same sprites/1.png -> same cache entry.
+
         Image frame0 = loader.getSprite('N', 'w', "idle", 0);
         Image frameWrapped = loader.getSprite('N', 'w', "idle", SpriteLoader.FRAME_COUNT);
         assertSame(frame0, frameWrapped);

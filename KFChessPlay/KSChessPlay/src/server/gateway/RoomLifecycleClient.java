@@ -16,13 +16,6 @@ import shared.protocol.payload.RoomStatusPayload;
 import java.time.Duration;
 import java.util.Optional;
 
-/**
- * WS Gateway's bus-facing client for the room-lifecycle calls {@code RoomCreateHandler}/
- * {@code RoomJoinHandler}/{@code RoomCancelHandler}/{@code LoginHandler} used to make directly on
- * {@code RoomManager} before PLAN_split_6_services.md §3.2 moved the sockets out of the monolith.
- * Talks to whatever answers {@link server.rpc.MonolithBusGateway} today (standing in for the not-yet-
- * split Game Allocator - real split is §3.4).
- */
 public final class RoomLifecycleClient {
     private static final Duration TIMEOUT = Duration.ofSeconds(3);
 
@@ -59,13 +52,10 @@ public final class RoomLifecycleClient {
                 new JoinRoomRequestPayload(userId, username, elo, roomId), TIMEOUT));
     }
 
-    /** Fire-and-forget, same as the old in-process {@code RoomManager.abandonRoom} call site. */
     public void cancelRoom(long userId, String roomId) {
         bus.publish(RoomBusSubjects.ROOM_CANCEL, MessageType.ROOM_CANCEL, new CancelRoomRequestPayload(userId, roomId));
     }
 
-    /** Used by {@code LoginHandler} to detect "this user was mid-game" on a fresh connection - empty
-     *  if there's no active room (either the monolith really has none, or the lookup timed out). */
     public Optional<String> lookupActiveRoom(long userId) {
         Optional<Message> reply = bus.request(RoomBusSubjects.ACTIVE_ROOM_LOOKUP, MessageType.ACTIVE_ROOM_LOOKUP,
                 new ActiveRoomQueryPayload(userId), TIMEOUT);

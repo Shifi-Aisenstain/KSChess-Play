@@ -7,30 +7,15 @@ import shared.eventbus.events.GameEndedEvent;
 import shared.eventbus.events.GameStartedEvent;
 import shared.eventbus.events.MoveExecutedEvent;
 import shared.eventbus.events.PieceJumpedEvent;
+import shared.tracing.TraceContext;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Two responsibilities, one log file:
- * <ol>
- *   <li>Subscribes to the domain {@link EventBus} (this is the "Update Move
- *       Logs" subscriber the course spec's pub/sub-bus requirement asks
- *       for) and writes a human-readable play-by-play.</li>
- *   <li>Exposes {@link #logTraffic} for the raw wire-level record of every
- *       message in and out, satisfying "store logs on both server and
- *       client side, for all of the client/server activity".</li>
- * </ol>
- *
- * <p>Since PLAN_split_6_services.md §3.6, every line written here is <em>also</em> emitted as one
- * structured JSON object per line on stdout (alongside the existing human-readable file line, not
- * instead of it) - convenient for a future log-aggregation setup (e.g. a container log driver
- * shipping stdout to a central store) to parse without scraping the file format. Real dashboards/
- * metrics (Prometheus etc.) stay explicitly out of scope for this sub-step, per the plan's own framing.
- */
 public final class ServerActivityLogger {
     private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final Gson STDOUT_JSON = new GsonBuilder().create();
@@ -39,7 +24,10 @@ public final class ServerActivityLogger {
 
     public ServerActivityLogger(String logFilePath, EventBus eventBus) {
         try {
-            this.writer = new PrintWriter(new FileWriter(logFilePath, true), true);
+            File logFile = new File(logFilePath);
+            File parentDir = logFile.getParentFile();
+            if (parentDir != null) parentDir.mkdirs();
+            this.writer = new PrintWriter(new FileWriter(logFile, true), true);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot open server log file: " + logFilePath, e);
         }
@@ -66,8 +54,6 @@ public final class ServerActivityLogger {
         writeLine(direction + " user=" + (userId == null ? "anonymous" : userId) + " type=" + messageType + " payload=" + json);
     }
 
-    /** For unrecoverable startup/infrastructure failures (e.g. the database can't be opened) that
-     *  aren't wire traffic but still need a clear, timestamped trail in the activity log. */
     public void logFatal(String context, String message) {
         writeLine("FATAL", "FATAL [" + context + "] " + message);
     }
@@ -78,11 +64,11 @@ public final class ServerActivityLogger {
 
     private synchronized void writeLine(String level, String line) {
         String timestamp = LocalDateTime.now().format(TIMESTAMP);
-        writer.println("[" + timestamp + "] " + line);
-        System.out.println(STDOUT_JSON.toJson(new StructuredLogLine(timestamp, level, line)));
+        String traceId = TraceContext.current();
+        String traceTag = traceId == null ? "" : " [trace=" + traceId + "]";
+        writer.println("[" + timestamp + "]" + traceTag + " " + line);
+        System.out.println(STDOUT_JSON.toJson(new StructuredLogLine(timestamp, level, line, traceId)));
     }
 
-    /** One JSON object per stdout line (PLAN_split_6_services.md §3.6) - a plain data carrier, not a
-     *  wire protocol type, so it deliberately doesn't go through {@code shared.protocol.MessageCodec}. */
-    private record StructuredLogLine(String timestamp, String level, String message) { }
+    private record StructuredLogLine(String timestamp, String level, String message, String traceId) { }
 }

@@ -6,8 +6,6 @@ import shared.protocol.payload.GameEventPayload;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Toolkit.beep() is a no-op-safe placeholder even in a headless environment - see the class
-  * Javadoc; nothing here touches a window. */
 public class SoundSubscriberTest {
 
     private GameEventPayload event(GameEventPayload.Kind kind) {

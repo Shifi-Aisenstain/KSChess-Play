@@ -1,0 +1,94 @@
+# Server_Design.md §1's Observability box lists "alerts" alongside logs/metrics/traces/load-tests.
+# This ConfigMap is the Prometheus rule file 40-prometheus.yaml's `rule_files` loads, evaluated by
+# that same Prometheus and fired to the Alertmanager deployed in 45-alertmanager.yaml. Every
+# expression below reads a counter/gauge shared.metrics.MetricsRegistry already exposes on some
+# service's /metrics endpoint - no new instrumentation was needed, only rules over what already
+# exists. Thresholds are deliberately simple (rate-of-failure or count-based, not statistical
+# baselining) since there is no production traffic history to tune against yet; treat them as a
+# starting point to revisit once real traffic volume is known.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kungfu-chess-alert-rules
+  namespace: kungfu-chess
+data:
+  alerts.yml: |
+    groups:
+      - name: kungfu-chess-availability
+        rules:
+          - alert: KungFuChessServiceDown
+            expr: up{job="kungfu-chess-pods"} == 0
+            for: 1m
+            labels:
+              severity: critical
+            annotations:
+              summary: "{{ $labels.app }} pod {{ $labels.pod }} is not scrapeable"
+              description: "Prometheus has not been able to reach this pod's /metrics endpoint for 1m. Either the pod crashed/restarted or its HTTP health/metrics server is stuck."
+
+      - name: kungfu-chess-auth
+        rules:
+          - alert: HighLoginFailureRate
+            expr: (rate(apigateway_login_failure_total[5m]) / (rate(apigateway_login_attempts_total[5m]) > 0)) > 0.5
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "More than half of /login attempts are failing"
+              description: "server.apigateway.LoginRestHandler is rejecting over 50% of login attempts over the last 5m. Could be a credential-stuffing attempt, a bad deploy, or Postgres/AuthService trouble."
+          - alert: HighInvalidSessionRate
+            expr: (rate(gateway_identify_failures_total[5m]) / ((rate(gateway_identify_failures_total[5m]) + rate(gateway_identify_success_total[5m])) > 0)) > 0.3
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "More than 30% of WS Gateway IDENTIFY attempts carry an invalid/expired session token"
+              description: "server.dispatch.handlers.IdentifyHandler is rejecting a high share of IDENTIFY attempts against server.auth.RedisSessionStore. Could mean sessions are expiring too aggressively, Redis lost data, or something is sending forged/stale tokens."
+
+      - name: kungfu-chess-persistence
+        rules:
+          - alert: EloUpdateFlushFailures
+            expr: rate(elowriter_flush_failures_total[5m]) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "server.persistence.EloWriterRuntime is failing to flush Elo updates to Postgres"
+              description: "Elo batch flushes have failed at least once per 5m on average. Players' ratings are silently falling behind what shard/BusEloWriter published over NATS."
+          - alert: GameHistoryPersistenceFailures
+            expr: (rate(elowriter_game_record_failures_total[5m]) + rate(elowriter_move_record_failures_total[5m])) > 0
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "server.persistence.GameHistoryWriterRuntime is failing to persist games/moves"
+              description: "Games or moves published over NATS are not making it into the games/moves tables, so GET /history will under-report results."
+
+      - name: kungfu-chess-matchmaking
+        rules:
+          - alert: MatchmakingStalled
+            expr: rate(matchmaker_requests_total[10m]) > 0 and rate(matchmaker_matches_found_total[10m]) == 0
+            for: 10m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Players are queueing but server.matchmaking.MatchmakerRuntime is not producing matches"
+              description: "Matchmaking requests are still arriving but zero matches have been found in 10m - check `allocator`'s reachability over NATS (server.matchmaking.BusRoomAllocationClient) and RedisWaitingPlayersQueue."
+          - alert: HighRoomAllocationRejectionRate
+            expr: (rate(allocator_rooms_create_rejected_total[5m]) + rate(allocator_rooms_join_rejected_total[5m])) > 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "server.allocator.GameAllocatorRuntime is rejecting a steady stream of room create/join requests"
+              description: "Could mean shard capacity is exhausted (see ShardSelector's SHARD_IDS round-robin) or RedisActiveRoomRegistry is returning unexpected state."
+
+      - name: kungfu-chess-saturation
+        rules:
+          - alert: GatewayConnectionsNearCapacity
+            expr: gateway_active_connections > 450
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "A gateway pod is nearing its assumed per-pod connection capacity"
+              description: "gateway_active_connections has stayed above 450 for 5m - the same gauge 42-hpa-gateway.yaml's HPA targets at 500/pod. Confirm the HPA is actually scaling out (see k8s/HPA_AUTOSCALING.md's demo-vs-production-target caveat)."

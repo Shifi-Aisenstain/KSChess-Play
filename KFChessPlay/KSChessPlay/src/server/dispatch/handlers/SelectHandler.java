@@ -9,7 +9,6 @@ import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.payload.SelectPayload;
 
-/** Server-authoritative click-to-select, so legal-move highlighting never has to trust the client. */
 public final class SelectHandler implements MessageHandler {
     private final GatewayRoomRegistry roomRegistry;
 

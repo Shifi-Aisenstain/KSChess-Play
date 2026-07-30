@@ -28,11 +28,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Exercises the incoming half of NetworkGameController (onMessage dispatch + getters) directly,
-  * without a live socket. ServerConnection is `final` and its send() requires an actually-open
-  * WebSocket, so outgoing methods (requestPlay, handleBoardClick, ...) aren't covered here - only
-  * the never-connected constructor (safe: WebSocketClient's ctor does no I/O) is needed to build
-  * a NetworkGameController and drive onMessage(...). */
 public class NetworkGameControllerTest {
 
     private NetworkGameController controller;
@@ -40,9 +35,7 @@ public class NetworkGameControllerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        // A plain OS-temp path rather than @TempDir: ClientActivityLogger never closes its
-        // FileWriter, and @TempDir's auto-cleanup fails on Windows when the file handle is still
-        // open - this sidesteps that instead of fighting it.
+
         String logPath = Files.createTempFile("kfchess-test-client-", ".log").toString();
         ClientActivityLogger logger = new ClientActivityLogger(logPath);
         ServerMessageListener[] holder = new ServerMessageListener[1];
@@ -170,7 +163,7 @@ public class NetworkGameControllerTest {
 
     @Test
     public void testCallbackNotSetDoesNotThrow() {
-        // No setOnPlayWaiting(...) called - onMessage should tolerate a null callback.
+
         assertDoesNotThrow(() -> controller.onMessage(encodeAndDecode(MessageType.PLAY_WAITING, EmptyPayload.INSTANCE)));
     }
 }

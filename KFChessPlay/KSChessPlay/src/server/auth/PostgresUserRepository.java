@@ -10,12 +10,6 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * {@link UserRepository} backed by Postgres instead of SQLite (Server_Design.md step 5) - same
- * interface as {@link SqliteUserRepository}, so nothing else in the app (AuthService, GameSession's
- * {@code EloWriter} chain, etc.) needs to know or care which one is actually wired up; that choice
- * lives entirely in {@code server.config.PersistenceConfig}.
- */
 public final class PostgresUserRepository implements UserRepository {
     private final PostgresConnectionProvider connectionProvider;
 
@@ -42,9 +36,7 @@ public final class PostgresUserRepository implements UserRepository {
 
     @Override
     public StoredUser create(String username, String passwordHash, String salt, int startingElo) {
-        // Unlike sqlite-jdbc (see SqliteUserRepository's comment), the postgresql driver properly
-        // implements PreparedStatement.getGeneratedKeys() for Statement.RETURN_GENERATED_KEYS - no
-        // last_insert_rowid()-style workaround needed here.
+
         String sql = "INSERT INTO users (username, password_hash, salt, elo, created_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -76,12 +68,6 @@ public final class PostgresUserRepository implements UserRepository {
         }
     }
 
-    /**
-     * Overrides the interface's default (which just loops {@link #updateElo}) with one actual
-     * round trip: every row goes into the same JDBC batch, committed as a single transaction, on
-     * one connection - this is the real "drains into Postgres in batches" Server_Design.md step 5
-     * asks for, exercised by {@code server.persistence.EloWriterMain}.
-     */
     @Override
     public void updateEloBatch(Map<Long, Integer> newEloByUserId) {
         if (newEloByUserId.isEmpty()) return;

@@ -71,7 +71,6 @@ public class CsvBoardLoaderTest {
         assertEquals(8, board.getLength());
         assertEquals(8, board.getCols());
 
-        // Two full ranks of pawns, one per side.
         int pawnCount = 0;
         for (int r = 0; r < 8; r++) {
             for (int c = 0; c < 8; c++) {

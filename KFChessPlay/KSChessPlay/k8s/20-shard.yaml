@@ -1,0 +1,57 @@
+# PLAN_split_6_services.md §3.1 - Game Server Shard, the authoritative GameEngine owner. Not
+# exposed to the public network at all (no Ingress/NodePort anywhere in this file) - only the
+# in-cluster Service, reached over NATS by the WS Gateway, matching Server_Design.md §5's "shards
+# are never on the public network" design goal.
+#
+# replicas is pinned to 1 here on purpose: every pod would run with the same SHARD_ID (from the
+# shared ConfigMap), and GameShardRuntime's room.allocated filter (`if (!shardId.equals(...))
+# return`) plus its per-room NATS subscription both assume exactly one process owns a given
+# SHARD_ID. Running 2+ replicas of *this* manifest unchanged would mean two pods both trying to
+# run the same GameSession for the same room - see k8s/README.md and HPA_AUTOSCALING.md for what
+# real shard horizontal scaling needs (distinct SHARD_ID per pod, plus the not-yet-built dynamic
+# room_id -> shard registration Server_Design.md §6 already calls out as missing).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shard
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: shard }
+  template:
+    metadata:
+      labels: { app: shard }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: shard
+          image: kungfu-chess:shard
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef: { name: kungfu-chess-config }
+          readinessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: 250m, memory: 256Mi }
+            limits: { cpu: 1, memory: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shard
+  namespace: kungfu-chess
+spec:
+  selector: { app: shard }
+  ports:
+    - name: health
+      port: 8081
+      targetPort: 8081

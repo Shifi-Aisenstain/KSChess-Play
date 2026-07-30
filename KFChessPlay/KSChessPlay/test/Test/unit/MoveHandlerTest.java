@@ -84,7 +84,6 @@ public class MoveHandlerTest {
         MoveHandler handler = new MoveHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
 
-        // alice is WHITE; trying to move a BLACK pawn should be rejected as "not your piece".
         handler.handle(session(alice, sent), moveMessage(1, 4, 3, 4));
 
         assertEquals(1, sent.size());

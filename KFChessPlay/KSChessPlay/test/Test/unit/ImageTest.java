@@ -13,9 +13,6 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** All operations here are plain in-memory raster manipulation (ImageIO/Graphics2D/BufferedImage) -
-  * headless-safe, no real display needed. Only Image.show() (opens a real JFrame) is out of scope,
-  * consistent with excluding Swing UI elsewhere. */
 public class ImageTest {
 
     private String writePng(Path dir, String name, int width, int height, boolean withAlpha, Color fill) throws IOException {
@@ -48,7 +45,7 @@ public class ImageTest {
 
     @Test
     public void testReadWithResizeKeepingAspect(@TempDir Path dir) throws IOException {
-        // 100x50 (2:1) fit into a 40x40 box, keeping aspect -> scale limited by width: 40x20.
+
         String path = writePng(dir, "wide.png", 100, 50, true, Color.GREEN);
         Image image = new Image().read(path, new Dimension(40, 40), true, null);
         assertEquals(40, image.getWidth());

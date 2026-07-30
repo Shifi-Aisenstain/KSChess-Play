@@ -1,0 +1,58 @@
+# Server_Design.md step 5 - Elo/game-history persistence writer (EloWriterRuntime +
+# GameHistoryWriterRuntime). Pinned to replicas: 1 on purpose, unlike gateway/matchmaker/allocator/
+# apigateway above: shared.bus.NatsMessageBus.subscribe has no queue-group support today (every
+# subscriber gets every message - see its javadoc-free but literal `dispatcher.subscribe(subject)`
+# call), and GameHistoryWriterRuntime.saveGame/saveMove are plain INSERTs, not upserts. Matchmaker/
+# Allocator get away with fan-out + replicas > 1 because their state changes are idempotent
+# (Redis-backed "already exists" checks); this writer's job is specifically to insert exactly one
+# row per game/move, so two replicas would double-insert every row. Real horizontal scaling here
+# needs either NATS queue groups (a jnats API change, not used anywhere in this codebase yet) or an
+# idempotency key + upsert on (room_id, ...) - both real future work, not a K3s config change.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elowriter
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: elowriter }
+  template:
+    metadata:
+      labels: { app: elowriter }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: elowriter
+          image: kungfu-chess:elowriter
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef: { name: kungfu-chess-config }
+          env:
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef: { name: postgres-credentials, key: POSTGRES_URL }
+          readinessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elowriter
+  namespace: kungfu-chess
+spec:
+  selector: { app: elowriter }
+  ports:
+    - port: 8081
+      targetPort: 8081

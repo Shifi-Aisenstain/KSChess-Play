@@ -141,8 +141,7 @@ public class MoveLoggerTest {
         MoveLogger logger = new MoveLogger();
         Piece whitePawn = new Piece('w', 'P');
         logger.recordMove(new Position(6, 4), new Position(4, 4), whitePawn, null, null);
-        // Without a board to read height from, rank falls back to row+1 (row 4 -> rank 5) instead
-        // of the usual board.getLength()-row inversion.
+
         assertTrue(logger.getWhiteMoveHistory().get(0).endsWith("Pe5"));
     }
 

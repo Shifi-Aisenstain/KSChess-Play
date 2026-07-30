@@ -1,0 +1,7 @@
+# Server_Design.md step 6: "פריסה על K3s (node יחיד או VM קטן): Deployment+Service לכל אחד
+# מ-6 הרכיבים, Redis, Postgres." Everything in k8s/ lives in this one namespace so it can be
+# torn down as a unit (`kubectl delete namespace kungfu-chess`) during iteration.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kungfu-chess

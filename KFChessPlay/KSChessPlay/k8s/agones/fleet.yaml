@@ -1,0 +1,45 @@
+# ILLUSTRATIVE / NOT DEPLOYED - Server_Design.md step 10 ("שקילת Agones ברגע שה-allocator הביתי
+# מוכיח את הרעיון בסקאלה קטנה"), and §2's own suggestion: "Agones... מחליף את הלוגיקה הביתית של
+# 'לבחור shard, לרשום את החדר' ב-CRDs מסוג GameServer/Fleet/GameServerAllocation." This is what that
+# replacement would look like - a Fleet of warm, ready-to-allocate Game Server Shard pods, instead of
+# k8s/20-shard.yaml's fixed single Deployment + server.allocator.ShardSelector's round-robin.
+#
+# This is NOT a drop-in replacement for 20-shard.yaml today. It requires the Agones Game Server SDK
+# (github.com/googleforgames/agones/sdks/go or a JVM port - Agones ships an HTTP/gRPC local sidecar
+# API any language can call) wired into server.shard.GameServerShardMain: call SDK.Ready() once
+# GameShardRuntime.start() finishes subscribing, SDK.Health() on a heartbeat, and SDK.Allocate()/
+# SDK.Shutdown() around a room's lifecycle instead of the current "one shardId forever" model. None
+# of that SDK integration exists in this codebase yet - this file documents the target shape, per
+# this session's "do everything, but label real future work as future work" approach.
+apiVersion: agones.dev/v1
+kind: Fleet
+metadata:
+  name: kungfu-chess-shard-fleet
+  namespace: kungfu-chess
+spec:
+  replicas: 3
+  scheduling: Packed
+  template:
+    spec:
+      ports:
+        - name: health
+          portPolicy: Static
+          containerPort: 8081
+      health:
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureThreshold: 3
+      template:
+        spec:
+          containers:
+            - name: shard
+              image: kungfu-chess:shard
+              envFrom:
+                - configMapRef: { name: kungfu-chess-config }
+              env:
+                - name: SHARD_ID
+                  valueFrom:
+                    fieldRef: { fieldPath: metadata.name }
+              resources:
+                requests: { cpu: 250m, memory: 256Mi }
+                limits: { cpu: 1, memory: 1Gi }

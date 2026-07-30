@@ -24,14 +24,6 @@ import view.SnapshotSource;
 
 import java.util.function.Consumer;
 
-/**
- * Client-side hub: the single place that knows both "how to talk to the
- * server" (outgoing requests) and "what the server just said" (incoming
- * {@link Message}s). Everything else - {@code Main}, {@code HomeScreen},
- * {@code GameWindow} - only sees callbacks/getters, never the socket or the
- * wire protocol directly. Also doubles as the {@link SnapshotSource} that
- * {@code view.GameLoop} renders from every frame.
- */
 public final class NetworkGameController implements ServerMessageListener, SnapshotSource {
     private final ServerConnection connection;
     private final EventBus localEventBus;
@@ -71,9 +63,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
     public void setOnGameOver(Consumer<GameOverPayload> cb) { this.onGameOver = cb; }
     public void setOnServerError(Consumer<String> cb) { this.onServerError = cb; }
 
-    // ---- outgoing requests -------------------------------------------------
-    // (LOGIN itself is handled by client.bridge.LoginController, before this class even exists)
-
     public void requestPlay() {
         connection.send(MessageType.PLAY_REQUEST, EmptyPayload.INSTANCE);
     }
@@ -94,7 +83,6 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
         connection.send(MessageType.RESIGN, EmptyPayload.INSTANCE);
     }
 
-    /** Wired to {@code GameWindow.onClick}. First click selects; second sends the move. Server re-validates both. */
     public void handleBoardClick(int row, int col) {
         Position clicked = new Position(row, col);
 
@@ -116,12 +104,9 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
         connection.send(MessageType.SELECT, new SelectPayload(false, 0, 0));
     }
 
-    /** Wired to {@code GameWindow.onRightClick} - the dodge/jump-in-place mechanic. */
     public void handleBoardRightClick(int row, int col) {
         connection.send(MessageType.JUMP, new JumpCommandPayload(row, col));
     }
-
-    // ---- incoming messages --------------------------------------------------
 
     @Override
     public void onMessage(Message message) {
@@ -136,8 +121,8 @@ public final class NetworkGameController implements ServerMessageListener, Snaps
             case DISCONNECT_COUNTDOWN -> deliver(onDisconnectCountdown, MessageCodec.decodePayload(message, CountdownPayload.class));
             case GAME_OVER -> deliver(onGameOver, MessageCodec.decodePayload(message, GameOverPayload.class));
             case ERROR -> deliver(onServerError, MessageCodec.decodePayload(message, ErrorPayload.class).message);
-            case PONG -> { /* heartbeat acknowledged, nothing to do */ }
-            default -> { /* client never receives request-only types */ }
+            case PONG -> {  }
+            default -> {  }
         }
     }
 

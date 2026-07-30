@@ -84,7 +84,6 @@ public class MoveLogger {
     public List<String> getWhiteMoveHistory() { return Collections.unmodifiableList(whiteMoveHistory); }
     public List<String> getBlackMoveHistory() { return Collections.unmodifiableList(blackMoveHistory); }
 
-    /** The "MM:SS.mmm|Notation" entry just recorded for that color, or "" if none yet. Used to publish move-log updates onto the event bus without re-deriving the format. */
     public String getLastEntry(char color) {
         List<String> history = (color == 'w') ? whiteMoveHistory : blackMoveHistory;
         return history.isEmpty() ? "" : history.get(history.size() - 1);

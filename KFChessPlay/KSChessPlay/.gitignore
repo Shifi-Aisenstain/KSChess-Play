@@ -1,41 +1,10 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.kotlin
-
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
-
-### Build output ###
-build/
 target/
-src.zip
-
-### Runtime data / secrets (should never be committed) ###
-logs/
-creds/
-*.db
+*.class
 *.log
+logs/
+*.db
+.idea/
+*.iml
+creds/
+build/
+dependency-reduced-pom.xml

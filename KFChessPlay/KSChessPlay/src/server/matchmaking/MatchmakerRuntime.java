@@ -1,7 +1,9 @@
 package server.matchmaking;
 
+import server.logging.ServerActivityLogger;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -10,21 +12,18 @@ import shared.protocol.payload.BusMatchNotFoundPayload;
 import shared.protocol.payload.CancelMatchRequestPayload;
 import shared.protocol.payload.MatchEnqueueRequestPayload;
 
-/**
- * The actual "run the matchmaking queue" logic of the Matchmaker (PLAN_split_6_services.md §3.3),
- * factored out of {@link MatchmakerMain} so it can be exercised directly against a
- * {@code shared.bus.InMemoryMessageBus} in tests, the same split as {@code server.shard.GameShardRuntime}
- * vs. {@code GameServerShardMain}. Answers exactly the two matchmaking subjects
- * {@code server.gateway.MatchmakingClient} calls - moved here verbatim from the now-retired
- * {@code server.rpc.MonolithBusGateway}, which stood in for this process before the real split.
- */
 public final class MatchmakerRuntime {
     private final MessageBus bus;
     private final MatchmakingService matchmakingService;
+    private final ServerActivityLogger activityLogger;
+    private final MetricsRegistry metricsRegistry;
 
-    public MatchmakerRuntime(MessageBus bus, MatchmakingService matchmakingService) {
+    public MatchmakerRuntime(MessageBus bus, MatchmakingService matchmakingService, ServerActivityLogger activityLogger,
+                              MetricsRegistry metricsRegistry) {
         this.bus = bus;
         this.matchmakingService = matchmakingService;
+        this.activityLogger = activityLogger;
+        this.metricsRegistry = metricsRegistry;
     }
 
     public void start() {
@@ -34,15 +33,22 @@ public final class MatchmakerRuntime {
 
     private void onMatchmakingRequest(Message message, String replyTo) {
         MatchEnqueueRequestPayload request = MessageCodec.decodePayload(message, MatchEnqueueRequestPayload.class);
+        activityLogger.logTraffic("IN", request.userId, "PLAY_REQUEST", "elo=" + request.elo);
+        metricsRegistry.incrementCounter("matchmaker_requests_total", "Total matchmaking enqueue requests received");
         matchmakingService.enqueue(new MatchRequest(request.userId, request.username, request.elo, new MatchListener() {
             @Override
             public void onMatchFound(String roomId, char assignedColor, String opponentUsername, int opponentElo) {
+                activityLogger.logTraffic("OUT", request.userId, "MATCH_FOUND",
+                        "roomId=" + roomId + " opponent=" + opponentUsername);
+                metricsRegistry.incrementCounter("matchmaker_matches_found_total", "Total successful matches made");
                 bus.publish(RoomBusSubjects.MATCHMAKING_RESULTS, MessageType.MATCH_FOUND,
                         new BusMatchFoundPayload(request.userId, roomId, assignedColor, opponentUsername, opponentElo));
             }
 
             @Override
             public void onNotFound() {
+                activityLogger.logTraffic("OUT", request.userId, "PLAY_NOT_FOUND", "{}");
+                metricsRegistry.incrementCounter("matchmaker_not_found_total", "Total matchmaking requests that expired unmatched");
                 bus.publish(RoomBusSubjects.MATCHMAKING_RESULTS, MessageType.PLAY_NOT_FOUND,
                         new BusMatchNotFoundPayload(request.userId));
             }
@@ -51,6 +57,8 @@ public final class MatchmakerRuntime {
 
     private void onMatchmakingCancel(Message message, String replyTo) {
         CancelMatchRequestPayload request = MessageCodec.decodePayload(message, CancelMatchRequestPayload.class);
+        activityLogger.logTraffic("IN", request.userId, "PLAY_CANCEL", "{}");
+        metricsRegistry.incrementCounter("matchmaker_cancels_total", "Total matchmaking cancel requests");
         matchmakingService.cancel(request.userId);
     }
 }

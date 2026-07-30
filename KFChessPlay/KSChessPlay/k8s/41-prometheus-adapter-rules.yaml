@@ -1,0 +1,38 @@
+# Server_Design.md step 7 needs "HPA לפי מטריקה מותאמת-אישית... (Prometheus adapter)" - this
+# ConfigMap is that adapter's rule set, mapping the two gauges 21/20-*.yaml's Prometheus now scrapes
+# (gateway_active_connections, shard_active_games - see shared.metrics.MetricsRegistry) onto the
+# custom.metrics.k8s.io API the HPAs in 42/43 read from.
+#
+# The adapter itself (k8s-prometheus-adapter) is not deployed by this file - install it via its
+# official Helm chart (`helm install prometheus-adapter prometheus-community/prometheus-adapter
+# -n kungfu-chess --set prometheus.url=http://prometheus.kungfu-chess.svc --set
+# prometheus.port=9090`), pointed at this ConfigMap's rules (`--set-file rules.custom=k8s/41-...
+# yaml`'s `data.custom-metrics.yaml` key, per the chart's own `rules.custom` values option). Kept as
+# a plain ConfigMap here rather than a full Helm values file so it's reviewable without assuming a
+# specific Helm release name/namespace.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kungfu-chess-adapter-rules
+  namespace: kungfu-chess
+data:
+  custom-metrics.yaml: |
+    rules:
+      - seriesQuery: 'gateway_active_connections{namespace!="",pod!=""}'
+        resources:
+          overrides:
+            namespace: { resource: "namespace" }
+            pod: { resource: "pod" }
+        name:
+          matches: "gateway_active_connections"
+          as: "gateway_active_connections"
+        metricsQuery: 'sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+      - seriesQuery: 'shard_active_games{namespace!="",pod!=""}'
+        resources:
+          overrides:
+            namespace: { resource: "namespace" }
+            pod: { resource: "pod" }
+        name:
+          matches: "shard_active_games"
+          as: "shard_active_games"
+        metricsQuery: 'sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'

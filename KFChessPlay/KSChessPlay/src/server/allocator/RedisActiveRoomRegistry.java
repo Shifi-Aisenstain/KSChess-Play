@@ -5,10 +5,6 @@ import shared.redis.RedisConnectionProvider;
 
 import java.util.Optional;
 
-/**
- * Real {@link ActiveRoomRegistry} backed by a single Redis hash (Server_Design.md step 4) - field is
- * the userId, value is the roomId. Plain strings, no serialization needed.
- */
 public final class RedisActiveRoomRegistry implements ActiveRoomRegistry {
     private static final String KEY = "allocator:active-room";
 

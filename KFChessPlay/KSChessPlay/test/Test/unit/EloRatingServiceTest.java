@@ -38,7 +38,7 @@ public class EloRatingServiceTest {
 
     @Test
     public void testUnderdogWinnerGainsMoreThanKFactorHalf() {
-        // White is rated much lower and still wins - should gain close to the full K-factor.
+
         RatingService.EloUpdate update = service.computeUpdate(1000, 1400, "WHITE");
 
         assertTrue(update.whiteDelta > 16);

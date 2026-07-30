@@ -26,21 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * A WS Gateway instance's live connection to one room's Game Server Shard (PLAN_split_6_services.md
- * §3.2) - the direct replacement for {@code server.game.RemoteGameSessionHandle}, which relayed the
- * exact same {@code room.<roomId>.commands}/{@code .updates} traffic from inside the monolith back
- * when the monolith still held the client sockets. Since the sockets moved here, this class does
- * the relay instead, straight to/from the local {@link MessageSink}s it's been told about (see
- * {@link #addLocalMember}) - the monolith is no longer on this path at all (see {@code Server_Design.md}
- * §5's architecture diagram: "WS Gateway <-> Game Server Shards" is a direct arrow).
- *
- * <p>Only tracks members connected to *this* Gateway instance. In a multi-instance deployment (after
- * §7's autoscaling) a room's members could be spread across several Gateway instances, each running
- * its own {@code GatewayRoomSession} for the same room, all subscribed to the same
- * {@code room.<roomId>.updates} - a targeted (non-broadcast) update for a userId this instance
- * doesn't know locally is silently ignored, which is correct (some other instance has that user).
- */
 public final class GatewayRoomSession {
     private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(3);
 
@@ -48,11 +33,7 @@ public final class GatewayRoomSession {
     private final MessageBus bus;
     private final Map<Long, MessageSink> localMembers = new ConcurrentHashMap<>();
     private final Map<Long, DisconnectWatchdog> watchdogsByUserId = new ConcurrentHashMap<>();
-    /** Learned passively from each user's own targeted STATE_UPDATE (see {@link #onUpdate}) rather
-     *  than plumbed through explicitly - the Shard is the only thing that actually decides colors,
-     *  and every member gets a STATE_UPDATE within one tick (~50ms) of joining/reconnecting (see
-     *  {@code server.game.GameSession#buildPersonalizedPayloads}), so this fills in on its own just
-     *  after {@link #addLocalMember} without the Gateway needing its own copy of role assignment. */
+
     private final Map<Long, Character> colorByUserId = new ConcurrentHashMap<>();
     private volatile boolean over = false;
 
@@ -64,8 +45,6 @@ public final class GatewayRoomSession {
 
     public String getRoomId() { return roomId; }
 
-    /** Registers (or replaces, on reconnect) the local socket for {@code userId} - future STATE_UPDATE/
-     *  GAME_EVENT/GAME_OVER/DISCONNECT_COUNTDOWN traffic addressed to them is delivered here. */
     public void addLocalMember(long userId, MessageSink sink) {
         localMembers.put(userId, sink);
     }
@@ -78,16 +57,11 @@ public final class GatewayRoomSession {
         return localMembers.containsKey(userId);
     }
 
-    /** 'w'/'b'/'s' once at least one STATE_UPDATE has been relayed for this user, {@code '\0'}
-     *  before that (a disconnect within the same ~50ms as connecting is not a real-world concern
-     *  for the 20s auto-resign countdown this feeds - see {@code server.gateway.DisconnectWatchdog}). */
     public char colorOf(long userId) {
         Character color = colorByUserId.get(userId);
         return color == null ? '\0' : color;
     }
 
-    /** Tells the Shard about a member who joined after allocation (almost always a spectator - white/
-     *  black are already known from {@code RoomAllocatedPayload}). Fire-and-forget, same as before. */
     public void notifyMemberJoined(long userId, Room.Role role) {
         publishCommand(MessageType.ROOM_ROSTER, new RoomRosterPayload(userId, role.name()));
     }
@@ -121,9 +95,6 @@ public final class GatewayRoomSession {
         watchdogsByUserId.put(userId, watchdog);
     }
 
-    /** Called on reconnect. Stops the watchdog and clears its countdown from every client's screen -
-     *  broadcast over the bus (not just to local sessions) so any *other* Gateway instance with a
-     *  stake in this room clears its UI too. */
     public void cancelWatchdogIfPresent(long userId, char disconnectedColor) {
         DisconnectWatchdog watchdog = watchdogsByUserId.remove(userId);
         if (watchdog == null) return;
@@ -131,8 +102,6 @@ public final class GatewayRoomSession {
         broadcastDisconnectCountdown(disconnectedColor, 0);
     }
 
-    /** Used by {@link DisconnectWatchdog}'s own tick - published on the bus (not delivered to local
-     *  sessions directly) for the same multi-instance reason as {@link #cancelWatchdogIfPresent}. */
     public void broadcastDisconnectCountdown(char disconnectedColor, int secondsRemaining) {
         RoutedUpdatePayload routed = new RoutedUpdatePayload(null, MessageType.DISCONNECT_COUNTDOWN,
                 MessageCodec.encodeInnerPayload(new CountdownPayload(roomId, disconnectedColor, secondsRemaining)));

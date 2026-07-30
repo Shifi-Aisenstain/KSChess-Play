@@ -18,18 +18,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Core real-time chess engine. Unchanged in behaviour from the single-player
- * version - the only addition is an {@link EventBus} hook so that server-side
- * code (scoreboards, move logs, sound cues, animations - see the course spec's
- * "pub/sub bus" requirement) can react to what happens on the board without
- * GameManager needing to know who's listening.
- *
- * <p>The no-arg constructor is preserved (and used by the existing unit/
- * integration tests) - it just wires up a private, unshared bus so nothing
- * publishes anywhere visible. Server code uses {@link #GameManager(String, EventBus)}
- * so the events end up on the shared per-room bus instead.
- */
 public class GameManager {
     private static final double JUMP_BOUNCE_HEIGHT = 0.3;
 
@@ -45,13 +33,6 @@ public class GameManager {
         this(null, new EventBus());
     }
 
-    /**
-     * @param roomId   identifies which game session published events belong to
-     *                 (a single server process can host many concurrent rooms
-     *                 sharing handler/logger classes, so events are tagged).
-     * @param eventBus the bus events are published on; pass the same instance
-     *                 used elsewhere in the room/session so subscribers see them.
-     */
     public GameManager(String roomId, EventBus eventBus) {
         this.roomId = roomId;
         this.eventBus = eventBus;
@@ -68,7 +49,6 @@ public class GameManager {
         }
     }
 
-    /** Returns true iff a move was actually registered (false for any rejection reason). */
     public boolean requestMove(MoveCommand command) {
         if (isGameOver || board == null) return false;
         var validation = ruleEngine.validateMove(board, command.getSource(), command.getDestination());
@@ -79,7 +59,6 @@ public class GameManager {
         return true;
     }
 
-    /** Returns true iff a jump was actually registered (false for any rejection reason). */
     public boolean requestJump(Position pos) {
         if (isGameOver || board == null) return false;
         var validation = ruleEngine.validateJump(board, pos);
@@ -91,8 +70,6 @@ public class GameManager {
         return true;
     }
 
-    /** Whether any move/jump/cooldown is still in flight - used server-side to decide whether a
-     *  tick needs to keep broadcasting (for smooth in-progress animation) even with no new input. */
     public boolean hasActiveEvents() {
         return !arbiter.getActiveEvents().isEmpty();
     }
@@ -152,7 +129,6 @@ public class GameManager {
     public boolean isGameOver() { return this.isGameOver; }
     public String[][] getUpdatedBoardMatrix() { return board.getReadOnlyMatrixView(); }
 
-    /** Which color owns the piece currently sitting on {@code pos}, or {@code '\0'} if empty. Used server-side for ownership checks. */
     public char colorAt(Position pos) {
         if (board == null) return '\0';
         Piece p = board.getPieceAt(pos);

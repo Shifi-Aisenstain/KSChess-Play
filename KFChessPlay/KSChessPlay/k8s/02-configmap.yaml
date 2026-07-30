@@ -1,0 +1,18 @@
+# Non-secret config shared across the 6 application services, mirroring docker-compose.yml's
+# per-service `environment:` blocks. NATS_URL/REDIS_URL/JAEGER_URL use in-namespace Service DNS
+# names (short form works because every Deployment below runs in the same `kungfu-chess`
+# namespace). JAEGER_URL only matters to `gateway`/`apigateway` today (shared.tracing.JaegerReporter
+# - see 13-jaeger.yaml), but every service picking it up from the shared ConfigMap costs nothing and
+# keeps this file the single source of truth if tracing spans are added to another service later.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kungfu-chess-config
+  namespace: kungfu-chess
+data:
+  NATS_URL: "nats://nats:4222"
+  REDIS_URL: "redis://redis:6379"
+  JAEGER_URL: "http://jaeger:9411/api/v2/spans"
+  SHARD_IDS: "shard-1"
+  SHARD_ID: "shard-1"
+  HEALTH_PORT: "8081"

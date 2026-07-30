@@ -169,6 +169,7 @@
                         <exclude>shared/redis/RedisConnectionProvider*.class</exclude>
                         <exclude>server/matchmaking/RedisWaitingPlayersQueue*.class</exclude>
                         <exclude>server/allocator/RedisActiveRoomRegistry*.class</exclude>
+                        <exclude>server/auth/RedisSessionStore*.class</exclude>
                         <!-- Server_Design.md step 5: same reasoning again - these need a live
                              Postgres server to exercise for real; SqliteUserRepository (already
                              covered by SqliteUserRepositoryTest against a real temp-file SQLite db)
@@ -176,6 +177,10 @@
                         <exclude>server/persistence/PostgresConnectionProvider*.class</exclude>
                         <exclude>server/persistence/PostgresSchemaInitializer*.class</exclude>
                         <exclude>server/auth/PostgresUserRepository*.class</exclude>
+                        <!-- Same reasoning: needs a live Postgres; SqliteGameHistoryRepository (covered
+                             by SqliteGameHistoryRepositoryTest against a real temp-file SQLite db)
+                             proves the shared GameHistoryRepository contract identically. -->
+                        <exclude>server/persistence/PostgresGameHistoryRepository*.class</exclude>
                         <!-- Game Server Shard composition root (PLAN_split_6_services.md §3.1) - same
                              rationale as the other composition roots here. Its actual logic lives in
                              GameShardRuntime, which *is* unit tested (against InMemoryMessageBus). -->
@@ -196,6 +201,8 @@
                              Its actual batching logic lives in EloWriterRuntime, which *is* unit
                              tested (against InMemoryMessageBus and a fake UserRepository). -->
                         <exclude>server/persistence/EloWriterMain*.class</exclude>
+                        <exclude>loadtest/LoadTestMain*.class</exclude>
+                        <exclude>loadtest/SimulatedPlayer*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -371,6 +378,21 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>server.persistence.EloWriterMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>loadtest-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>loadtest</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>loadtest.LoadTestMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

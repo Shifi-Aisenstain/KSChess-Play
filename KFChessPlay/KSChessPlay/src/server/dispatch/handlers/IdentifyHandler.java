@@ -1,53 +1,57 @@
 package server.dispatch.handlers;
 
+import server.auth.SessionInfo;
+import server.auth.SessionStore;
 import server.auth.User;
 import server.dispatch.MessageHandler;
 import server.gateway.GatewayRoomRegistry;
 import server.gateway.GatewayRoomSession;
 import server.gateway.RoomLifecycleClient;
 import server.net.PlayerSession;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
+import shared.protocol.payload.ErrorPayload;
 import shared.protocol.payload.IdentifyPayload;
 import shared.protocol.payload.LoginResultPayload;
 
-/**
- * Since PLAN_split_6_services.md §3.5, authentication itself happens over REST against the API
- * Gateway (see {@code server.apigateway.ApiGatewayMain}'s {@code POST /login}) before the client
- * even opens this socket - replacing the old {@code LoginHandler}, which checked a password directly.
- * This handler just attaches the identity the client already proved over REST to this connection's
- * {@link PlayerSession}; it has no {@code AuthService} dependency at all anymore. Reuses
- * {@code MessageType.LOGIN_RESULT}/{@link LoginResultPayload} for the ack, since from the client's
- * perspective this still completes the same "now I'm logged in on this connection" step.
- */
+import java.util.Optional;
+
 public final class IdentifyHandler implements MessageHandler {
     private final RoomLifecycleClient roomLifecycle;
     private final GatewayRoomRegistry roomRegistry;
+    private final SessionStore sessionStore;
+    private final MetricsRegistry metricsRegistry;
 
-    public IdentifyHandler(RoomLifecycleClient roomLifecycle, GatewayRoomRegistry roomRegistry) {
+    public IdentifyHandler(RoomLifecycleClient roomLifecycle, GatewayRoomRegistry roomRegistry, SessionStore sessionStore,
+                            MetricsRegistry metricsRegistry) {
         this.roomLifecycle = roomLifecycle;
         this.roomRegistry = roomRegistry;
+        this.sessionStore = sessionStore;
+        this.metricsRegistry = metricsRegistry;
     }
 
     @Override
     public void handle(PlayerSession session, Message message) {
         IdentifyPayload payload = MessageCodec.decodePayload(message, IdentifyPayload.class);
-        User user = new User(payload.userId, payload.username, payload.elo);
+        Optional<SessionInfo> sessionInfo = sessionStore.validate(payload.sessionToken);
+        if (sessionInfo.isEmpty()) {
+            metricsRegistry.incrementCounter("gateway_identify_failures_total", "Total IDENTIFY attempts rejected for an invalid or expired session token");
+            session.send(MessageType.ERROR, new ErrorPayload("Invalid or expired session - please log in again."));
+            return;
+        }
+
+        SessionInfo info = sessionInfo.get();
+        User user = new User(info.userId, info.username, info.elo);
 
         session.setUser(user);
         reattachToActiveGameIfAny(session, user.getId());
-        session.send(MessageType.LOGIN_RESULT, LoginResultPayload.ok(user.getId(), user.getUsername(), user.getElo()));
+        metricsRegistry.incrementCounter("gateway_identify_success_total", "Total IDENTIFY attempts accepted with a valid session token");
+        session.send(MessageType.LOGIN_RESULT,
+                LoginResultPayload.ok(user.getId(), user.getUsername(), user.getElo(), payload.sessionToken));
     }
 
-    /**
-     * Spec: "disconnection is not immediate loss - if you reconnect in time, the auto-resign timer
-     * is cancelled." A fresh identify always creates a brand-new {@link PlayerSession} with no room,
-     * so this is the one place that can notice "this user still has a game running" and quietly
-     * resume it - asking the Allocator (over {@link RoomLifecycleClient#lookupActiveRoom}, since only
-     * it still tracks that) instead of checking a local {@code Room} directly, then reattaching this
-     * socket and cancelling any ticking {@code DisconnectWatchdog} - before the client even asks for one.
-     */
     private void reattachToActiveGameIfAny(PlayerSession session, long userId) {
         roomLifecycle.lookupActiveRoom(userId).ifPresent(roomId -> {
             GatewayRoomSession roomSession = roomRegistry.attachToAlreadyRunningRoom(roomId, userId, session);

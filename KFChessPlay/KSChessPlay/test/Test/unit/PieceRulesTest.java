@@ -1,7 +1,6 @@
 package Test.unit;
 
 import rules.PieceRules;
-import rules.MoveValidation;
 import models.Piece;
 import models.Board;
 import models.Position;

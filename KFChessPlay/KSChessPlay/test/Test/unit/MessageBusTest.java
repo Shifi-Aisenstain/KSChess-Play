@@ -7,6 +7,7 @@ import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
 import shared.protocol.payload.ErrorPayload;
+import shared.tracing.TraceContext;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -15,13 +16,17 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises the {@link MessageBus} contract (publish/subscribe, request/reply, unsubscribe)
- * against {@link InMemoryMessageBus}, since the real {@link shared.bus.NatsMessageBus} needs a
- * live NATS server (see PLAN_split_6_services.md, sub-phase 3.0) - both implement the same
- * interface, so this is what actually gets exercised in `mvn test`.
- */
 public class MessageBusTest {
+
+    @org.junit.jupiter.api.BeforeEach
+    public void clearTraceBeforeEachTest() {
+        TraceContext.clear();
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    public void clearTraceAfterEachTest() {
+        TraceContext.clear();
+    }
 
     @Test
     public void testSubscriberReceivesPublishedMessage() {
@@ -62,8 +67,7 @@ public class MessageBusTest {
     @Test
     public void testRequestReplyRoundTrip() {
         MessageBus bus = new InMemoryMessageBus();
-        // Simulates a service (e.g. Game Allocator) answering a request from another service
-        // (e.g. WS Gateway asking "which room is this user in?").
+
         bus.subscribe("user.42.active-room", (msg, replyTo) ->
                 bus.reply(replyTo, MessageType.ERROR, new ErrorPayload("room-xyz")));
 
@@ -96,5 +100,43 @@ public class MessageBusTest {
 
         assertEquals(List.of("a"), a);
         assertEquals(List.of("b"), b);
+    }
+
+    @Test
+    public void testPublishedMessageCarriesThePublishersCurrentTraceId() {
+        MessageBus bus = new InMemoryMessageBus();
+        List<String> receivedTraceIds = new ArrayList<>();
+        bus.subscribe("room.abc.commands", (msg, replyTo) -> receivedTraceIds.add(msg.getTraceId()));
+
+        TraceContext.set("trace-from-caller");
+        bus.publish("room.abc.commands", MessageType.ERROR, new ErrorPayload("hello"));
+
+        assertEquals(List.of("trace-from-caller"), receivedTraceIds);
+    }
+
+    @Test
+    public void testHandlerSeesThePublishersTraceIdAsItsOwnCurrentTraceWhilePublishing() {
+        MessageBus bus = new InMemoryMessageBus();
+        List<String> observedInsideHandler = new ArrayList<>();
+        bus.subscribe("allocator.rooms", (msg, replyTo) -> observedInsideHandler.add(TraceContext.current()));
+
+        TraceContext.set("trace-xyz");
+        bus.publish("allocator.rooms", MessageType.ERROR, new ErrorPayload("go"));
+
+        assertEquals(List.of("trace-xyz"), observedInsideHandler,
+                "a handler reacting to a bus message must see that message's traceId as its own current trace, so any further publish it makes propagates the same id onward");
+        assertEquals("trace-xyz", TraceContext.current(), "delivering to a handler must not clobber the publisher's own trace context afterward");
+    }
+
+    @Test
+    public void testPublishGeneratesAFreshTraceIdWhenCallerHasNone() {
+        MessageBus bus = new InMemoryMessageBus();
+        List<String> receivedTraceIds = new ArrayList<>();
+        bus.subscribe("matchmaking.requests", (msg, replyTo) -> receivedTraceIds.add(msg.getTraceId()));
+
+        bus.publish("matchmaking.requests", MessageType.ERROR, new ErrorPayload("hello"));
+
+        assertEquals(1, receivedTraceIds.size());
+        assertNotNull(receivedTraceIds.get(0));
     }
 }

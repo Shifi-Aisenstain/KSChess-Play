@@ -37,11 +37,6 @@ public class PlayRequestHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    /** Recorded via {@code server.matchmaking.MatchmakerRuntime}, which wraps this in its own
-     *  translation {@code MatchListener} before enqueueing - see {@code TestSupport}'s javadoc. So
-     *  {@code lastRequest.listener} below is that translation listener, not literally the handler's
-     *  own anonymous listener; invoking it still round-trips through the bus exactly like a real
-     *  match result would, ending up back at the handler's listener via {@code MatchmakingClient}. */
     private static final class RecordingMatchmakingService implements MatchmakingService {
         MatchRequest lastRequest;
         boolean cancelled = false;

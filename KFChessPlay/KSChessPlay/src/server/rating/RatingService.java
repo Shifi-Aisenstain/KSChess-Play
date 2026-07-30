@@ -1,7 +1,7 @@
 package server.rating;
 
 public interface RatingService {
-    /** Result of a finished game, used to compute both players' new ratings. */
+
     final class EloUpdate {
         public final int whiteDelta;
         public final int blackDelta;
@@ -16,6 +16,5 @@ public interface RatingService {
         }
     }
 
-    /** @param winnerColor "WHITE", "BLACK", or null for a draw. */
     EloUpdate computeUpdate(int whiteElo, int blackElo, String winnerColor);
 }

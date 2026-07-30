@@ -40,9 +40,7 @@ public final class RoomJoinHandler implements MessageHandler {
         session.setCurrentRoomId(result.roomId);
 
         Optional<GatewayRoomSession> attached = roomRegistry.registerPendingMember(result.roomId, user.getId(), session);
-        // WHITE/BLACK are already known to the Shard from the room.allocated payload itself (see
-        // RoomManager.startGameSession) - only a spectator joining a room whose game is already
-        // running is genuinely new information the Shard needs told about.
+
         if (Room.Role.SPECTATOR.name().equals(result.role)) {
             attached.ifPresent(roomSession -> roomSession.notifyMemberJoined(user.getId(), Room.Role.SPECTATOR));
         }

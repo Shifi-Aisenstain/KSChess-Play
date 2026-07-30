@@ -34,9 +34,7 @@ public final class RoomCreateHandler implements MessageHandler {
         }
 
         session.setCurrentRoomId(result.roomId);
-        // The creator is always alone at this point (WHITE) - the room isn't allocated to a Shard
-        // yet, so this just queues them until a second player's ROOM_JOIN triggers room.allocated
-        // (see GatewayRoomRegistry).
+
         roomRegistry.registerPendingMember(result.roomId, user.getId(), session);
         session.send(MessageType.ROOM_CREATED, new RoomStatusPayload(result.roomId, result.role));
     }

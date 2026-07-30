@@ -93,8 +93,6 @@ public class ServerActivityLoggerTest {
         assertTrue(readLog(path).contains("user=anonymous"));
     }
 
-    /** PLAN_split_6_services.md §3.6: every line also goes to stdout as one JSON object, alongside
-     *  the existing human-readable file line - captured here by temporarily swapping System.out. */
     @Test
     public void testLogTrafficAlsoEmitsStructuredJsonToStdout() throws Exception {
         String path = newLogPath();

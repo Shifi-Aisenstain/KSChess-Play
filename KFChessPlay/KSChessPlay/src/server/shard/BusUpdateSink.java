@@ -7,13 +7,6 @@ import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
 import shared.protocol.payload.RoutedUpdatePayload;
 
-/**
- * {@link GameUpdateSink} used by the real {@code GameServerShardMain}: instead of writing straight
- * to a socket (there is none here - the client is connected to the monolith/WS Gateway, a different
- * process), it publishes to {@code room.<roomId>.updates} for whoever's on the other end
- * ({@code server.game.RemoteGameSessionHandle} today) to relay onward. See
- * PLAN_split_6_services.md §3.1.
- */
 public final class BusUpdateSink implements GameUpdateSink {
     private final MessageBus bus;
     private final String roomId;

@@ -14,9 +14,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** Exercises the real SQLite-backed repository against a throwaway DB file per test (via @TempDir),
-  * rather than mocking JDBC - this is the code SchemaInitializer/AuthServiceImpl actually run in
-  * production, so it's worth verifying against a real driver, not just an in-memory fake. */
 public class SqliteUserRepositoryTest {
 
     private SqliteUserRepository repository;
@@ -65,10 +62,6 @@ public class SqliteUserRepositoryTest {
         assertEquals(1350, repository.findByUsername("alice").orElseThrow().elo);
     }
 
-    /** Server_Design.md step 5: SqliteUserRepository doesn't override {@code updateEloBatch}, so
-     *  this exercises the interface's default implementation (loop {@code updateElo} per entry)
-     *  against a real database - {@code PostgresUserRepository} overrides it for one real batched
-     *  round trip instead (see pom.xml's jacoco excludes for why that one needs a live Postgres). */
     @Test
     public void testUpdateEloBatchDefaultAppliesEveryEntry() {
         UserRepository.StoredUser alice = repository.create("alice", "h", "s", 1200);

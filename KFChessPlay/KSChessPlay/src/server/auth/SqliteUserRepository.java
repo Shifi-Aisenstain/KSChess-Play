@@ -35,9 +35,7 @@ public final class SqliteUserRepository implements UserRepository {
 
     @Override
     public StoredUser create(String username, String passwordHash, String salt, int startingElo) {
-        // sqlite-jdbc doesn't implement PreparedStatement.getGeneratedKeys() for
-        // Statement.RETURN_GENERATED_KEYS (throws SQLFeatureNotSupportedException) -
-        // last_insert_rowid() is the driver's documented alternative.
+
         String sql = "INSERT INTO users (username, password_hash, salt, elo, created_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection connection = connectionProvider.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {

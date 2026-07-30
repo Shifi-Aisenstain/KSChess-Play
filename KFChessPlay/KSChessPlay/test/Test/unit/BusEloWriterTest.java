@@ -13,11 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises Server_Design.md step 5's publishing side: {@link BusEloWriter} must publish exactly
- * what {@code server.persistence.EloWriterRuntime} expects to consume on the other end, over
- * {@link RoomBusSubjects#ELO_UPDATES}.
- */
 public class BusEloWriterTest {
 
     @Test

@@ -20,18 +20,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** DisconnectWatchdog ticks a real ScheduledExecutorService every second (see production code) -
-  * these tests use short real-time waits (~1.2s) rather than mocking time, since the countdown
-  * itself has no injectable clock. The final "reaches zero -> auto-resign" branch would need a real
-  * 20s wait via the public API and is intentionally not covered here to keep the suite fast; the
-  * cancel-on-reconnect and already-over-game paths (the two behaviors the spec cares about) are.
-  *
-  * <p>Since PLAN_split_6_services.md §3.2, {@code DisconnectWatchdog} lives in {@code server.gateway}
-  * and depends on a {@link GatewayRoomSession} rather than a {@code Room}/{@code GameSessionHandle}
-  * pair - obtained here from {@link TestSupport.GatewayHarness#roomRegistry} after
-  * {@code createRoomForMatch} has triggered room.allocated, with a {@link RecordingSink} attached as
-  * a local member (see {@link GatewayRoomSession#addLocalMember}) to observe the countdown
-  * broadcasts the same way a real Gateway-side {@code MessageSink} would. */
 public class DisconnectWatchdogTest {
 
     private static final class InMemoryUserRepository implements server.auth.UserRepository {

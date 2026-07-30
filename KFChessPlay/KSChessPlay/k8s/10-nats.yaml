@@ -1,0 +1,40 @@
+# Internal service-to-service bus (PLAN_split_6_services.md §3.0) - same nats:2-alpine image as
+# docker-compose.yml, stateless so a plain Deployment (not a StatefulSet) is enough here.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nats
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: nats }
+  template:
+    metadata:
+      labels: { app: nats }
+    spec:
+      containers:
+        - name: nats
+          image: nats:2-alpine
+          ports:
+            - containerPort: 4222
+          readinessProbe:
+            tcpSocket: { port: 4222 }
+            initialDelaySeconds: 3
+          livenessProbe:
+            tcpSocket: { port: 4222 }
+            initialDelaySeconds: 10
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats
+  namespace: kungfu-chess
+spec:
+  selector: { app: nats }
+  ports:
+    - port: 4222
+      targetPort: 4222

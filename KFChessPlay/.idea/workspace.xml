@@ -8,9 +8,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="add login and sign in in the console">
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/build-and-run.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/build-and-run.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/persistence/PostgresSchemaInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/persistence/PostgresSchemaInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,7 +30,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/KSChessPlay" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -110,7 +109,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "copilot.chat.legacySessionMetadata.migrated": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/User/Desktop/studies/bootcamp/KSChess-Play/KFChessPlay",

@@ -1,0 +1,48 @@
+# PLAN_split_6_services.md §3.4 - Game Allocator. Active-room/reconnect registry lives in Redis
+# (RedisActiveRoomRegistry), and NATS fan-out delivers every ROOM_CREATE/ROOM_JOIN/ROOM_CANCEL to
+# every replica - RoomManager's own "room already exists"/"already active" checks against Redis are
+# what keep two replicas from double-allocating the same room, so replicas > 1 is safe today.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allocator
+  namespace: kungfu-chess
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: allocator }
+  template:
+    metadata:
+      labels: { app: allocator }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8081"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: allocator
+          image: kungfu-chess:allocator
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef: { name: kungfu-chess-config }
+          readinessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8081 }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allocator
+  namespace: kungfu-chess
+spec:
+  selector: { app: allocator }
+  ports:
+    - port: 8081
+      targetPort: 8081

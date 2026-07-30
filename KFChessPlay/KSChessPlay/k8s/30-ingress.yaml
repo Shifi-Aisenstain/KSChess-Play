@@ -1,0 +1,36 @@
+# Server_Design.md §5: exactly one public REST endpoint (API Gateway) and one public WebSocket
+# endpoint (WS Gateway) - every other service in this namespace (shard, matchmaker, allocator,
+# elowriter, nats, redis, postgres) is ClusterIP-only, reachable only from inside the cluster.
+# K3s ships Traefik as its default Ingress controller, so this needs no extra controller install.
+# For a bare-metal single node without DNS, swap `host:` for the node's IP and use
+# `kubectl get ingress -n kungfu-chess` to confirm the assigned address, or replace this file with
+# two NodePort Services (apigateway :8080, gateway :8887) if Ingress is more than this demo needs.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kungfu-chess
+  namespace: kungfu-chess
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: play.kschess.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: apigateway
+                port:
+                  number: 8080
+    - host: ws.kschess.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 8887

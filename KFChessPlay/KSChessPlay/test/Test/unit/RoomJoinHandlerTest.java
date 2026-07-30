@@ -73,11 +73,7 @@ public class RoomJoinHandlerTest {
         joinHandler.handle(bobSession, roomMessage(MessageType.ROOM_JOIN, "GAMEROOM"));
 
         assertEquals("GAMEROOM", bobSession.getCurrentRoomId());
-        // Not necessarily bobSent.get(0): starting the game session now also synchronously relays a
-        // GAME_STARTED GAME_EVENT to every room member (server.shard.ShardGameEventRelay, via the
-        // local Shard this test runs against - see TestSupport.newGatewayHarness) before
-        // RoomJoinHandler gets to send its own ROOM_JOINED confirmation. Both arrive; order between
-        // them isn't a contract worth asserting on, so check "was it sent at all" instead of "was it first".
+
         assertTrue(bobSent.stream().anyMatch(s -> s.contains("BLACK")),
                 "expected a ROOM_JOINED message containing the assigned role somewhere in what bob received: " + bobSent);
 

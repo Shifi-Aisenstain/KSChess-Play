@@ -1,0 +1,51 @@
+# Server_Design.md §1's Observability box lists "traces" - this is the collector/UI those traces
+# land in. `gateway` and `apigateway` (see 21-gateway.yaml/24-apigateway.yaml, both already read
+# JAEGER_URL from the shared ConfigMap) POST Zipkin v2 JSON spans here via shared.tracing.
+# JaegerReporter - a plain java.net.http.HttpClient call, no OpenTelemetry SDK dependency, matching
+# this project's hand-rolled-metrics style (shared.metrics.MetricsRegistry).
+#
+# `jaegertracing/all-in-one` bundles the collector, query UI and in-memory storage in one image -
+# fine for this single-cluster demo, not for production (traces vanish on pod restart; a real
+# deployment would point it at Elasticsearch/Cassandra/Kafka instead). Its Zipkin-compatible HTTP
+# intake (port 9411, path /api/v2/spans) is what JAEGER_URL points at; the query UI (port 16686) is
+# for humans browsing traces, not read by any of this project's own code.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: jaeger }
+  template:
+    metadata:
+      labels: { app: jaeger }
+    spec:
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:1.57
+          env:
+            - name: COLLECTOR_ZIPKIN_HOST_PORT
+              value: ":9411"
+          ports:
+            - containerPort: 16686
+            - containerPort: 9411
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+  namespace: kungfu-chess
+spec:
+  selector: { app: jaeger }
+  ports:
+    - name: zipkin
+      port: 9411
+      targetPort: 9411
+    - name: query-ui
+      port: 16686
+      targetPort: 16686

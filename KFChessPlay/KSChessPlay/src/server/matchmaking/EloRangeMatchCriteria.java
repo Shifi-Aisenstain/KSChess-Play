@@ -1,6 +1,5 @@
 package server.matchmaking;
 
-/** Pairs players whose ELO differs by at most {@code range} (spec: +-100). */
 public final class EloRangeMatchCriteria implements MatchCriteria {
     private final int range;
 

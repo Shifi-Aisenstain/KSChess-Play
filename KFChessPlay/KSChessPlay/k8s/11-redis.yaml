@@ -1,0 +1,55 @@
+# Server_Design.md step 4: matchmaking queue, active-room/reconnect registry (§6 status notes the
+# literal room_id -> shard lookup table itself isn't implemented yet - see RedisWaitingPlayersQueue/
+# RedisActiveRoomRegistry). A single-replica StatefulSet + PVC keeps data across pod restarts,
+# matching docker-compose.yml's named `postgres-data` volume pattern (redis has no compose volume
+# today since local dev tolerates losing the queue on restart, but K3s pods restart more often than
+# a dev's docker-compose session does, so this adds one here for parity with a real deployment).
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: kungfu-chess
+spec:
+  serviceName: redis
+  replicas: 1
+  selector:
+    matchLabels: { app: redis }
+  template:
+    metadata:
+      labels: { app: redis }
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          readinessProbe:
+            exec: { command: ["redis-cli", "ping"] }
+            initialDelaySeconds: 3
+          livenessProbe:
+            exec: { command: ["redis-cli", "ping"] }
+            initialDelaySeconds: 10
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 256Mi }
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests: { storage: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: kungfu-chess
+spec:
+  selector: { app: redis }
+  ports:
+    - port: 6379
+      targetPort: 6379

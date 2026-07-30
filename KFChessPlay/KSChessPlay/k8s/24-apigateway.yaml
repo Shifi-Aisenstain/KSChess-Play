@@ -1,0 +1,58 @@
+# PLAN_split_6_services.md §3.5 - API Gateway. REST/HTTP only (login, /history, /metrics,
+# /health folded onto its own HttpServer/PORT - see ApiGatewayMain), stateless (AuthService/
+# UserRepository/GameHistoryRepository all read/write straight through to Postgres, and
+# server.auth.RedisSessionStore holds login sessions in Redis rather than in-process), so replicas
+# > 1 is safe. The other of the two services meant to be reachable from outside the cluster (see
+# 30-ingress.yaml) - Server_Design.md §5: "REST/HTTP (login, rooms, history) → API Gateway."
+# Reports a Jaeger span per /login and /history request (shared.tracing.Span/JaegerReporter,
+# JAEGER_URL from the shared ConfigMap below - see 13-jaeger.yaml).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway
+  namespace: kungfu-chess
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: apigateway }
+  template:
+    metadata:
+      labels: { app: apigateway }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: apigateway
+          image: kungfu-chess:apigateway
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef: { name: kungfu-chess-config }
+          env:
+            - name: PORT
+              value: "8080"
+            - name: POSTGRES_URL
+              valueFrom:
+                secretKeyRef: { name: postgres-credentials, key: POSTGRES_URL }
+          readinessProbe:
+            httpGet: { path: /health, port: 8080 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8080 }
+            initialDelaySeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apigateway
+  namespace: kungfu-chess
+spec:
+  selector: { app: apigateway }
+  ports:
+    - port: 8080
+      targetPort: 8080

@@ -6,6 +6,7 @@ import server.persistence.EloWriterRuntime;
 import shared.bus.InMemoryMessageBus;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.MessageType;
 import shared.protocol.payload.EloUpdateRequestedPayload;
 
@@ -18,12 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises Server_Design.md step 5's batching logic against a real {@link EloWriterRuntime} on an
- * {@link InMemoryMessageBus} (standing in for a live NATS connection, same substitution every other
- * bus-facing runtime test in this project makes) and a fake {@link UserRepository} that records every
- * {@code updateEloBatch} call instead of touching a database.
- */
 public class EloWriterRuntimeTest {
 
     private static final class RecordingUserRepository implements UserRepository {
@@ -38,8 +33,7 @@ public class EloWriterRuntimeTest {
             return u;
         }
         @Override public void updateElo(long userId, int newElo) {
-            // Not expected to be called directly by EloWriterRuntime - it always goes through the
-            // batch method - but implemented anyway since it's a required interface method.
+
             batchCalls.add(Map.of(userId, newElo));
         }
         @Override public void updateEloBatch(Map<Long, Integer> newEloByUserId) {
@@ -91,8 +85,46 @@ public class EloWriterRuntimeTest {
         RecordingUserRepository userRepository = new RecordingUserRepository();
         new EloWriterRuntime(bus, userRepository, 30).start();
 
-        Thread.sleep(150); // several empty flush ticks
+        Thread.sleep(150);
 
         assertTrue(userRepository.batchCalls.isEmpty(), "an empty buffer should never call updateEloBatch");
+    }
+
+    @Test
+    public void testMetricsCountFlushedUpdatesAndFailures() throws InterruptedException {
+        MessageBus bus = new InMemoryMessageBus();
+        RecordingUserRepository userRepository = new RecordingUserRepository();
+        MetricsRegistry metricsRegistry = new MetricsRegistry();
+        new EloWriterRuntime(bus, userRepository, 50, metricsRegistry).start();
+
+        bus.publish(RoomBusSubjects.ELO_UPDATES, MessageType.ELO_UPDATE_REQUESTED, new EloUpdateRequestedPayload(1, 1350));
+        bus.publish(RoomBusSubjects.ELO_UPDATES, MessageType.ELO_UPDATE_REQUESTED, new EloUpdateRequestedPayload(2, 1050));
+
+        awaitTrue(() -> !userRepository.batchCalls.isEmpty(), 2000);
+
+        assertTrue(metricsRegistry.renderPrometheusText().contains("elowriter_elo_updates_written_total 2"));
+    }
+
+    @Test
+    public void testMetricsCountFlushFailuresWhenRepositoryThrows() throws InterruptedException {
+        MessageBus bus = new InMemoryMessageBus();
+        UserRepository throwingRepository = new UserRepository() {
+            @Override public Optional<StoredUser> findByUsername(String username) { return Optional.empty(); }
+            @Override public StoredUser create(String username, String passwordHash, String salt, int startingElo) {
+                throw new UnsupportedOperationException();
+            }
+            @Override public void updateElo(long userId, int newElo) { }
+            @Override public void updateEloBatch(Map<Long, Integer> newEloByUserId) {
+                throw new IllegalStateException("db unavailable");
+            }
+        };
+        MetricsRegistry metricsRegistry = new MetricsRegistry();
+        new EloWriterRuntime(bus, throwingRepository, 50, metricsRegistry).start();
+
+        bus.publish(RoomBusSubjects.ELO_UPDATES, MessageType.ELO_UPDATE_REQUESTED, new EloUpdateRequestedPayload(1, 1350));
+
+        awaitTrue(() -> metricsRegistry.renderPrometheusText().contains("elowriter_flush_failures_total"), 2000);
+
+        assertTrue(metricsRegistry.renderPrometheusText().contains("elowriter_flush_failures_total 1"));
     }
 }

@@ -4,13 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * Single point that knows how to obtain a JDBC connection to the server's
- * SQLite file. Kept as its own class (rather than each repository opening
- * connections ad-hoc) so the DB path/driver setup is configured exactly once
- * - a small Singleton-flavoured factory, injected into repositories rather
- * than referenced statically, which keeps the repositories unit-testable.
- */
 public final class SqliteConnectionProvider {
     private final String jdbcUrl;
 

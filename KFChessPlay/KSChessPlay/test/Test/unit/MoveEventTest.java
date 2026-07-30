@@ -20,11 +20,9 @@ public class MoveEventTest {
 
         MoveEvent event = new MoveEvent(piece, src, dest, endTime);
 
-        // בדיקת ה-Getters
         assertEquals(dest, event.getToPosition());
         assertEquals(1, event.getPriority());
 
-        // בדיקת הרצה בסיסית (בלי התנגשויות)
         Board board = new Board(8, 8);
         GameManager gameManager = new GameManager();
         gameManager.initializeBoard(8, 8);
@@ -32,13 +30,12 @@ public class MoveEventTest {
 
         event.execute(board, new ArrayList<>(), gameManager);
 
-        // וידוא שהכלי הגיע ליעד
         assertEquals(piece, gameManager.getBoard().getPieceAt(dest));
     }
 
     @Test
     public void testPawnPromotion() {
-        // בדיקת הכתרת חייל לבן שמגיע לשורה 0
+
         Piece pawn = new Piece('w', 'P');
         Position src = new Position(1, 0);
         Position dest = new Position(0, 0);
@@ -53,7 +50,6 @@ public class MoveEventTest {
 
         event.execute(board, new ArrayList<>(), gameManager);
 
-        // וידוא שהכלי ביעד הפך למלכה (Q)
         Piece promotedPiece = gameManager.getBoard().getPieceAt(dest);
         assertNotNull(promotedPiece);
         assertEquals('Q', promotedPiece.getType());

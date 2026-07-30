@@ -1,0 +1,16 @@
+# ILLUSTRATIVE / NOT DEPLOYED - the request server.allocator.GameAllocatorRuntime would send
+# instead of running its own server.allocator.ShardSelector round-robin over a static SHARD_IDS list
+# (see k8s/agones/fleet.yaml's header comment for the prerequisite this depends on). In a real
+# integration, GameAllocatorRuntime.onRoomCreate would call the Agones allocator service's gRPC/REST
+# API with a payload equivalent to this GameServerAllocation, read back the allocated GameServer's
+# address, and use that instead of picking a shardId from ShardSelector - Agones becomes the "which
+# pod is free" decision instead of RoomManager/RedisActiveRoomRegistry.
+apiVersion: allocation.agones.dev/v1
+kind: GameServerAllocation
+spec:
+  selectors:
+    - matchLabels:
+        agones.dev/fleet: kungfu-chess-shard-fleet
+  metadata:
+    labels:
+      room-requested-at: PLACEHOLDER-epoch-millis

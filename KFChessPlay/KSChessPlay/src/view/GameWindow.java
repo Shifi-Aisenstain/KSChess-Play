@@ -33,19 +33,13 @@ public class GameWindow extends JFrame {
     private final JLabel countdownLabel;
     private javax.swing.Timer bannerTimer;
 
-    /** Names are already known from login/matchmaking/room join by the time this is constructed. */
     public GameWindow(Image canvas, String whiteName, String blackName) {
         setTitle("Kung Fu Chess - " + whiteName + " (White) vs " + blackName + " (Black)");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         this.canvasLabel = new JLabel(new ImageIcon(canvas.get()));
-        // JLabel centers its icon by default. The side history panels keep a fixed
-        // preferred height (set once from the unzoomed board), so once zoomFactor
-        // shrinks the board image below that height, BorderLayout stretches this
-        // label taller than its icon - and centering would draw the image away from
-        // (0,0), while onClick/onRightClick below assume raw pixel (0,0) is the
-        // image's top-left corner. Pin it there so that assumption always holds.
+
         canvasLabel.setHorizontalAlignment(SwingConstants.LEFT);
         canvasLabel.setVerticalAlignment(SwingConstants.TOP);
 
@@ -106,7 +100,6 @@ public class GameWindow extends JFrame {
         pack();
     }
 
-    /** Networked-play addition: brief on-screen banner for game start/end/capture cues from the server's event bus. */
     public void flashBanner(String text, Color background) {
         bannerLabel.setText(text);
         bannerLabel.setBackground(background);
@@ -117,7 +110,6 @@ public class GameWindow extends JFrame {
         bannerTimer.start();
     }
 
-    /** Networked-play addition: spec's "auto-resign after 20 sec, make a count down on the screen". */
     public void showDisconnectCountdown(String playerColorLabel, int secondsRemaining) {
         countdownLabel.setText(playerColorLabel + " disconnected - auto-resign in " + secondsRemaining + "s");
         countdownLabel.setVisible(true);
@@ -179,12 +171,6 @@ public class GameWindow extends JFrame {
         canvasLabel.repaint();
     }
 
-    /**
-     * One-time reconciliation for a client that didn't observe every {@code GAME_EVENT} on the bus
-     * from the start (e.g. a spectator joining mid-game) - backfills score/history from the first
-     * full snapshot received. Ongoing updates during play come from {@link #updateScore} and
-     * {@link #appendMoveLogEntry}, driven by the event bus (see {@code client.ui.ScoreboardSubscriber}).
-     */
     public void updateSidePanel(GameSnapshot snapshot) {
         updateScore(snapshot.getScoreWhite(), snapshot.getScoreBlack());
 
@@ -203,13 +189,11 @@ public class GameWindow extends JFrame {
         }
     }
 
-    /** Bus-driven score update - see {@code client.ui.ScoreboardSubscriber}. */
     public void updateScore(int scoreWhite, int scoreBlack) {
         setScoreLabelText(whiteScoreLabel, scoreWhite);
         setScoreLabelText(blackScoreLabel, scoreBlack);
     }
 
-    /** Bus-driven move-log append - see {@code client.ui.ScoreboardSubscriber}. */
     public void appendMoveLogEntry(char color, String logEntry) {
         if (logEntry == null || logEntry.isEmpty()) return;
         if (color == 'w') {

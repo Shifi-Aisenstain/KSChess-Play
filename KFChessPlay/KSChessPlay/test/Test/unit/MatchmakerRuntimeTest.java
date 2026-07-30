@@ -15,20 +15,13 @@ import server.rooms.RoomManager;
 import shared.bus.InMemoryMessageBus;
 import shared.bus.MessageBus;
 import shared.eventbus.EventBus;
+import shared.metrics.MetricsRegistry;
 
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises PLAN_split_6_services.md §3.3's own stated verification: "two clients enter the
- * matchmaking queue, get matched, and a game starts." {@link MatchmakingClient} (the same bus client
- * the real WS Gateway uses) talks to a real {@link MatchmakerRuntime} - running the unmodified
- * {@link MatchmakingServiceImpl} pairing algorithm - which in turn reaches a real
- * {@link GameAllocatorRuntime} only over the bus (via {@link BusRoomAllocationClient}), exactly like
- * production, over an {@link InMemoryMessageBus} standing in for a live NATS connection.
- */
 public class MatchmakerRuntimeTest {
 
     private static final class RecordingListener implements MatchListener {
@@ -53,21 +46,21 @@ public class MatchmakerRuntimeTest {
     }
 
     private RoomManager roomManager;
+    private MetricsRegistry matchmakerMetrics;
 
     private MatchmakingClient newMatchmakerOnSharedBus(MessageBus bus) {
         roomManager = new RoomManager(new EventBus(), bus, new ShardSelector(List.of("shard-1")));
-        new GameAllocatorRuntime(bus, roomManager).start();
+        new GameAllocatorRuntime(bus, roomManager, TestSupport.newActivityLoggerOrThrow(), new MetricsRegistry()).start();
 
         RoomLifecycleClient roomLifecycle = new RoomLifecycleClient(bus);
         MatchmakingService matchmakingService = new MatchmakingServiceImpl(
                 new EloRangeMatchCriteria(100), new BusRoomAllocationClient(roomLifecycle));
-        new MatchmakerRuntime(bus, matchmakingService).start();
+        matchmakerMetrics = new MetricsRegistry();
+        new MatchmakerRuntime(bus, matchmakingService, TestSupport.newActivityLoggerOrThrow(), matchmakerMetrics).start();
 
         return new MatchmakingClient(bus);
     }
 
-    /** The real scan loop ticks every 500ms (see MatchmakingServiceImpl.SCAN_INTERVAL_MS) - poll
-     *  rather than sleep a fixed amount, so this isn't flaky under load. */
     private static void awaitTrue(BooleanSupplier condition, long timeoutMs) throws InterruptedException {
         long deadline = System.currentTimeMillis() + timeoutMs;
         while (!condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
@@ -93,8 +86,6 @@ public class MatchmakerRuntimeTest {
         assertEquals("alice", bobListener.opponentUsername);
         assertEquals(1210, aliceListener.opponentElo);
 
-        // The room the Allocator created must actually be running (activeRoomByUserId populated),
-        // i.e. this isn't just a MATCH_FOUND message with no real room/game session behind it.
         assertEquals(aliceListener.roomId, roomManager.getActiveRoomForUser(1).orElse(null));
         assertEquals(aliceListener.roomId, roomManager.getActiveRoomForUser(2).orElse(null));
     }
@@ -106,7 +97,7 @@ public class MatchmakerRuntimeTest {
         RecordingListener aliceListener = new RecordingListener();
         client.enqueue(1, "alice", 1200, aliceListener);
 
-        Thread.sleep(700); // more than one scan cycle
+        Thread.sleep(700);
         assertNull(aliceListener.roomId);
         assertFalse(aliceListener.notFound, "60s expiry hasn't elapsed, so no result should have fired yet");
     }
@@ -122,8 +113,26 @@ public class MatchmakerRuntimeTest {
         RecordingListener bobListener = new RecordingListener();
         client.enqueue(2, "bob", 1200, bobListener);
 
-        Thread.sleep(700); // more than one scan cycle
+        Thread.sleep(700);
         assertNull(aliceListener.roomId);
         assertNull(bobListener.roomId, "alice was cancelled before bob arrived, so there's no one left to pair bob with");
+    }
+
+    @Test
+    public void testMetricsCountRequestsMatchesAndCancels() throws InterruptedException {
+        MatchmakingClient client = newMatchmakerOnSharedBus(new InMemoryMessageBus());
+
+        client.enqueue(1, "alice", 1200, new RecordingListener());
+        client.enqueue(2, "bob", 1210, new RecordingListener());
+        awaitTrue(() -> matchmakerMetrics.renderPrometheusText().contains("matchmaker_matches_found_total 2"), 2000);
+
+        client.enqueue(3, "carol", 1200, new RecordingListener());
+        client.cancel(3);
+
+        String rendered = matchmakerMetrics.renderPrometheusText();
+        assertTrue(rendered.contains("matchmaker_requests_total 3"));
+        assertTrue(rendered.contains("matchmaker_matches_found_total 2"),
+                "onMatchFound fires once per side of the pairing, so a single match increments this twice");
+        assertTrue(rendered.contains("matchmaker_cancels_total 1"));
     }
 }

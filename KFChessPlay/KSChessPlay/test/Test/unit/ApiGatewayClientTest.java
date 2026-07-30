@@ -7,20 +7,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.apigateway.LoginRestHandler;
 import server.auth.AuthService;
+import server.auth.InMemorySessionStore;
 import server.auth.User;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.payload.LoginResultPayload;
+import shared.tracing.JaegerReporter;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises {@link ApiGatewayClient} (the client's counterpart to {@code server.apigateway}) against
- * a real loopback {@code HttpServer} running the real {@code LoginRestHandler} - proves the two ends
- * of PLAN_split_6_services.md §3.5's REST contract actually agree on wire format, not just that each
- * side round-trips its own DTOs correctly in isolation.
- */
 public class ApiGatewayClientTest {
 
     private static final class StubAuthService implements AuthService {
@@ -36,7 +33,8 @@ public class ApiGatewayClientTest {
     public void setUp() throws IOException {
         authService = new StubAuthService();
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-        server.createContext("/login", new LoginRestHandler(authService));
+        server.createContext("/login", new LoginRestHandler(authService, TestSupport.newActivityLoggerOrThrow(), new MetricsRegistry(),
+                new InMemorySessionStore(), new JaegerReporter("http://localhost:1/not-a-real-jaeger")));
         server.setExecutor(null);
         server.start();
         client = new ApiGatewayClient("http://localhost:" + server.getAddress().getPort());
@@ -57,6 +55,7 @@ public class ApiGatewayClientTest {
         assertEquals(7, result.userId);
         assertEquals("bob", result.username);
         assertEquals(1400, result.elo);
+        assertNotNull(result.sessionToken);
     }
 
     @Test
@@ -71,7 +70,7 @@ public class ApiGatewayClientTest {
 
     @Test
     public void testUnreachableGatewayReturnsFailureNotException() {
-        server.stop(0); // now nothing is listening on this port
+        server.stop(0);
 
         assertThrows(IOException.class, () -> client.login("alice", "pw"),
                 "Main.connectAndLogin is the one that turns this into a user-facing message");

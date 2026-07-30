@@ -3,12 +3,6 @@ package client.ui;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Spec 1.a: "Button: Room - Open a windows message with text box and
- * buttons: Create / Join / Cancel". Join requires the room code in the text
- * box; Create treats it as an optional custom room ID/name (blank = server
- * auto-generates one, same as before).
- */
 public final class RoomDialog extends JDialog {
     public enum Outcome { CREATE, JOIN, CANCEL }
 

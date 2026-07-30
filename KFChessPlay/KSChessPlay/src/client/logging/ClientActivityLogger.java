@@ -1,12 +1,12 @@
 package client.logging;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/** Client-side half of "store logs on both server and client side, for all of the client/server activity." */
 public final class ClientActivityLogger {
     private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
@@ -14,7 +14,10 @@ public final class ClientActivityLogger {
 
     public ClientActivityLogger(String logFilePath) {
         try {
-            this.writer = new PrintWriter(new FileWriter(logFilePath, true), true);
+            File logFile = new File(logFilePath);
+            File parentDir = logFile.getParentFile();
+            if (parentDir != null) parentDir.mkdirs();
+            this.writer = new PrintWriter(new FileWriter(logFile, true), true);
         } catch (IOException e) {
             throw new IllegalStateException("Cannot open client log file: " + logFilePath, e);
         }

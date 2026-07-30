@@ -1,0 +1,67 @@
+# Server_Design.md §1's Observability box lists "alerts" - this is the receiving end of
+# 44-alert-rules.yaml's rules (fired here by 40-prometheus.yaml's `alerting.alertmanagers`
+# config, which points at the `alertmanager` Service below by name).
+#
+# The receiver defined here (`default-receiver`) is intentionally a no-op: no `slack_configs`/
+# `email_configs`/`webhook_configs` are wired in, because no real Slack webhook URL, SMTP
+# credentials, or on-call webhook exist for this project. Firing alerts are still fully visible
+# and queryable at Alertmanager's own UI/API (:9093 - grouped, deduplicated, silenced there same
+# as any real deployment), they just are not pushed anywhere external. Wiring a real receiver is a
+# one-block addition to the `receivers:` list below once real notification credentials exist -
+# deliberately not faked here.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: kungfu-chess
+data:
+  alertmanager.yml: |
+    route:
+      receiver: default-receiver
+      group_by: ["alertname", "app"]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+      - name: default-receiver
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: alertmanager }
+  template:
+    metadata:
+      labels: { app: alertmanager }
+    spec:
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:v0.27.0
+          args:
+            - --config.file=/etc/alertmanager/alertmanager.yml
+          ports:
+            - containerPort: 9093
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alertmanager
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 128Mi }
+      volumes:
+        - name: config
+          configMap: { name: alertmanager-config }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: kungfu-chess
+spec:
+  selector: { app: alertmanager }
+  ports:
+    - port: 9093
+      targetPort: 9093

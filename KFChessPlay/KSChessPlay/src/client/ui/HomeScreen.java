@@ -3,13 +3,6 @@ package client.ui;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Spec 1: "Add Home screen with ... support only 2 players" / "Add 'Play'
- * button" / "Add 'Room' button". Purely a view - every button press is
- * forwarded to a {@link HomeScreenListener} (usually
- * {@code client.bridge.NetworkGameController}) which owns what happens on
- * the network; this class never talks to a socket itself.
- */
 public final class HomeScreen extends JFrame {
     private final JLabel statusLabel = new JLabel(" ", SwingConstants.CENTER);
     private final JButton playButton = new JButton("Play");
@@ -67,7 +60,7 @@ public final class HomeScreen extends JFrame {
                 String roomId = dialog.getRoomIdText();
                 if (!roomId.isEmpty()) listener.onRoomJoinRequested(roomId);
             }
-            case CANCEL -> { /* nothing to do */ }
+            case CANCEL -> {  }
         }
     }
 

@@ -15,8 +15,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/** ImgRenderer draws onto an in-memory BufferedImage (Graphics2D, no real display needed) - the
-  * same reasoning that keeps ImageTest/SpriteLoaderTest headless-safe applies here. */
 public class ImgRendererTest {
 
     private ImgRenderer newRenderer() {

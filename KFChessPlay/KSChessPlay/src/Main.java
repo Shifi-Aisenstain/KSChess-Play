@@ -30,15 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-/**
- * Client bootstrap for the networked build: console login, then a Swing
- * home screen (Play / Room), then a live {@link GameWindow} driven entirely
- * by {@code STATE_UPDATE} messages from the server. This class is the
- * client's composition root - see {@code server.apigateway.ApiGatewayMain}/
- * {@code server.gateway.WsGatewayMain} for its two server-side counterparts
- * (login and everything else, respectively, since PLAN_split_6_services.md
- * §3.5). No gameplay logic lives here; it only wires collaborators together.
- */
 public class Main {
     private static final String ASSETS_DIR  = "assets";
     private static final String BOARD_IMAGE = ASSETS_DIR + "/board.png";
@@ -50,12 +41,12 @@ public class Main {
         String serverUri = args.length > 0 ? args[0] : DEFAULT_SERVER_URI;
         String apiBaseUrl = args.length > 1 ? args[1] : DEFAULT_API_BASE_URL;
 
-        ClientActivityLogger activityLogger = new ClientActivityLogger("client_activity.log");
+        ClientActivityLogger activityLogger = new ClientActivityLogger("logs/client/activity.log");
         EventBus localEventBus = new EventBus();
         localEventBus.subscribe(GameEventPayload.class, new SoundSubscriber());
 
         LoginSession session = connectAndLogin(serverUri, apiBaseUrl, activityLogger, localEventBus);
-        if (session == null) return; // login failed / server unreachable, message already printed
+        if (session == null) return;
 
         Image background = new Image();
         background.read(BOARD_IMAGE);
@@ -66,7 +57,6 @@ public class Main {
         homeScreen.setVisible(true);
     }
 
-    /** Bundles the two things a successful login produces: the live controller and the account details. */
     private static final class LoginSession {
         final NetworkGameController controller;
         final LoginResultPayload account;
@@ -77,13 +67,6 @@ public class Main {
         }
     }
 
-    /**
-     * Since PLAN_split_6_services.md §3.5, authentication itself happens over REST against the API
-     * Gateway <em>before</em> the WebSocket is even opened - only once that succeeds does this open
-     * the socket and send IDENTIFY to attach the already-proven identity to it (see
-     * {@code LoginController}'s javadoc). Splitting the old single LOGIN round-trip into these two
-     * steps is exactly the "focused client change" the plan calls for at this sub-step.
-     */
     private static LoginSession connectAndLogin(String serverUri, String apiBaseUrl,
                                                  ClientActivityLogger activityLogger, EventBus localEventBus) {
         try {
@@ -96,9 +79,6 @@ public class Main {
                 return null;
             }
 
-            // The connection needs a listener before either exists, so route through a holder;
-            // LoginController owns the socket until identify succeeds, then NetworkGameController
-            // takes over for the rest of the session - each request type has its own controller.
             ServerMessageListener[] listenerHolder = new ServerMessageListener[1];
             ServerConnection connection = new ServerConnection(new URI(serverUri),
                     message -> listenerHolder[0].onMessage(message), activityLogger);
@@ -167,8 +147,6 @@ public class Main {
         localEventBus.subscribe(GameEventPayload.class, new AnimationSubscriber(window));
         localEventBus.subscribe(GameEventPayload.class, new ScoreboardSubscriber(window));
 
-        // One-time backfill for a client that joins mid-game (e.g. a spectator) and so missed
-        // earlier GAME_EVENTs; ongoing score/move-log updates come from ScoreboardSubscriber above.
         var initialSnapshot = controller.getLatestSnapshot();
         if (initialSnapshot != null) window.updateSidePanel(initialSnapshot);
 

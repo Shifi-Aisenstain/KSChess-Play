@@ -1,0 +1,121 @@
+# Server_Design.md §1's "Observability" component, made real: scrapes the `/metrics` endpoint every
+# service now exposes (shared.metrics.MetricsRegistry/MetricsRestHandler) via each Deployment's
+# `prometheus.io/scrape`/`port`/`path` pod annotations (see 20-25-*.yaml). This is a minimal
+# single-replica Prometheus with no persistent storage - enough to make the custom-metrics HPAs in
+# 42/43 work and to eyeball graphs at :9090, not a production monitoring stack (no long-term
+# retention, no HA - real future work). Alerting is real as of this file: `rule_files` loads the
+# rules ConfigMap below (kungfu-chess-alert-rules, same metric names shared.metrics.MetricsRegistry
+# already exposes), and `alerting.alertmanagers` points at the Alertmanager deployed by
+# 45-alertmanager.yaml - closing the diagram's Observability "alerts" row alongside logs/metrics/
+# traces/load-tests.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: kungfu-chess
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    rule_files:
+      - /etc/prometheus/rules/alerts.yml
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ["alertmanager:9093"]
+    scrape_configs:
+      - job_name: kungfu-chess-pods
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names: ["kungfu-chess"]
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: "true"
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: replace
+            target_label: app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: kungfu-chess
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: prometheus }
+  template:
+    metadata:
+      labels: { app: prometheus }
+    spec:
+      serviceAccountName: prometheus
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.53.0
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: rules
+              mountPath: /etc/prometheus/rules
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: 500m, memory: 512Mi }
+      volumes:
+        - name: config
+          configMap: { name: prometheus-config }
+        - name: rules
+          configMap: { name: kungfu-chess-alert-rules }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: kungfu-chess
+spec:
+  selector: { app: prometheus }
+  ports:
+    - port: 9090
+      targetPort: 9090
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: kungfu-chess
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kungfu-chess-prometheus
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kungfu-chess-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: kungfu-chess
+roleRef:
+  kind: ClusterRole
+  name: kungfu-chess-prometheus
+  apiGroup: rbac.authorization.k8s.io

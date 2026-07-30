@@ -9,6 +9,7 @@ import shared.bus.InMemoryMessageBus;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
 import shared.eventbus.EventBus;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.MessageCodec;
 import shared.protocol.payload.RoomAllocatedPayload;
 
@@ -17,18 +18,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises PLAN_split_6_services.md §3.4's own stated verification: "manual room creation + joining
- * by code work end-to-end; reconnect to an existing game works." {@link RoomLifecycleClient} (the
- * same bus client the real WS Gateway uses) talks to a real {@link GameAllocatorRuntime} over an
- * {@link InMemoryMessageBus}, standing in for a live NATS connection exactly like
- * {@code GameShardRuntimeTest} already does for the Shard side.
- */
 public class GameAllocatorRuntimeTest {
+
+    private MetricsRegistry metricsRegistry;
 
     private RoomLifecycleClient newAllocatorClient(MessageBus bus, ShardSelector shardSelector) {
         RoomManager roomManager = new RoomManager(new EventBus(), bus, shardSelector);
-        new GameAllocatorRuntime(bus, roomManager).start();
+        metricsRegistry = new MetricsRegistry();
+        new GameAllocatorRuntime(bus, roomManager, TestSupport.newActivityLoggerOrThrow(), metricsRegistry).start();
         return new RoomLifecycleClient(bus);
     }
 
@@ -90,8 +87,6 @@ public class GameAllocatorRuntimeTest {
 
         assertDoesNotThrow(() -> client.cancelRoom(1, "ABANDON"));
 
-        // Cancelling doesn't free the reservation (matches RoomManager's pre-split behavior) - the
-        // room should still be joinable by a second player afterwards.
         RoomLifecycleClient.Result joined = client.joinRoom(2, "bob", 1200, "ABANDON");
         assertTrue(joined.success);
     }
@@ -111,5 +106,23 @@ public class GameAllocatorRuntimeTest {
         client.joinRoom(4, "dave", 1200, secondRoom.roomId);
 
         assertEquals(List.of("shard-1", "shard-2"), capturedShardIds);
+    }
+
+    @Test
+    public void testMetricsCountRoomLifecycleEvents() {
+        RoomLifecycleClient client = newAllocatorClient(new InMemoryMessageBus());
+
+        RoomLifecycleClient.Result created = client.createRoom(1, "alice", 1200, "METROOM");
+        client.createRoom(2, "bob", 1200, "METROOM");
+        client.joinRoom(3, "carol", 1200, created.roomId);
+        client.joinRoom(4, "dave", 1200, "NOPE");
+        client.cancelRoom(1, created.roomId);
+
+        String rendered = metricsRegistry.renderPrometheusText();
+        assertTrue(rendered.contains("allocator_rooms_created_total 1"));
+        assertTrue(rendered.contains("allocator_rooms_create_rejected_total 1"));
+        assertTrue(rendered.contains("allocator_rooms_joined_total 1"));
+        assertTrue(rendered.contains("allocator_rooms_join_rejected_total 1"));
+        assertTrue(rendered.contains("allocator_rooms_cancelled_total 1"));
     }
 }

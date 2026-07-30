@@ -6,6 +6,7 @@ import server.allocator.ShardSelector;
 import server.auth.User;
 import server.gateway.GatewayRoomRegistry;
 import server.gateway.GatewayRoomSession;
+import server.history.GameHistoryRecorder;
 import server.net.MessageSink;
 import server.rating.EloRatingService;
 import server.rooms.Room;
@@ -16,6 +17,7 @@ import shared.bus.InMemoryMessageBus;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
 import shared.eventbus.EventBus;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.MessageType;
 import shared.protocol.payload.GameOverPayload;
 import shared.protocol.payload.RoutedUpdatePayload;
@@ -25,18 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises PLAN_split_6_services.md §3.1's own stated verification: "the monolith (everything
- * except GameSession) talks successfully to a single external Shard over NATS; a full game works
- * end-to-end." {@link InMemoryMessageBus} stands in for a live NATS connection here, same as
- * {@code MessageBusTest} already does for the raw bus contract - {@link GameShardRuntime} is the
- * exact class {@code server.shard.GameServerShardMain} wires to the real thing in production.
- *
- * <p>Since PLAN_split_6_services.md §3.2, "the monolith" here means {@link RoomManager} plus a
- * {@link GatewayRoomRegistry} standing in for the WS Gateway's own view of the room (the piece that
- * actually reaches gameplay traffic now that {@code Room} carries no sockets/{@code GameSessionHandle}
- * at all - see {@code Room}'s javadoc), both wired to the same bus as the Shard.
- */
 public class GameShardRuntimeTest {
 
     private static final String SHARD_ID = "shard-1";
@@ -62,9 +52,6 @@ public class GameShardRuntimeTest {
         }
     }
 
-    /** Subscribes {@code roomRegistry} to room.allocated *before* returning the {@link RoomManager} -
-     *  InMemoryMessageBus does not replay missed publishes to a late subscriber, so this ordering
-     *  matters exactly like it does in {@code TestSupport.newGatewayHarness}. */
     private RoomManager newMonolithRoomManagerOnSharedBus(MessageBus bus, EventBus eventBus) {
         roomRegistry = new GatewayRoomRegistry(bus);
         return new RoomManager(eventBus, bus, new ShardSelector(java.util.List.of(SHARD_ID)));
@@ -73,7 +60,9 @@ public class GameShardRuntimeTest {
     @Test
     public void testFullGameEndToEndThroughSingleExternalShard() {
         MessageBus bus = new InMemoryMessageBus();
-        GameShardRuntime shard = new GameShardRuntime(bus, new EventBus(), new EloRatingService(), (userId, newElo) -> { }, SHARD_ID);
+        MetricsRegistry metricsRegistry = new MetricsRegistry();
+        GameShardRuntime shard = new GameShardRuntime(bus, new EventBus(), new EloRatingService(),
+                (userId, newElo) -> { }, GameHistoryRecorder.NO_OP, SHARD_ID, metricsRegistry);
         shard.start();
 
         EventBus monolithEventBus = new EventBus();
@@ -90,11 +79,9 @@ public class GameShardRuntimeTest {
         assertTrue(roomManager.getActiveRoomForUser(alice.getId()).isPresent(),
                 "room.allocated should have reached the Shard and a real GameSession should be running");
 
-        // alice (WHITE) moving her own pawn should be accepted by the real engine running in the Shard.
         assertTrue(session.handleMove(alice.getId(), new models.Position(6, 4), new models.Position(4, 4)),
                 "legal move by its owner, round-tripped through the Shard, should be accepted");
 
-        // alice trying to move one of bob's (BLACK) pieces should be rejected by the same real engine.
         assertFalse(session.handleMove(alice.getId(), new models.Position(1, 4), new models.Position(3, 4)),
                 "moving the opponent's piece should be rejected, exactly like the in-process engine used to");
 
@@ -105,12 +92,18 @@ public class GameShardRuntimeTest {
         assertTrue(roomManager.getActiveRoomForUser(alice.getId()).isEmpty(),
                 "RoomManager must re-publish GameEndedEvent on the monolith's own EventBus "
                         + "so its activeRoomByUserId cleanup (unchanged since before the split) still fires");
+
+        String renderedMetrics = metricsRegistry.renderPrometheusText();
+        assertTrue(renderedMetrics.contains("shard_rooms_allocated_total 1"));
+        assertTrue(renderedMetrics.contains("shard_active_games 1"));
+        assertTrue(renderedMetrics.contains("shard_commands_total"));
     }
 
     @Test
     public void testSpectatorJoiningMidGameIsRegisteredWithTheRemoteSession() {
         MessageBus bus = new InMemoryMessageBus();
-        GameShardRuntime shard = new GameShardRuntime(bus, new EventBus(), new EloRatingService(), (userId, newElo) -> { }, SHARD_ID);
+        GameShardRuntime shard = new GameShardRuntime(bus, new EventBus(), new EloRatingService(),
+                (userId, newElo) -> { }, GameHistoryRecorder.NO_OP, SHARD_ID, new MetricsRegistry());
         shard.start();
 
         roomManager = newMonolithRoomManagerOnSharedBus(bus, new EventBus());
@@ -126,14 +119,13 @@ public class GameShardRuntimeTest {
         assertTrue(joined.success);
         assertEquals(Room.Role.SPECTATOR, joined.role);
         session.notifyMemberJoined(carol.getId(), Room.Role.SPECTATOR);
-        // Real assertion: onMemberJoined must not have thrown/blocked, and the game must still be
-        // running fine afterwards for the two real players.
+
         assertTrue(session.handleMove(alice.getId(), new models.Position(6, 4), new models.Position(4, 4)));
     }
 
     @Test
     public void testRemoteHandleMoveWithNoShardListeningIsRejectedNotThrown() {
-        MessageBus bus = new InMemoryMessageBus(); // no GameShardRuntime subscribed to it at all
+        MessageBus bus = new InMemoryMessageBus();
         roomManager = newMonolithRoomManagerOnSharedBus(bus, new EventBus());
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1200);

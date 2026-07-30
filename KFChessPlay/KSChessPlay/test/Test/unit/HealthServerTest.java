@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import shared.health.HealthServer;
+import shared.metrics.MetricsRegistry;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,12 +14,6 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Exercises PLAN_split_6_services.md §3.6's trivial liveness probe against a real loopback server -
- * every process (Shard/Gateway/Matchmaker/Allocator) starts one of these via
- * {@link HealthServer#startOnPort}, and {@code server.apigateway.ApiGatewayMain} wires the same
- * {@code shared.health.HealthRestHandler} directly onto its own existing {@code HttpServer} instead.
- */
 public class HealthServerTest {
 
     private HttpServer server;
@@ -30,7 +25,7 @@ public class HealthServerTest {
 
     @Test
     public void testHealthEndpointReturns200Ok() throws Exception {
-        server = HealthServer.startOnPort(0); // 0 = ephemeral port, avoids clashing with a real service
+        server = HealthServer.startOnPort(0, new MetricsRegistry());
         int port = server.getAddress().getPort();
 
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/health"))
@@ -41,5 +36,22 @@ public class HealthServerTest {
 
         assertEquals(200, response.statusCode());
         assertEquals("OK", response.body());
+    }
+
+    @Test
+    public void testMetricsEndpointIsAlsoMountedOnTheSameServer() throws Exception {
+        MetricsRegistry registry = new MetricsRegistry();
+        registry.incrementCounter("test_counter_total", "A test counter");
+        server = HealthServer.startOnPort(0, registry);
+        int port = server.getAddress().getPort();
+
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/metrics"))
+                .timeout(Duration.ofSeconds(5))
+                .GET()
+                .build();
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("test_counter_total 1"));
     }
 }

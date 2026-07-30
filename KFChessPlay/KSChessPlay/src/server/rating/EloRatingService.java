@@ -1,6 +1,5 @@
 package server.rating;
 
-/** Textbook Elo rating formula, K-factor 32 (standard for non-master play). */
 public final class EloRatingService implements RatingService {
     private static final int K_FACTOR = 32;
 

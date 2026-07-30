@@ -1,10 +1,12 @@
 package server.allocator;
 
 import server.auth.User;
+import server.logging.ServerActivityLogger;
 import server.rooms.Room;
 import server.rooms.RoomManager;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
+import shared.metrics.MetricsRegistry;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -16,21 +18,18 @@ import shared.protocol.payload.ErrorPayload;
 import shared.protocol.payload.JoinRoomRequestPayload;
 import shared.protocol.payload.RoomStatusPayload;
 
-/**
- * The actual "own room lifecycle" logic of the Game Allocator (PLAN_split_6_services.md §3.4),
- * factored out of {@link GameAllocatorMain} so it can be exercised directly against a
- * {@code shared.bus.InMemoryMessageBus} in tests, the same split as {@code server.shard.GameShardRuntime}
- * vs. {@code GameServerShardMain}. Answers exactly the four room-lifecycle subjects
- * {@code server.gateway.RoomLifecycleClient} calls - moved here verbatim from the now-retired
- * {@code server.rpc.MonolithBusGateway}, which stood in for this process before the real split.
- */
 public final class GameAllocatorRuntime {
     private final MessageBus bus;
     private final RoomManager roomManager;
+    private final ServerActivityLogger activityLogger;
+    private final MetricsRegistry metricsRegistry;
 
-    public GameAllocatorRuntime(MessageBus bus, RoomManager roomManager) {
+    public GameAllocatorRuntime(MessageBus bus, RoomManager roomManager, ServerActivityLogger activityLogger,
+                                 MetricsRegistry metricsRegistry) {
         this.bus = bus;
         this.roomManager = roomManager;
+        this.activityLogger = activityLogger;
+        this.metricsRegistry = metricsRegistry;
     }
 
     public void start() {
@@ -44,6 +43,13 @@ public final class GameAllocatorRuntime {
         CreateRoomRequestPayload request = MessageCodec.decodePayload(message, CreateRoomRequestPayload.class);
         User user = new User(request.userId, request.username, request.elo);
         RoomManager.CreateResult result = roomManager.createRoom(user, request.desiredRoomId);
+        if (result.success) {
+            activityLogger.logTraffic("IN", request.userId, "ROOM_CREATE", "roomId=" + result.room.getId());
+            metricsRegistry.incrementCounter("allocator_rooms_created_total", "Total rooms successfully created");
+        } else {
+            activityLogger.logTraffic("IN", request.userId, "ROOM_CREATE", "rejected: " + result.errorMessage);
+            metricsRegistry.incrementCounter("allocator_rooms_create_rejected_total", "Total room-create requests rejected");
+        }
         if (replyTo == null) return;
         if (result.success) {
             bus.reply(replyTo, MessageType.ROOM_CREATED, new RoomStatusPayload(result.room.getId(), Room.Role.WHITE.name()));
@@ -56,6 +62,13 @@ public final class GameAllocatorRuntime {
         JoinRoomRequestPayload request = MessageCodec.decodePayload(message, JoinRoomRequestPayload.class);
         User user = new User(request.userId, request.username, request.elo);
         RoomManager.JoinResult result = roomManager.joinRoom(request.roomId, user);
+        if (result.success) {
+            activityLogger.logTraffic("IN", request.userId, "ROOM_JOIN", "roomId=" + request.roomId + " role=" + result.role);
+            metricsRegistry.incrementCounter("allocator_rooms_joined_total", "Total successful room joins");
+        } else {
+            activityLogger.logTraffic("IN", request.userId, "ROOM_JOIN", "rejected: " + result.errorMessage);
+            metricsRegistry.incrementCounter("allocator_rooms_join_rejected_total", "Total room-join requests rejected");
+        }
         if (replyTo == null) return;
         if (result.success) {
             bus.reply(replyTo, MessageType.ROOM_JOINED, new RoomStatusPayload(result.room.getId(), result.role.name()));
@@ -66,6 +79,8 @@ public final class GameAllocatorRuntime {
 
     private void onRoomCancel(Message message, String replyTo) {
         CancelRoomRequestPayload request = MessageCodec.decodePayload(message, CancelRoomRequestPayload.class);
+        activityLogger.logTraffic("IN", request.userId, "ROOM_CANCEL", "roomId=" + request.roomId);
+        metricsRegistry.incrementCounter("allocator_rooms_cancelled_total", "Total rooms cancelled/abandoned");
         roomManager.abandonRoom(request.roomId, request.userId);
     }
 

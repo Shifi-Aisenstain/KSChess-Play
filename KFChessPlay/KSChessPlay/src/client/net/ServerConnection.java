@@ -9,14 +9,6 @@ import shared.protocol.MessageType;
 
 import java.net.URI;
 
-/**
- * Client-side counterpart of {@code server.net.ChessWebSocketServer}. Every
- * outgoing call goes through {@link #send}, every incoming frame is decoded
- * once here and handed to a single {@link ServerMessageListener} - callers
- * (mainly {@code client.bridge.NetworkGameController}) branch on
- * {@link Message#getType()} themselves rather than this class growing a
- * huge if/else chain of its own.
- */
 public final class ServerConnection extends WebSocketClient {
     private final ServerMessageListener listener;
     private final ClientActivityLogger activityLogger;
