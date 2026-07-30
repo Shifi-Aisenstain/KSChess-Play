@@ -58,15 +58,19 @@ public final class GatewayRoomRegistry {
 
     /** Called once a locally-connected user is confirmed into a room. If the room's
      *  {@link GatewayRoomSession} already exists (room.allocated already arrived - the common case
-     *  for a second player joining, a spectator, or a reconnect), attaches immediately; otherwise
-     *  queues until {@link #onRoomAllocated} promotes it. */
-    public void registerPendingMember(String roomId, long userId, MessageSink sink) {
+     *  for a spectator joining, or a second player joining an already-started room), attaches
+     *  immediately and returns it (so the caller can, e.g., tell the Shard about a spectator via
+     *  {@link GatewayRoomSession#notifyMemberJoined} - white/black don't need that, they're already
+     *  known to the Shard from the allocation payload itself); otherwise queues until
+     *  {@link #onRoomAllocated} promotes it and returns empty. */
+    public Optional<GatewayRoomSession> registerPendingMember(String roomId, long userId, MessageSink sink) {
         GatewayRoomSession existing = sessions.get(roomId);
         if (existing != null) {
             existing.addLocalMember(userId, sink);
-            return;
+            return Optional.of(existing);
         }
         pendingByRoomId.computeIfAbsent(roomId, id -> new CopyOnWriteArrayList<>()).add(new PendingMember(userId, sink));
+        return Optional.empty();
     }
 
     /**

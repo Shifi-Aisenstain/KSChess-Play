@@ -7,7 +7,6 @@ import server.dispatch.handlers.MoveHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
 import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -37,7 +36,7 @@ public class MoveHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private RoomManager roomManager;
+    private TestSupport.GatewayHarness harness;
     private Room room;
     private User alice;
     private User bob;
@@ -50,16 +49,16 @@ public class MoveHandlerTest {
     }
 
     private void startGame() {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1200);
-        room = roomManager.createRoomForMatch(alice, bob);
+        room = harness.roomManager.createRoomForMatch(alice, bob);
     }
 
     @AfterEach
     public void tearDown() {
-        if (room != null && room.getGameSession() != null) {
-            room.getGameSession().handleResign(alice.getId());
+        if (room != null) {
+            harness.forceResign(room.getId(), alice.getId());
         }
     }
 
@@ -71,7 +70,7 @@ public class MoveHandlerTest {
     @Test
     public void testOwnPieceMoveIsAcceptedNoError() throws Exception {
         startGame();
-        MoveHandler handler = new MoveHandler(roomManager);
+        MoveHandler handler = new MoveHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
 
         handler.handle(session(alice, sent), moveMessage(6, 4, 4, 4));
@@ -82,7 +81,7 @@ public class MoveHandlerTest {
     @Test
     public void testMovingOpponentsPieceIsRejected() throws Exception {
         startGame();
-        MoveHandler handler = new MoveHandler(roomManager);
+        MoveHandler handler = new MoveHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
 
         // alice is WHITE; trying to move a BLACK pawn should be rejected as "not your piece".
@@ -95,7 +94,7 @@ public class MoveHandlerTest {
     @Test
     public void testMoveWithoutActiveGameSendsError() throws Exception {
         startGame();
-        MoveHandler handler = new MoveHandler(roomManager);
+        MoveHandler handler = new MoveHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
         PlayerSession noRoomSession = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());
         noRoomSession.setUser(new User(99, "carol", 1200));

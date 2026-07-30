@@ -2,11 +2,10 @@ package server.dispatch.handlers;
 
 import server.auth.User;
 import server.dispatch.MessageHandler;
+import server.gateway.GatewayRoomRegistry;
+import server.gateway.MatchmakingClient;
 import server.matchmaking.MatchListener;
-import server.matchmaking.MatchRequest;
-import server.matchmaking.MatchmakingService;
 import server.net.PlayerSession;
-import server.rooms.RoomManager;
 import shared.protocol.Message;
 import shared.protocol.MessageType;
 import shared.protocol.payload.EmptyPayload;
@@ -14,12 +13,12 @@ import shared.protocol.payload.ErrorPayload;
 import shared.protocol.payload.MatchFoundPayload;
 
 public final class PlayRequestHandler implements MessageHandler {
-    private final MatchmakingService matchmakingService;
-    private final RoomManager roomManager;
+    private final MatchmakingClient matchmakingClient;
+    private final GatewayRoomRegistry roomRegistry;
 
-    public PlayRequestHandler(MatchmakingService matchmakingService, RoomManager roomManager) {
-        this.matchmakingService = matchmakingService;
-        this.roomManager = roomManager;
+    public PlayRequestHandler(MatchmakingClient matchmakingClient, GatewayRoomRegistry roomRegistry) {
+        this.matchmakingClient = matchmakingClient;
+        this.roomRegistry = roomRegistry;
     }
 
     @Override
@@ -29,11 +28,15 @@ public final class PlayRequestHandler implements MessageHandler {
 
         session.send(MessageType.PLAY_WAITING, EmptyPayload.INSTANCE);
 
-        matchmakingService.enqueue(new MatchRequest(user.getId(), user.getUsername(), user.getElo(), new MatchListener() {
+        matchmakingClient.enqueue(user.getId(), user.getUsername(), user.getElo(), new MatchListener() {
             @Override
             public void onMatchFound(String roomId, char assignedColor, String opponentUsername, int opponentElo) {
                 session.setCurrentRoomId(roomId);
-                roomManager.attachSink(roomId, user.getId(), session);
+                // Matchmaking always allocates a Shard immediately for both players (see
+                // RoomManager.createRoomForMatch) - by the time this callback fires, room.allocated
+                // has already been published (see GatewayRoomRegistry's javadoc for the exact
+                // ordering guarantee this relies on), so this always attaches immediately.
+                roomRegistry.registerPendingMember(roomId, user.getId(), session);
                 session.send(MessageType.MATCH_FOUND,
                         new MatchFoundPayload(roomId, assignedColor, opponentUsername, opponentElo));
             }
@@ -43,6 +46,6 @@ public final class PlayRequestHandler implements MessageHandler {
                 session.send(MessageType.PLAY_NOT_FOUND,
                         new ErrorPayload("Couldn't find an opponent within your ELO range. Try again."));
             }
-        }));
+        });
     }
 }

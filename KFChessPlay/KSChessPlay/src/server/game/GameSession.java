@@ -7,7 +7,7 @@ import models.Board;
 import models.Piece;
 import models.Position;
 import server.auth.User;
-import server.auth.UserRepository;
+import server.rating.EloWriter;
 import server.rating.RatingService;
 import server.rooms.Room;
 import shared.eventbus.EventBus;
@@ -77,7 +77,7 @@ public final class GameSession {
     private final User black;
     private final EventBus eventBus;
     private final RatingService ratingService;
-    private final UserRepository userRepository;
+    private final EloWriter eloWriter;
 
     /** Every room member who needs a personalized STATE_UPDATE tick, including spectators - seeded
      *  with white/black at construction, grown by {@link #onMemberJoined}. Not backed by a live
@@ -95,14 +95,14 @@ public final class GameSession {
     private boolean dirty = true;
 
     public GameSession(String roomId, GameUpdateSink updateSink, User white, User black,
-                        EventBus eventBus, RatingService ratingService, UserRepository userRepository) {
+                        EventBus eventBus, RatingService ratingService, EloWriter eloWriter) {
         this.roomId = roomId;
         this.updateSink = updateSink;
         this.white = white;
         this.black = black;
         this.eventBus = eventBus;
         this.ratingService = ratingService;
-        this.userRepository = userRepository;
+        this.eloWriter = eloWriter;
         this.gameManager = new GameManager(roomId, eventBus);
         this.roles.put(white.getId(), Room.Role.WHITE);
         this.roles.put(black.getId(), Room.Role.BLACK);
@@ -262,8 +262,8 @@ public final class GameSession {
         if (ticker != null) ticker.shutdown();
 
         RatingService.EloUpdate update = ratingService.computeUpdate(white.getElo(), black.getElo(), winnerColor);
-        userRepository.updateElo(white.getId(), update.whiteNewElo);
-        userRepository.updateElo(black.getId(), update.blackNewElo);
+        eloWriter.updateElo(white.getId(), update.whiteNewElo);
+        eloWriter.updateElo(black.getId(), update.blackNewElo);
 
         eventBus.publish(new GameEndedEvent(roomId, winnerColor, reason, white.getUsername(), black.getUsername()));
         updateSink.broadcastToAll(MessageType.GAME_OVER, new GameOverPayload(

@@ -1,8 +1,8 @@
+view\ImgRenderer$1.class
+client\audio\SoundSubscriber$1.class
 client\bridge\NetworkGameController$1.class
 client\ui\ScoreboardSubscriber$1.class
 client\ui\HomeScreen$1.class
-view\ImgRenderer$1.class
 client\ui\AnimationSubscriber$1.class
-client\audio\SoundSubscriber$1.class
-server\game\RemoteGameSessionHandle$1.class
+server\gateway\GatewayRoomSession$1.class
 server\shard\GameShardRuntime$1.class

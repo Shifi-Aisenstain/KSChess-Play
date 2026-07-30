@@ -5,7 +5,6 @@ import server.auth.User;
 import server.dispatch.handlers.RoomCreateHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -35,8 +34,6 @@ public class RoomCreateHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private RoomManager roomManager;
-
     private PlayerSession loggedInSession(User user, List<String> sent) throws Exception {
         PlayerSession session = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());
         session.setUser(user);
@@ -49,8 +46,9 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testCreateRoomSendsRoomCreatedAndSetsSessionRoomId() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCreateHandler handler = new RoomCreateHandler(roomManager);
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCreateHandler handler = new RoomCreateHandler(harness.roomLifecycle, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User alice = new User(1, "alice", 1200);
@@ -64,8 +62,9 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testDuplicateCustomIdSendsError() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCreateHandler handler = new RoomCreateHandler(roomManager);
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCreateHandler handler = new RoomCreateHandler(harness.roomLifecycle, harness.roomRegistry);
 
         User alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
@@ -79,8 +78,9 @@ public class RoomCreateHandlerTest {
 
     @Test
     public void testCreateRoomWithoutLoginIsRejected() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCreateHandler handler = new RoomCreateHandler(roomManager);
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCreateHandler handler = new RoomCreateHandler(harness.roomLifecycle, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         PlayerSession anon = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());

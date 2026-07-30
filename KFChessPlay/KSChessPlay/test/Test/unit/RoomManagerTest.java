@@ -5,12 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.auth.User;
 import server.auth.UserRepository;
-import server.net.MessageSink;
 import server.rating.EloRatingService;
 import server.rooms.Room;
 import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
-import shared.protocol.MessageType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,10 +18,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RoomManagerTest {
-
-    private static final class NoOpSink implements MessageSink {
-        @Override public void send(MessageType type, Object payload) { }
-    }
 
     /** Enough to satisfy GameSession's userRepository.updateElo(...) calls on finishGame - no DB needed. */
     private static final class InMemoryUserRepository implements UserRepository {
@@ -41,15 +35,17 @@ public class RoomManagerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
+    private TestSupport.GatewayHarness harness;
     private RoomManager roomManager;
     private User alice;
     private User bob;
-    private Room startedRoom;
+    private String startedRoomId;
 
     @BeforeEach
     public void setUp() {
         EventBus eventBus = new EventBus();
-        roomManager = TestSupport.newRoomManagerWithLocalShard(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        harness = TestSupport.newGatewayHarness(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        roomManager = harness.roomManager;
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1210);
     }
@@ -58,38 +54,38 @@ public class RoomManagerTest {
     public void tearDown() {
         // A started GameSession spins up a background ticking thread (see GameSession.start()) -
         // resign it so the test doesn't leak a running ScheduledExecutorService.
-        if (startedRoom != null && startedRoom.getGameSession() != null) {
-            startedRoom.getGameSession().handleResign(alice.getId());
+        if (startedRoomId != null) {
+            harness.forceResign(startedRoomId, alice.getId());
         }
     }
 
     @Test
     public void testCreateRoomReservesCreatorAsWhite() {
-        RoomManager.CreateResult result = roomManager.createRoom(alice, new NoOpSink(), null);
+        RoomManager.CreateResult result = roomManager.createRoom(alice, null);
 
         assertTrue(result.success);
         assertEquals(Room.Role.WHITE, result.room.getRoles().get(alice.getId()));
-        assertNull(result.room.getGameSession(), "session shouldn't start until a second player joins");
+        assertFalse(result.room.isStarted(), "session shouldn't start until a second player joins");
     }
 
     @Test
     public void testCreateRoomWithBlankIdAutoGenerates() {
-        RoomManager.CreateResult result = roomManager.createRoom(alice, new NoOpSink(), "  ");
+        RoomManager.CreateResult result = roomManager.createRoom(alice, "  ");
         assertTrue(result.success);
         assertFalse(result.room.getId().isBlank());
     }
 
     @Test
     public void testCreateRoomWithCustomIdUsesIt() {
-        RoomManager.CreateResult result = roomManager.createRoom(alice, new NoOpSink(), "MYROOM");
+        RoomManager.CreateResult result = roomManager.createRoom(alice, "MYROOM");
         assertTrue(result.success);
         assertEquals("MYROOM", result.room.getId());
     }
 
     @Test
     public void testCreateRoomWithTakenCustomIdFails() {
-        roomManager.createRoom(alice, new NoOpSink(), "TAKEN");
-        RoomManager.CreateResult second = roomManager.createRoom(bob, new NoOpSink(), "TAKEN");
+        roomManager.createRoom(alice, "TAKEN");
+        RoomManager.CreateResult second = roomManager.createRoom(bob, "TAKEN");
 
         assertFalse(second.success);
         assertNotNull(second.errorMessage);
@@ -97,26 +93,26 @@ public class RoomManagerTest {
 
     @Test
     public void testJoinUnknownRoomFails() {
-        RoomManager.JoinResult result = roomManager.joinRoom("NOPE", alice, new NoOpSink());
+        RoomManager.JoinResult result = roomManager.joinRoom("NOPE", alice);
         assertFalse(result.success);
     }
 
     @Test
     public void testSecondJoinStartsGameSession() {
-        RoomManager.CreateResult created = roomManager.createRoom(alice, new NoOpSink(), "GAMEROOM");
-        RoomManager.JoinResult joined = roomManager.joinRoom("GAMEROOM", bob, new NoOpSink());
-        startedRoom = created.room;
+        RoomManager.CreateResult created = roomManager.createRoom(alice, "GAMEROOM");
+        RoomManager.JoinResult joined = roomManager.joinRoom("GAMEROOM", bob);
+        startedRoomId = created.room.getId();
 
         assertTrue(joined.success);
         assertEquals(Room.Role.BLACK, joined.role);
-        assertNotNull(created.room.getGameSession());
+        assertTrue(created.room.isStarted());
     }
 
     @Test
     public void testActiveRoomTrackedForBothPlayersOnceGameStarts() {
-        RoomManager.CreateResult created = roomManager.createRoom(alice, new NoOpSink(), "TRACKROOM");
-        roomManager.joinRoom("TRACKROOM", bob, new NoOpSink());
-        startedRoom = created.room;
+        RoomManager.CreateResult created = roomManager.createRoom(alice, "TRACKROOM");
+        roomManager.joinRoom("TRACKROOM", bob);
+        startedRoomId = created.room.getId();
 
         assertEquals(Optional.of("TRACKROOM"), roomManager.getActiveRoomForUser(alice.getId()));
         assertEquals(Optional.of("TRACKROOM"), roomManager.getActiveRoomForUser(bob.getId()));
@@ -129,17 +125,17 @@ public class RoomManagerTest {
 
     @Test
     public void testAbandonRoomBeforeGameStartDetachesCreator() {
-        roomManager.createRoom(alice, new NoOpSink(), "ABANDON");
+        roomManager.createRoom(alice, "ABANDON");
         assertDoesNotThrow(() -> roomManager.abandonRoom("ABANDON", alice.getId()));
     }
 
     @Test
     public void testCreateRoomForMatchStartsSessionImmediately() {
         Room room = roomManager.createRoomForMatch(alice, bob);
-        startedRoom = room;
+        startedRoomId = room.getId();
 
         assertTrue(room.isFull());
-        assertNotNull(room.getGameSession());
+        assertTrue(room.isStarted());
         assertEquals(Room.Role.WHITE, room.getRoles().get(alice.getId()));
         assertEquals(Room.Role.BLACK, room.getRoles().get(bob.getId()));
     }

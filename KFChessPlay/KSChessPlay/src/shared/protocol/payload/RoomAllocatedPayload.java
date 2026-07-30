@@ -4,14 +4,17 @@ import lombok.AllArgsConstructor;
 
 /**
  * Published on the global {@code room.allocated} subject (PLAN_split_6_services.md §2/§3.1) to
- * tell a Game Server Shard "this room is yours, start it." In the real 6-way split this is sent by
- * the Game Allocator; at sub-step 3.1 there is no separate Allocator yet, so
- * {@code RemoteGameSessionHandle} (in the monolith) publishes it directly, standing in for that
- * future role - see the class javadoc there.
+ * tell a Game Server Shard "this room is yours, start it." Broadcast to every Shard instance (and
+ * every WS Gateway instance, which just needs to know "allocation happened", not to which shard -
+ * see {@code server.gateway.GatewayRoomRegistry}); {@link #shardId} is how each Shard tells whether a
+ * given allocation is actually meant for it (PLAN_split_6_services.md §3.4's round-robin shard
+ * selection - see {@code server.allocator.ShardSelector}) rather than one of its siblings, without
+ * needing a separate per-shard subject.
  */
 @AllArgsConstructor
 public final class RoomAllocatedPayload {
     public final String roomId;
+    public final String shardId;
     public final long whiteId;
     public final String whiteUsername;
     public final int whiteElo;

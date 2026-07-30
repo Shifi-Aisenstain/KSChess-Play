@@ -8,7 +8,11 @@ package shared.protocol;
  */
 public enum MessageType {
     // Client -> Server
-    LOGIN,
+    // Since PLAN_split_6_services.md §3.5, authentication itself happens over REST (POST /login on
+    // the API Gateway, see server.apigateway.ApiGatewayMain) before the socket is even opened - LOGIN
+    // is gone from this protocol. IDENTIFY carries the already-authenticated identity (IdentifyPayload)
+    // so the WS Gateway can attach a User to this PlayerSession without re-checking a password.
+    IDENTIFY,
     PLAY_REQUEST,
     PLAY_CANCEL,
     ROOM_CREATE,
@@ -42,9 +46,15 @@ public enum MessageType {
     ROOM_ROSTER,     // inner type of a ROOM_COMMAND carrying a RoomRosterPayload (member join/reconnect)
     COMMAND_ACK,     // Shard's reply to a request/reply MOVE/JUMP ROOM_COMMAND: wraps a CommandAckPayload
 
-    // Internal bus only, PLAN_split_6_services.md §3.2 (WS Gateway <-> monolith room/matchmaking RPC).
-    // ROOM_CREATE/ROOM_JOIN/ROOM_CANCEL/PLAY_REQUEST/PLAY_CANCEL/ROOM_CREATED/ROOM_JOINED/MATCH_FOUND/
-    // PLAY_NOT_FOUND/ERROR above are all reused as-is for the matching bus request/reply - see
-    // RoomBusSubjects and server.rpc.MonolithBusGateway.
-    ACTIVE_ROOM_LOOKUP // envelope type for both request and reply on user.<userId>.active-room
+    // Internal bus only, PLAN_split_6_services.md §3.2/§3.3/§3.4 (WS Gateway <-> Game Allocator/
+    // Matchmaker RPC). ROOM_CREATE/ROOM_JOIN/ROOM_CANCEL/PLAY_REQUEST/PLAY_CANCEL/ROOM_CREATED/
+    // ROOM_JOINED/MATCH_FOUND/PLAY_NOT_FOUND/ERROR above are all reused as-is for the matching bus
+    // request/reply - see RoomBusSubjects, server.gateway.RoomLifecycleClient/MatchmakingClient, and
+    // their answering server.allocator.GameAllocatorRuntime/server.matchmaking.MatchmakerRuntime.
+    ACTIVE_ROOM_LOOKUP, // envelope type for both request and reply on user.<userId>.active-room
+
+    // Internal bus only, Server_Design.md step 5: a Game Server Shard publishes this instead of
+    // writing Elo synchronously through UserRepository - see server.rating.EloWriter/
+    // server.persistence.BusEloWriter and the batched consumer, server.persistence.EloWriterMain.
+    ELO_UPDATE_REQUESTED
 }

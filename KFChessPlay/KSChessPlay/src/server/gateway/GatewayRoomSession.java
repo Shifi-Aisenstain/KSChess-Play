@@ -48,6 +48,12 @@ public final class GatewayRoomSession {
     private final MessageBus bus;
     private final Map<Long, MessageSink> localMembers = new ConcurrentHashMap<>();
     private final Map<Long, DisconnectWatchdog> watchdogsByUserId = new ConcurrentHashMap<>();
+    /** Learned passively from each user's own targeted STATE_UPDATE (see {@link #onUpdate}) rather
+     *  than plumbed through explicitly - the Shard is the only thing that actually decides colors,
+     *  and every member gets a STATE_UPDATE within one tick (~50ms) of joining/reconnecting (see
+     *  {@code server.game.GameSession#buildPersonalizedPayloads}), so this fills in on its own just
+     *  after {@link #addLocalMember} without the Gateway needing its own copy of role assignment. */
+    private final Map<Long, Character> colorByUserId = new ConcurrentHashMap<>();
     private volatile boolean over = false;
 
     public GatewayRoomSession(String roomId, MessageBus bus) {
@@ -70,6 +76,14 @@ public final class GatewayRoomSession {
 
     public boolean hasLocalMember(long userId) {
         return localMembers.containsKey(userId);
+    }
+
+    /** 'w'/'b'/'s' once at least one STATE_UPDATE has been relayed for this user, {@code '\0'}
+     *  before that (a disconnect within the same ~50ms as connecting is not a real-world concern
+     *  for the 20s auto-resign countdown this feeds - see {@code server.gateway.DisconnectWatchdog}). */
+    public char colorOf(long userId) {
+        Character color = colorByUserId.get(userId);
+        return color == null ? '\0' : color;
     }
 
     /** Tells the Shard about a member who joined after allocation (almost always a spectator - white/
@@ -130,6 +144,9 @@ public final class GatewayRoomSession {
         Object payload = decodeInner(routed.innerType, routed.innerPayloadJson);
 
         if (routed.targetUserId != null) {
+            if (routed.innerType == MessageType.STATE_UPDATE) {
+                colorByUserId.put(routed.targetUserId, ((StateUpdatePayload) payload).yourColor);
+            }
             MessageSink sink = localMembers.get(routed.targetUserId);
             if (sink != null) sink.send(routed.innerType, payload);
         } else {

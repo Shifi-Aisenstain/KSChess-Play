@@ -1,5 +1,7 @@
 package server.logging;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import shared.eventbus.EventBus;
 import shared.eventbus.events.GameEndedEvent;
 import shared.eventbus.events.GameStartedEvent;
@@ -22,9 +24,16 @@ import java.time.format.DateTimeFormatter;
  *       message in and out, satisfying "store logs on both server and
  *       client side, for all of the client/server activity".</li>
  * </ol>
+ *
+ * <p>Since PLAN_split_6_services.md §3.6, every line written here is <em>also</em> emitted as one
+ * structured JSON object per line on stdout (alongside the existing human-readable file line, not
+ * instead of it) - convenient for a future log-aggregation setup (e.g. a container log driver
+ * shipping stdout to a central store) to parse without scraping the file format. Real dashboards/
+ * metrics (Prometheus etc.) stay explicitly out of scope for this sub-step, per the plan's own framing.
  */
 public final class ServerActivityLogger {
     private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final Gson STDOUT_JSON = new GsonBuilder().create();
 
     private final PrintWriter writer;
 
@@ -60,10 +69,20 @@ public final class ServerActivityLogger {
     /** For unrecoverable startup/infrastructure failures (e.g. the database can't be opened) that
      *  aren't wire traffic but still need a clear, timestamped trail in the activity log. */
     public void logFatal(String context, String message) {
-        writeLine("FATAL [" + context + "] " + message);
+        writeLine("FATAL", "FATAL [" + context + "] " + message);
     }
 
-    private synchronized void writeLine(String line) {
-        writer.println("[" + LocalDateTime.now().format(TIMESTAMP) + "] " + line);
+    private void writeLine(String line) {
+        writeLine("INFO", line);
     }
+
+    private synchronized void writeLine(String level, String line) {
+        String timestamp = LocalDateTime.now().format(TIMESTAMP);
+        writer.println("[" + timestamp + "] " + line);
+        System.out.println(STDOUT_JSON.toJson(new StructuredLogLine(timestamp, level, line)));
+    }
+
+    /** One JSON object per stdout line (PLAN_split_6_services.md §3.6) - a plain data carrier, not a
+     *  wire protocol type, so it deliberately doesn't go through {@code shared.protocol.MessageCodec}. */
+    private record StructuredLogLine(String timestamp, String level, String message) { }
 }

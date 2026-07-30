@@ -8,7 +8,6 @@ import server.matchmaking.MatchRequest;
 import server.matchmaking.MatchmakingService;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -38,6 +37,11 @@ public class PlayRequestHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
+    /** Recorded via {@code server.matchmaking.MatchmakerRuntime}, which wraps this in its own
+     *  translation {@code MatchListener} before enqueueing - see {@code TestSupport}'s javadoc. So
+     *  {@code lastRequest.listener} below is that translation listener, not literally the handler's
+     *  own anonymous listener; invoking it still round-trips through the bus exactly like a real
+     *  match result would, ending up back at the handler's listener via {@code MatchmakingClient}. */
     private static final class RecordingMatchmakingService implements MatchmakingService {
         MatchRequest lastRequest;
         boolean cancelled = false;
@@ -57,11 +61,15 @@ public class PlayRequestHandlerTest {
         return session;
     }
 
+    private TestSupport.GatewayHarness harness(RecordingMatchmakingService matchmaking) {
+        return TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository(), matchmaking);
+    }
+
     @Test
     public void testPlayRequestSendsWaitingAndEnqueues() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayRequestHandler handler = new PlayRequestHandler(harness.matchmakingClient, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User alice = new User(1, "alice", 1200);
@@ -75,8 +83,8 @@ public class PlayRequestHandlerTest {
     @Test
     public void testPlayRequestWithoutLoginIsRejected() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayRequestHandler handler = new PlayRequestHandler(harness.matchmakingClient, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         PlayerSession anon = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());
@@ -89,8 +97,8 @@ public class PlayRequestHandlerTest {
     @Test
     public void testMatchFoundCallbackSendsMatchFoundAndAttachesSink() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayRequestHandler handler = new PlayRequestHandler(harness.matchmakingClient, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User alice = new User(1, "alice", 1200);
@@ -106,8 +114,8 @@ public class PlayRequestHandlerTest {
     @Test
     public void testNotFoundCallbackSendsPlayNotFound() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        PlayRequestHandler handler = new PlayRequestHandler(matchmaking, roomManager);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayRequestHandler handler = new PlayRequestHandler(harness.matchmakingClient, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User alice = new User(1, "alice", 1200);
@@ -121,7 +129,8 @@ public class PlayRequestHandlerTest {
     @Test
     public void testPlayCancelDelegatesToMatchmakingService() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        PlayCancelHandler handler = new PlayCancelHandler(matchmaking);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayCancelHandler handler = new PlayCancelHandler(harness.matchmakingClient);
 
         List<String> sent = new ArrayList<>();
         User alice = new User(1, "alice", 1200);
@@ -134,7 +143,8 @@ public class PlayRequestHandlerTest {
     @Test
     public void testPlayCancelWithoutLoginIsRejected() throws Exception {
         RecordingMatchmakingService matchmaking = new RecordingMatchmakingService();
-        PlayCancelHandler handler = new PlayCancelHandler(matchmaking);
+        TestSupport.GatewayHarness harness = harness(matchmaking);
+        PlayCancelHandler handler = new PlayCancelHandler(harness.matchmakingClient);
 
         List<String> sent = new ArrayList<>();
         PlayerSession anon = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());

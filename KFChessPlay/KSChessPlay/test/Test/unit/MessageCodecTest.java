@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
-import shared.protocol.payload.LoginPayload;
+import shared.protocol.payload.IdentifyPayload;
 import shared.protocol.payload.MoveCommandPayload;
 import shared.protocol.payload.EmptyPayload;
 import shared.protocol.payload.ErrorPayload;
@@ -30,8 +30,8 @@ public class MessageCodecTest {
 
     @Test
     public void testEnvelopeCarriesPayloadAsNestedJsonString() {
-        LoginPayload login = new LoginPayload("alice", "hunter2");
-        String wire = MessageCodec.encode(MessageType.LOGIN, login);
+        IdentifyPayload identify = new IdentifyPayload(1, "alice", 1200);
+        String wire = MessageCodec.encode(MessageType.IDENTIFY, identify);
 
         // The wire format is deliberately "envelope holds raw payload JSON" - the outer object's
         // payloadJson field is itself a JSON string, not a nested object.

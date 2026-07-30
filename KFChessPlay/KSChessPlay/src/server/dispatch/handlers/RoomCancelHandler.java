@@ -2,15 +2,15 @@ package server.dispatch.handlers;
 
 import server.auth.User;
 import server.dispatch.MessageHandler;
+import server.gateway.RoomLifecycleClient;
 import server.net.PlayerSession;
-import server.rooms.RoomManager;
 import shared.protocol.Message;
 
 public final class RoomCancelHandler implements MessageHandler {
-    private final RoomManager roomManager;
+    private final RoomLifecycleClient roomLifecycle;
 
-    public RoomCancelHandler(RoomManager roomManager) {
-        this.roomManager = roomManager;
+    public RoomCancelHandler(RoomLifecycleClient roomLifecycle) {
+        this.roomLifecycle = roomLifecycle;
     }
 
     @Override
@@ -20,7 +20,7 @@ public final class RoomCancelHandler implements MessageHandler {
 
         String roomId = session.getCurrentRoomId();
         if (roomId != null) {
-            roomManager.abandonRoom(roomId, user.getId());
+            roomLifecycle.cancelRoom(user.getId(), roomId);
             session.setCurrentRoomId(null);
         }
     }

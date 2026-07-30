@@ -1,8 +1,9 @@
 package server.rooms;
 
+import server.allocator.ActiveRoomRegistry;
+import server.allocator.InMemoryActiveRoomRegistry;
+import server.allocator.ShardSelector;
 import server.auth.User;
-import server.auth.UserRepository;
-import server.rating.RatingService;
 import shared.bus.MessageBus;
 import shared.bus.RoomBusSubjects;
 import shared.eventbus.EventBus;
@@ -37,24 +38,28 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class RoomManager {
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
-    private final Map<Long, String> activeRoomByUserId = new ConcurrentHashMap<>();
     private final RoomIdGenerator idGenerator = new RoomIdGenerator();
     private final EventBus eventBus;
-    private final RatingService ratingService;
-    private final UserRepository userRepository;
     private final MessageBus bus;
+    private final ShardSelector shardSelector;
+    private final ActiveRoomRegistry activeRoomRegistry;
 
-    public RoomManager(EventBus eventBus, RatingService ratingService, UserRepository userRepository, MessageBus bus) {
-        this.eventBus = eventBus;
-        this.ratingService = ratingService;
-        this.userRepository = userRepository;
-        this.bus = bus;
+    public RoomManager(EventBus eventBus, MessageBus bus, ShardSelector shardSelector) {
+        this(eventBus, bus, shardSelector, new InMemoryActiveRoomRegistry());
     }
 
-    /** Used by {@code LoginHandler}/{@code server.rpc.MonolithBusGateway}'s active-room lookup to
-     *  detect "this user was mid-game and is reconnecting." */
+    public RoomManager(EventBus eventBus, MessageBus bus, ShardSelector shardSelector,
+                        ActiveRoomRegistry activeRoomRegistry) {
+        this.eventBus = eventBus;
+        this.bus = bus;
+        this.shardSelector = shardSelector;
+        this.activeRoomRegistry = activeRoomRegistry;
+    }
+
+    /** Used by {@code IdentifyHandler}/{@code server.gateway.RoomLifecycleClient}'s active-room
+     *  lookup to detect "this user was mid-game and is reconnecting." */
     public Optional<String> getActiveRoomForUser(long userId) {
-        return Optional.ofNullable(activeRoomByUserId.get(userId));
+        return activeRoomRegistry.get(userId);
     }
 
     public static final class JoinResult {
@@ -149,8 +154,8 @@ public final class RoomManager {
         room.markStarted();
         User white = room.getUser('w');
         User black = room.getUser('b');
-        activeRoomByUserId.put(white.getId(), room.getId());
-        activeRoomByUserId.put(black.getId(), room.getId());
+        activeRoomRegistry.put(white.getId(), room.getId());
+        activeRoomRegistry.put(black.getId(), room.getId());
 
         // Standing in for the not-yet-split Game Allocator (§3.4): tells the Shard to start running
         // this room (PLAN_split_6_services.md §3.1), and - since §3.2 - also the signal every WS
@@ -158,11 +163,11 @@ public final class RoomManager {
         // (the Shard's own subscription to that subject is guaranteed to already exist by the time
         // this publish call returns/is observed - see GameShardRuntime).
         bus.publish(RoomBusSubjects.ROOM_ALLOCATED, MessageType.ROOM_ALLOCATED, new RoomAllocatedPayload(
-                room.getId(), white.getId(), white.getUsername(), white.getElo(),
+                room.getId(), shardSelector.next(), white.getId(), white.getUsername(), white.getElo(),
                 black.getId(), black.getUsername(), black.getElo()));
 
         // Only remaining reason this process needs to know when a game ends at all: clearing
-        // activeRoomByUserId so a later reconnect lookup doesn't point at a finished game. Before
+        // activeRoomRegistry so a later reconnect lookup doesn't point at a finished game. Before
         // §3.2 this piggybacked on GameEndedEvent already being republished onto this same eventBus
         // by RemoteGameSessionHandle (which relayed all Shard traffic here); now that nothing else in
         // this process needs the full relay, it's cheaper to just watch for GAME_OVER directly.
@@ -170,8 +175,8 @@ public final class RoomManager {
         subscriptionHolder[0] = bus.subscribe(RoomBusSubjects.updates(room.getId()), (message, replyTo) -> {
             GameOverPayload gameOver = decodeIfGameOver(message);
             if (gameOver == null) return;
-            activeRoomByUserId.remove(white.getId());
-            activeRoomByUserId.remove(black.getId());
+            activeRoomRegistry.remove(white.getId());
+            activeRoomRegistry.remove(black.getId());
             eventBus.publish(new GameEndedEvent(room.getId(), gameOver.winnerColor, gameOver.reason,
                     gameOver.whiteUsername, gameOver.blackUsername));
             subscriptionHolder[0].unsubscribe();

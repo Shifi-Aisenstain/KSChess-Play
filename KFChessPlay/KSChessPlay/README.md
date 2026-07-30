@@ -20,34 +20,41 @@ From this directory (`KSChessPlay/`, where `pom.xml` lives):
 mvn -q package
 ```
 
-This compiles everything, runs the unit tests (`test/Test/unit`), and produces two runnable
-("shaded") jars under `target/`:
+This compiles everything, runs the unit tests (`test/Test/unit`), and produces seven runnable
+("shaded") jars under `target/`, one per process (see `PLAN_split_6_services.md` for the full
+service-split story):
 
 - `target/kungfu-chess-client.jar` — the Swing client (main class `Main`).
-- `target/kungfu-chess-server.jar` — the WebSocket server (main class `server.ServerController`).
+- `target/kungfu-chess-shard.jar` — Game Server Shard, runs the actual game engine (`server.shard.GameServerShardMain`).
+- `target/kungfu-chess-gateway.jar` — WS Gateway, holds every client WebSocket (`server.gateway.WsGatewayMain`).
+- `target/kungfu-chess-matchmaker.jar` — Elo-range matchmaking queue (`server.matchmaking.MatchmakerMain`).
+- `target/kungfu-chess-allocator.jar` — room creation/joining + Shard selection (`server.allocator.GameAllocatorMain`).
+- `target/kungfu-chess-apigateway.jar` — `POST /login` over REST (`server.apigateway.ApiGatewayMain`).
+- `target/kungfu-chess-elowriter.jar` — batches Elo updates into storage (`server.persistence.EloWriterMain`).
+
+There is no single "the server" jar/process anymore - the backend is these 6 independent processes
+(plus NATS/Redis/Postgres to talk to each other and hold shared state) rather than one monolith.
 
 To skip tests while iterating: `mvn -q package -DskipTests`.
 
 ## Run
 
-**Server** (starts a WebSocket server on port `8887`, creates/opens `kungfu_chess.db` in the
-current directory for accounts/Elo, and writes `server_activity.log`):
+**Backend** (all 6 processes + NATS/Redis/Postgres) - see the [Docker](#docker) section below;
+`docker compose up --build` is the supported way to run the full backend, since running 6 JVMs plus
+NATS/Redis/Postgres by hand isn't practical.
 
-```powershell
-.\run_server.ps1
-```
-
-**Client** (connects to `ws://localhost:8887` by default; prompts for a username/password on the
-console — unknown usernames are auto-registered at 1200 Elo):
+**Client** (connects to the WS Gateway at `ws://localhost:8887` and the API Gateway at
+`http://localhost:8080` by default; prompts for a username/password on the console — unknown
+usernames are auto-registered at 1200 Elo):
 
 ```powershell
 .\run_client.ps1
 ```
 
-To connect to a different server, pass the URI as an argument to the client jar directly:
-`java -jar target\kungfu-chess-client.jar ws://<host>:8887`.
+To connect to a different backend: `.\run_client.ps1 ws://<host>:8887 http://<host>:8080`, or
+directly: `java -jar target\kungfu-chess-client.jar ws://<host>:8887 http://<host>:8080`.
 
-Both scripts auto-detect whether `mvn` is on `PATH`:
+`run_client.ps1`/`build-and-run.ps1` auto-detect whether `mvn` is on `PATH`:
 - If it is, they build (`mvn -q package -DskipTests`) and run the shaded jar from `target/`.
 - If it isn't (e.g. Maven only exists inside an IDE), they fall back to compiling with `javac`
   (including the Lombok annotation-processor flags — see `ARCHITECTURE.md` §1) straight from the
@@ -55,38 +62,45 @@ Both scripts auto-detect whether `mvn` is on `PATH`:
   This path requires that you've opened the project in an IDE (or run `mvn` once) so those
   dependency jars actually exist locally.
 
-Play a full local match by running the server once and the client twice (two terminals/players);
-each client's *Play* button queues into Elo-range matchmaking, or use *Room* to create/join a
-specific room with another player directly.
+Play a full local match: start the backend (`docker compose up --build`), then run the client twice
+(two terminals/players); each client's *Play* button queues into Elo-range matchmaking, or use
+*Room* to create/join a specific room with another player directly.
 
 ## Configuration
 
-Nothing is externally configurable via a config file today — the relevant constants are:
+Nothing is externally configurable via a config file today — every process reads its settings from
+environment variables (see `docker-compose.yml` for the values each one is actually started with):
 
-| Setting | Value | Where |
-|---|---|---|
-| Server port | `8887` | `server.ServerController` |
-| Default client server URI | `ws://localhost:8887` | `Main.DEFAULT_SERVER_URI` (override via CLI arg) |
-| SQLite DB file | `kungfu_chess.db` (created in the working directory) | `server.ServerController` |
-| Server/client activity logs | `server_activity.log` / `client_activity.log` | `server.ServerController` / `Main` |
-| Elo matchmaking range | ±100 | `server.ServerController` |
-| Tick rate | 50ms (20/sec) | `server.game.GameSession.TICK_MS` |
+| Setting | Env var | Default | Process |
+|---|---|---|---|
+| WS Gateway port | `PORT` | `8887` | `server.gateway.WsGatewayMain` |
+| API Gateway port | `PORT` | `8080` | `server.apigateway.ApiGatewayMain` |
+| Health-check port | `HEALTH_PORT` | `8081` | every backend process except API Gateway, which folds `/health` onto its own `PORT` instead (see `shared.health.HealthServer`) |
+| NATS URL | `NATS_URL` | `nats://nats:4222` | Shard/Gateway/Matchmaker/Allocator/Elo writer (not API Gateway - it never touches NATS) |
+| Redis URL | `REDIS_URL` | `redis://redis:6379` | Matchmaker (waiting-players queue), Allocator (active-room registry) - see `shared.redis` |
+| Postgres URL (JDBC, credentials as query params) | `POSTGRES_URL` | *(unset - falls back to SQLite)* | API Gateway, Elo writer - the only two processes that touch a database at all; unset means `server.config.PersistenceConfig` uses SQLite instead (`DB_FILE`, default `kungfu_chess.db`) - the local dev/demo default per `Server_Design.md` |
+| This Shard's id | `SHARD_ID` | `shard-1` | `server.shard.GameServerShardMain` (must appear in Allocator's `SHARD_IDS`) |
+| Allocator's known shard ids | `SHARD_IDS` (comma-separated) | `shard-1` | `server.allocator.GameAllocatorMain` |
+| Default client WS/API addresses | CLI args | `ws://localhost:8887` / `http://localhost:8080` | `Main` |
+| Elo matchmaking range | (constant, not env) | ±100 | `server.matchmaking.MatchmakerMain` |
+| Tick rate | (constant, not env) | 50ms (20/sec) | `server.game.GameSession.TICK_MS` |
 
 ## Docker
 
-Steps 1-2 of `Server_Design.md`'s build-out plan: a `Dockerfile` (server only -
-the Swing client isn't a fit for a headless container) and a
-`docker-compose.yml` that also brings up real Redis and Postgres containers.
+`docker-compose.yml` runs the full backend: all 6 processes above, each built from the single
+build-arg-driven root `Dockerfile` (`JAR_CLASSIFIER` picks which shaded jar becomes that container's
+`app.jar`), plus NATS/Redis/Postgres - all three are actually wired into the app now (NATS for every
+inter-process call, Redis for the Matchmaker/Allocator per `Server_Design.md` step 4, Postgres for
+the API Gateway/Elo writer per step 5).
 
 ```powershell
 docker compose up --build
 ```
 
-Starts the server on `ws://localhost:8887`. **Redis and Postgres are present
-but unused so far** - `server.ServerController` still persists to SQLite
-(`kungfu_chess.db`) inside its own container. Wiring the app into Redis/Postgres
-is a later step in `Server_Design.md` (§3.4-5), after the real service split
-(§3.3).
+Exposes the WS Gateway on `ws://localhost:8887` and the API Gateway (login) on
+`http://localhost:8080` - point the Swing client at both (see [Run](#run) above). The Swing client
+itself is not part of this compose file - it isn't a fit for a headless container - run it locally
+with `run_client.ps1` against the Dockerized backend.
 
 ## Tests
 

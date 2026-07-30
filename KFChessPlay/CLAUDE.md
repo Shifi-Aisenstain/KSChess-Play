@@ -105,3 +105,5 @@ At the end of each response, include a short summary:
 - Don't create new files unless necessary; prefer editing existing ones
 - If a change is large or affects multiple files, briefly state the plan 
   before starting
+
+  Whenever you need my approval or confirmation to proceed with a task—such as running a shell command or executing a tool—play an audible system sound or alert to notify me immediately so I can switch to the terminal and approve it.

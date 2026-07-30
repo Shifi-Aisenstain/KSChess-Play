@@ -3,11 +3,10 @@ package Test.unit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import server.auth.User;
-import server.game.DisconnectWatchdog;
+import server.gateway.DisconnectWatchdog;
+import server.gateway.GatewayRoomSession;
 import server.net.MessageSink;
 import server.rating.EloRatingService;
-import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.MessageType;
 import shared.protocol.payload.CountdownPayload;
@@ -25,7 +24,14 @@ import static org.junit.jupiter.api.Assertions.*;
   * these tests use short real-time waits (~1.2s) rather than mocking time, since the countdown
   * itself has no injectable clock. The final "reaches zero -> auto-resign" branch would need a real
   * 20s wait via the public API and is intentionally not covered here to keep the suite fast; the
-  * cancel-on-reconnect and already-over-game paths (the two behaviors the spec cares about) are. */
+  * cancel-on-reconnect and already-over-game paths (the two behaviors the spec cares about) are.
+  *
+  * <p>Since PLAN_split_6_services.md §3.2, {@code DisconnectWatchdog} lives in {@code server.gateway}
+  * and depends on a {@link GatewayRoomSession} rather than a {@code Room}/{@code GameSessionHandle}
+  * pair - obtained here from {@link TestSupport.GatewayHarness#roomRegistry} after
+  * {@code createRoomForMatch} has triggered room.allocated, with a {@link RecordingSink} attached as
+  * a local member (see {@link GatewayRoomSession#addLocalMember}) to observe the countdown
+  * broadcasts the same way a real Gateway-side {@code MessageSink} would. */
 public class DisconnectWatchdogTest {
 
     private static final class InMemoryUserRepository implements server.auth.UserRepository {
@@ -47,28 +53,34 @@ public class DisconnectWatchdogTest {
         }
     }
 
-    private Room room;
+    private TestSupport.GatewayHarness harness;
+    private String roomId;
     private User alice;
     private DisconnectWatchdog watchdog;
 
     @AfterEach
     public void tearDown() {
         if (watchdog != null) watchdog.cancel();
-        if (room != null && room.getGameSession() != null && !room.getGameSession().isOver()) {
-            room.getGameSession().handleResign(alice.getId());
-        }
+        if (roomId != null) harness.forceResign(roomId, alice.getId());
+    }
+
+    private GatewayRoomSession startGameAndAttach(RecordingSink sink) {
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        alice = new User(1, "alice", 1200);
+        User bob = new User(2, "bob", 1200);
+        var room = harness.roomManager.createRoomForMatch(alice, bob);
+        roomId = room.getId();
+        GatewayRoomSession session = harness.roomRegistry.get(roomId).orElseThrow();
+        session.addLocalMember(alice.getId(), sink);
+        return session;
     }
 
     @Test
     public void testStartBroadcastsDecreasingCountdown() throws Exception {
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        alice = new User(1, "alice", 1200);
-        User bob = new User(2, "bob", 1200);
-        room = roomManager.createRoomForMatch(alice, bob);
         RecordingSink sink = new RecordingSink();
-        room.attachSink(alice.getId(), sink);
+        GatewayRoomSession session = startGameAndAttach(sink);
 
-        watchdog = new DisconnectWatchdog(room, room.getGameSession(), alice.getId(), 'w');
+        watchdog = new DisconnectWatchdog(session, alice.getId(), 'w');
         watchdog.start();
         Thread.sleep(1200);
         watchdog.cancel();
@@ -80,14 +92,10 @@ public class DisconnectWatchdogTest {
 
     @Test
     public void testCancelStopsFurtherTicks() throws Exception {
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        alice = new User(1, "alice", 1200);
-        User bob = new User(2, "bob", 1200);
-        room = roomManager.createRoomForMatch(alice, bob);
         RecordingSink sink = new RecordingSink();
-        room.attachSink(alice.getId(), sink);
+        GatewayRoomSession session = startGameAndAttach(sink);
 
-        watchdog = new DisconnectWatchdog(room, room.getGameSession(), alice.getId(), 'w');
+        watchdog = new DisconnectWatchdog(session, alice.getId(), 'w');
         watchdog.start();
         Thread.sleep(1200);
         watchdog.cancel();
@@ -99,17 +107,12 @@ public class DisconnectWatchdogTest {
 
     @Test
     public void testWatchdogOnAlreadyOverGameNeverBroadcasts() throws Exception {
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        alice = new User(1, "alice", 1200);
-        User bob = new User(2, "bob", 1200);
-        room = roomManager.createRoomForMatch(alice, bob);
-        room.getGameSession().handleResign(alice.getId());
-        assertTrue(room.getGameSession().isOver());
-
         RecordingSink sink = new RecordingSink();
-        room.attachSink(alice.getId(), sink);
+        GatewayRoomSession session = startGameAndAttach(sink);
+        session.forceResignDueToDisconnect(alice.getId());
+        assertTrue(session.isOver());
 
-        watchdog = new DisconnectWatchdog(room, room.getGameSession(), alice.getId(), 'w');
+        watchdog = new DisconnectWatchdog(session, alice.getId(), 'w');
         watchdog.start();
         Thread.sleep(1200);
 

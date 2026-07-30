@@ -1,18 +1,16 @@
 package Test.unit;
 
 import org.junit.jupiter.api.Test;
-import server.auth.AuthService;
 import server.auth.User;
-import server.dispatch.handlers.LoginHandler;
+import server.dispatch.handlers.IdentifyHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
 import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
-import shared.protocol.payload.LoginPayload;
+import shared.protocol.payload.IdentifyPayload;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,12 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LoginHandlerTest {
-
-    private static final class StubAuthService implements AuthService {
-        AuthService.Result nextResult;
-        @Override public Result login(String username, String password) { return nextResult; }
-    }
+public class IdentifyHandlerTest {
 
     private static final class InMemoryUserRepository implements server.auth.UserRepository {
         private final Map<Long, StoredUser> byId = new HashMap<>();
@@ -42,8 +35,8 @@ public class LoginHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private Message loginMessage(String username, String password) {
-        return MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.LOGIN, new LoginPayload(username, password)));
+    private Message identifyMessage(long userId, String username, int elo) {
+        return MessageCodec.decodeEnvelope(MessageCodec.encode(MessageType.IDENTIFY, new IdentifyPayload(userId, username, elo)));
     }
 
     private PlayerSession session(List<String> sent) throws Exception {
@@ -51,15 +44,14 @@ public class LoginHandlerTest {
     }
 
     @Test
-    public void testSuccessfulLoginSendsLoginResultAndSetsUser() throws Exception {
-        StubAuthService auth = new StubAuthService();
-        auth.nextResult = AuthService.Result.ok(new User(1, "alice", 1200));
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        LoginHandler handler = new LoginHandler(auth, roomManager);
+    public void testIdentifySetsUserAndSendsLoginResult() throws Exception {
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         PlayerSession session = session(sent);
-        handler.handle(session, loginMessage("alice", "pw"));
+        handler.handle(session, identifyMessage(1, "alice", 1200));
 
         assertNotNull(session.getUser());
         assertEquals("alice", session.getUser().getUsername());
@@ -71,44 +63,29 @@ public class LoginHandlerTest {
                 shared.protocol.payload.LoginResultPayload.class);
         assertTrue(payload.success);
         assertEquals("alice", payload.username);
+        assertEquals(1200, payload.elo);
     }
 
     @Test
-    public void testFailedLoginDoesNotSetUser() throws Exception {
-        StubAuthService auth = new StubAuthService();
-        auth.nextResult = AuthService.Result.fail("bad password");
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        LoginHandler handler = new LoginHandler(auth, roomManager);
-
-        List<String> sent = new ArrayList<>();
-        PlayerSession session = session(sent);
-        handler.handle(session, loginMessage("alice", "wrong"));
-
-        assertNull(session.getUser());
-        assertTrue(sent.get(0).contains("bad password"));
-    }
-
-    @Test
-    public void testLoginReattachesToActiveGameAfterDisconnect() throws Exception {
+    public void testIdentifyReattachesToActiveGameAfterDisconnect() throws Exception {
         EventBus eventBus = new EventBus();
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(eventBus, new EloRatingService(), new InMemoryUserRepository());
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(eventBus, new EloRatingService(), new InMemoryUserRepository());
         User alice = new User(10, "alice", 1200);
         User bob = new User(11, "bob", 1200);
-        Room room = roomManager.createRoomForMatch(alice, bob);
+        Room room = harness.roomManager.createRoomForMatch(alice, bob);
         try {
-            assertTrue(roomManager.getActiveRoomForUser(alice.getId()).isPresent());
+            assertTrue(harness.roomManager.getActiveRoomForUser(alice.getId()).isPresent());
 
-            StubAuthService auth = new StubAuthService();
-            auth.nextResult = AuthService.Result.ok(alice);
-            LoginHandler handler = new LoginHandler(auth, roomManager);
+            IdentifyHandler handler = new IdentifyHandler(harness.roomLifecycle, harness.roomRegistry);
 
             List<String> sent = new ArrayList<>();
             PlayerSession newSession = session(sent);
-            handler.handle(newSession, loginMessage("alice", "pw"));
+            handler.handle(newSession, identifyMessage(alice.getId(), "alice", 1200));
 
             assertEquals(room.getId(), newSession.getCurrentRoomId());
         } finally {
-            room.getGameSession().handleResign(alice.getId());
+            harness.forceResign(room.getId(), alice.getId());
         }
     }
 }

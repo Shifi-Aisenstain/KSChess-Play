@@ -4,28 +4,24 @@ import models.Position;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import server.auth.User;
-import server.auth.UserRepository;
 import server.game.GameSession;
+import server.game.GameUpdateSink;
 import server.net.MessageSink;
 import server.rating.EloRatingService;
-import server.rooms.Room;
-import server.rooms.RoomUpdateSink;
 import shared.eventbus.EventBus;
 import shared.protocol.MessageType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,11 +45,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * failure modes: no exception escapes the direct calls, and the ticker is still alive and
  * broadcasting afterwards (proven by a capturing sink continuing to receive STATE_UPDATEs).
  *
- * <p>Constructs the real {@link GameSession} directly against a {@link RoomUpdateSink} wrapping a
- * plain {@link Room}, rather than going through {@code RoomManager} - since PLAN_split_6_services.md
- * §3.1, {@code RoomManager.startGameSession} hands rooms off to a {@code RemoteGameSessionHandle} /
- * external Shard instead of running the engine in-process, which would defeat the entire point of
- * this test (it wants the real engine, real ticker, and real lock contention in *this* JVM).
+ * <p>Constructs the real {@link GameSession} directly against a small local {@link GameUpdateSink}
+ * test double, rather than going through {@code RoomManager} - since PLAN_split_6_services.md §3.1,
+ * {@code RoomManager.startGameSession} hands rooms off to an external Shard instead of running the
+ * engine in-process, which would defeat the entire point of this test (it wants the real engine,
+ * real ticker, and real lock contention in *this* JVM). {@code GameSession} itself has had no
+ * {@code Room} dependency since §3.1 (see its constructor), so no {@code Room} is needed here at all.
  */
 public class GameSessionConcurrencyTest {
 
@@ -65,16 +62,19 @@ public class GameSessionConcurrencyTest {
         int count() { return stateUpdateCount.get(); }
     }
 
-    private static final class InMemoryUserRepository implements UserRepository {
-        private final Map<Long, StoredUser> byId = new HashMap<>();
-        private final AtomicLong nextId = new AtomicLong(1);
-        @Override public Optional<StoredUser> findByUsername(String username) { return Optional.empty(); }
-        @Override public StoredUser create(String username, String passwordHash, String salt, int startingElo) {
-            StoredUser u = new StoredUser(nextId.getAndIncrement(), username, passwordHash, salt, startingElo);
-            byId.put(u.id, u);
-            return u;
+    /** Minimal {@link GameUpdateSink} test double: routes {@code sendTo}/{@code broadcastToAll} to
+     *  whatever {@link MessageSink}s have been {@link #attach}ed, the same role
+     *  {@code server.rooms.RoomUpdateSink} played before it was retired in §3.2. */
+    private static final class TestUpdateSink implements GameUpdateSink {
+        private final Map<Long, MessageSink> sinksByUserId = new ConcurrentHashMap<>();
+        void attach(long userId, MessageSink sink) { sinksByUserId.put(userId, sink); }
+        @Override public void sendTo(long userId, MessageType type, Object payload) {
+            MessageSink sink = sinksByUserId.get(userId);
+            if (sink != null) sink.send(type, payload);
         }
-        @Override public void updateElo(long userId, int newElo) { }
+        @Override public void broadcastToAll(MessageType type, Object payload) {
+            for (MessageSink sink : sinksByUserId.values()) sink.send(type, payload);
+        }
     }
 
     private GameSession startedSession;
@@ -93,18 +93,15 @@ public class GameSessionConcurrencyTest {
     public void concurrentMovesJumpsAndTicksDoNotCorruptGameState() throws Exception {
         alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
-        Room room = new Room("TESTROOM");
-        room.reserveRole(alice); // WHITE (first reservation)
-        room.reserveRole(bob);   // BLACK (second reservation)
 
-        GameSession session = new GameSession("TESTROOM", new RoomUpdateSink(room), alice, bob,
-                new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        room.setGameSession(session);
+        TestUpdateSink updateSink = new TestUpdateSink();
+        GameSession session = new GameSession("TESTROOM", updateSink, alice, bob,
+                new EventBus(), new EloRatingService(), (userId, newElo) -> { });
         startedSession = session;
         session.start();
 
         CapturingSink aliceSink = new CapturingSink();
-        room.attachSink(alice.getId(), aliceSink);
+        updateSink.attach(alice.getId(), aliceSink);
 
         AtomicReference<Throwable> failure = new AtomicReference<>();
         CountDownLatch startLatch = new CountDownLatch(1);

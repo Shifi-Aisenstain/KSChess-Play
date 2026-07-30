@@ -2,6 +2,7 @@ import client.audio.SoundSubscriber;
 import client.bridge.LoginController;
 import client.bridge.NetworkGameController;
 import client.logging.ClientActivityLogger;
+import client.net.ApiGatewayClient;
 import client.net.ServerConnection;
 import client.net.ServerMessageListener;
 import client.ui.AnimationSubscriber;
@@ -33,24 +34,27 @@ import java.util.function.Consumer;
  * Client bootstrap for the networked build: console login, then a Swing
  * home screen (Play / Room), then a live {@link GameWindow} driven entirely
  * by {@code STATE_UPDATE} messages from the server. This class is the
- * client's composition root - see {@code server.ServerController} for its
- * server-side counterpart. No gameplay logic lives here; it only wires
- * collaborators together.
+ * client's composition root - see {@code server.apigateway.ApiGatewayMain}/
+ * {@code server.gateway.WsGatewayMain} for its two server-side counterparts
+ * (login and everything else, respectively, since PLAN_split_6_services.md
+ * §3.5). No gameplay logic lives here; it only wires collaborators together.
  */
 public class Main {
     private static final String ASSETS_DIR  = "assets";
     private static final String BOARD_IMAGE = ASSETS_DIR + "/board.png";
     private static final String DEFAULT_SERVER_URI = "ws://localhost:8887";
+    private static final String DEFAULT_API_BASE_URL = "http://localhost:8080";
     private static final int LOGIN_TIMEOUT_SECONDS = 10;
 
     public static void main(String[] args) throws Exception {
         String serverUri = args.length > 0 ? args[0] : DEFAULT_SERVER_URI;
+        String apiBaseUrl = args.length > 1 ? args[1] : DEFAULT_API_BASE_URL;
 
         ClientActivityLogger activityLogger = new ClientActivityLogger("client_activity.log");
         EventBus localEventBus = new EventBus();
         localEventBus.subscribe(GameEventPayload.class, new SoundSubscriber());
 
-        LoginSession session = connectAndLogin(serverUri, activityLogger, localEventBus);
+        LoginSession session = connectAndLogin(serverUri, apiBaseUrl, activityLogger, localEventBus);
         if (session == null) return; // login failed / server unreachable, message already printed
 
         Image background = new Image();
@@ -73,13 +77,27 @@ public class Main {
         }
     }
 
-    private static LoginSession connectAndLogin(String serverUri, ClientActivityLogger activityLogger,
-                                                 EventBus localEventBus) {
+    /**
+     * Since PLAN_split_6_services.md §3.5, authentication itself happens over REST against the API
+     * Gateway <em>before</em> the WebSocket is even opened - only once that succeeds does this open
+     * the socket and send IDENTIFY to attach the already-proven identity to it (see
+     * {@code LoginController}'s javadoc). Splitting the old single LOGIN round-trip into these two
+     * steps is exactly the "focused client change" the plan calls for at this sub-step.
+     */
+    private static LoginSession connectAndLogin(String serverUri, String apiBaseUrl,
+                                                 ClientActivityLogger activityLogger, EventBus localEventBus) {
         try {
             LoginConsolePrompt.Credentials credentials = new LoginConsolePrompt().prompt();
 
+            LoginResultPayload authenticated = new ApiGatewayClient(apiBaseUrl)
+                    .login(credentials.username, credentials.password);
+            if (!authenticated.success) {
+                System.err.println("Login failed: " + authenticated.errorMessage);
+                return null;
+            }
+
             // The connection needs a listener before either exists, so route through a holder;
-            // LoginController owns the socket until login succeeds, then NetworkGameController
+            // LoginController owns the socket until identify succeeds, then NetworkGameController
             // takes over for the rest of the session - each request type has its own controller.
             ServerMessageListener[] listenerHolder = new ServerMessageListener[1];
             ServerConnection connection = new ServerConnection(new URI(serverUri),
@@ -89,12 +107,11 @@ public class Main {
             listenerHolder[0] = loginController;
 
             connection.connectBlocking();
-            CompletableFuture<LoginResultPayload> loginFuture =
-                    loginController.login(credentials.username, credentials.password);
+            CompletableFuture<LoginResultPayload> identifyFuture = loginController.identify(authenticated);
 
-            LoginResultPayload result = loginFuture.get(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            LoginResultPayload result = identifyFuture.get(LOGIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             if (!result.success) {
-                System.err.println("Login failed: " + result.errorMessage);
+                System.err.println("Could not attach identity to connection: " + result.errorMessage);
                 return null;
             }
             System.out.println("Logged in as " + result.username + " (ELO " + result.elo + ")");
@@ -103,7 +120,10 @@ public class Main {
             listenerHolder[0] = controller;
             return new LoginSession(controller, result);
         } catch (TimeoutException e) {
-            System.err.println("Server did not respond to login in time. Is it running at " + serverUri + "?");
+            System.err.println("Gateway did not respond to identify in time. Is it running at " + serverUri + "?");
+            return null;
+        } catch (java.io.IOException e) {
+            System.err.println("Could not reach API Gateway at " + apiBaseUrl + ": " + e.getMessage());
             return null;
         } catch (Exception e) {
             System.err.println("Could not connect/login: " + e.getMessage());

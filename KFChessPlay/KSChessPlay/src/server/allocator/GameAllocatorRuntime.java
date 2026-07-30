@@ -1,9 +1,6 @@
-package server.rpc;
+package server.allocator;
 
 import server.auth.User;
-import server.matchmaking.MatchListener;
-import server.matchmaking.MatchRequest;
-import server.matchmaking.MatchmakingService;
 import server.rooms.Room;
 import server.rooms.RoomManager;
 import shared.bus.MessageBus;
@@ -13,38 +10,27 @@ import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
 import shared.protocol.payload.ActiveRoomQueryPayload;
 import shared.protocol.payload.ActiveRoomReplyPayload;
-import shared.protocol.payload.BusMatchFoundPayload;
-import shared.protocol.payload.BusMatchNotFoundPayload;
-import shared.protocol.payload.CancelMatchRequestPayload;
 import shared.protocol.payload.CancelRoomRequestPayload;
 import shared.protocol.payload.CreateRoomRequestPayload;
 import shared.protocol.payload.ErrorPayload;
 import shared.protocol.payload.JoinRoomRequestPayload;
-import shared.protocol.payload.MatchEnqueueRequestPayload;
 import shared.protocol.payload.RoomStatusPayload;
 
 /**
- * The remaining monolith's bus-facing front door (PLAN_split_6_services.md §3.2): thin adapters
- * from the room-lifecycle/matchmaking bus subjects (§2) onto the real {@link RoomManager}/
- * {@link MatchmakingService} calls this process still makes in-process, exactly the same way it
- * always has. Nothing about {@code RoomManager}'s or {@code MatchmakingServiceImpl}'s own logic
- * changes here - this class only exists because the WS Gateway (where ROOM_CREATE/ROOM_JOIN/
- * ROOM_CANCEL/PLAY_REQUEST/PLAY_CANCEL used to be handled in-process, before §3.2 moved the sockets
- * out) can no longer call either service directly.
- *
- * <p>Standing in for two components that don't exist as separate processes yet: the Game Allocator
- * (room.create/room.join/room.cancel - real split is §3.4) and the Matchmaker
- * (matchmaking.requests/matchmaking.cancel/matchmaking.results - real split is §3.3).
+ * The actual "own room lifecycle" logic of the Game Allocator (PLAN_split_6_services.md §3.4),
+ * factored out of {@link GameAllocatorMain} so it can be exercised directly against a
+ * {@code shared.bus.InMemoryMessageBus} in tests, the same split as {@code server.shard.GameShardRuntime}
+ * vs. {@code GameServerShardMain}. Answers exactly the four room-lifecycle subjects
+ * {@code server.gateway.RoomLifecycleClient} calls - moved here verbatim from the now-retired
+ * {@code server.rpc.MonolithBusGateway}, which stood in for this process before the real split.
  */
-public final class MonolithBusGateway {
+public final class GameAllocatorRuntime {
     private final MessageBus bus;
     private final RoomManager roomManager;
-    private final MatchmakingService matchmakingService;
 
-    public MonolithBusGateway(MessageBus bus, RoomManager roomManager, MatchmakingService matchmakingService) {
+    public GameAllocatorRuntime(MessageBus bus, RoomManager roomManager) {
         this.bus = bus;
         this.roomManager = roomManager;
-        this.matchmakingService = matchmakingService;
     }
 
     public void start() {
@@ -52,8 +38,6 @@ public final class MonolithBusGateway {
         bus.subscribe(RoomBusSubjects.ROOM_JOIN, this::onRoomJoin);
         bus.subscribe(RoomBusSubjects.ROOM_CANCEL, this::onRoomCancel);
         bus.subscribe(RoomBusSubjects.ACTIVE_ROOM_LOOKUP, this::onActiveRoomLookup);
-        bus.subscribe(RoomBusSubjects.MATCHMAKING_REQUESTS, this::onMatchmakingRequest);
-        bus.subscribe(RoomBusSubjects.MATCHMAKING_CANCEL, this::onMatchmakingCancel);
     }
 
     private void onRoomCreate(Message message, String replyTo) {
@@ -90,27 +74,5 @@ public final class MonolithBusGateway {
         if (replyTo == null) return;
         String roomId = roomManager.getActiveRoomForUser(request.userId).orElse(null);
         bus.reply(replyTo, MessageType.ACTIVE_ROOM_LOOKUP, new ActiveRoomReplyPayload(roomId));
-    }
-
-    private void onMatchmakingRequest(Message message, String replyTo) {
-        MatchEnqueueRequestPayload request = MessageCodec.decodePayload(message, MatchEnqueueRequestPayload.class);
-        matchmakingService.enqueue(new MatchRequest(request.userId, request.username, request.elo, new MatchListener() {
-            @Override
-            public void onMatchFound(String roomId, char assignedColor, String opponentUsername, int opponentElo) {
-                bus.publish(RoomBusSubjects.MATCHMAKING_RESULTS, MessageType.MATCH_FOUND,
-                        new BusMatchFoundPayload(request.userId, roomId, assignedColor, opponentUsername, opponentElo));
-            }
-
-            @Override
-            public void onNotFound() {
-                bus.publish(RoomBusSubjects.MATCHMAKING_RESULTS, MessageType.PLAY_NOT_FOUND,
-                        new BusMatchNotFoundPayload(request.userId));
-            }
-        }));
-    }
-
-    private void onMatchmakingCancel(Message message, String replyTo) {
-        CancelMatchRequestPayload request = MessageCodec.decodePayload(message, CancelMatchRequestPayload.class);
-        matchmakingService.cancel(request.userId);
     }
 }

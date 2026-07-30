@@ -5,39 +5,43 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import server.auth.User;
 import server.dispatch.MessageDispatcher;
-import server.game.DisconnectWatchdog;
-import server.game.GameSessionHandle;
+import server.gateway.DisconnectWatchdog;
+import server.gateway.GatewayRoomRegistry;
+import server.gateway.GatewayRoomSession;
+import server.gateway.MatchmakingClient;
 import server.logging.ServerActivityLogger;
-import server.matchmaking.MatchmakingService;
-import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 
 import java.net.InetSocketAddress;
-import java.util.Optional;
 
 /**
  * Thin transport adapter: turns raw WebSocket callbacks into
  * {@link MessageDispatcher#dispatch} calls, and turns socket close events
  * into the spec's "auto-resign after 20 sec, with a countdown" behaviour.
  * No game/business logic lives here on purpose.
+ *
+ * <p>Since PLAN_split_6_services.md §3.2, this runs inside {@code server.gateway.WsGatewayMain}
+ * rather than the monolith: disconnect handling now goes through {@link GatewayRoomRegistry}/
+ * {@link GatewayRoomSession} (which relay straight to a room's Game Server Shard over the bus)
+ * instead of a local {@code RoomManager}/{@code Room}, and matchmaking cancellation goes through
+ * {@link MatchmakingClient} instead of an in-process {@code MatchmakingService}.
  */
 public final class ChessWebSocketServer extends WebSocketServer {
     private final MessageDispatcher dispatcher;
     private final SessionRegistry sessionRegistry;
-    private final RoomManager roomManager;
-    private final MatchmakingService matchmakingService;
+    private final GatewayRoomRegistry roomRegistry;
+    private final MatchmakingClient matchmakingClient;
     private final ServerActivityLogger activityLogger;
 
     public ChessWebSocketServer(InetSocketAddress address, MessageDispatcher dispatcher,
-                                 SessionRegistry sessionRegistry, RoomManager roomManager,
-                                 MatchmakingService matchmakingService, ServerActivityLogger activityLogger) {
+                                 SessionRegistry sessionRegistry, GatewayRoomRegistry roomRegistry,
+                                 MatchmakingClient matchmakingClient, ServerActivityLogger activityLogger) {
         super(address);
         this.dispatcher = dispatcher;
         this.sessionRegistry = sessionRegistry;
-        this.roomManager = roomManager;
-        this.matchmakingService = matchmakingService;
+        this.roomRegistry = roomRegistry;
+        this.matchmakingClient = matchmakingClient;
         this.activityLogger = activityLogger;
     }
 
@@ -56,7 +60,7 @@ public final class ChessWebSocketServer extends WebSocketServer {
         System.out.println("[server] client disconnected: " + conn.getRemoteSocketAddress());
 
         if (session.getUser() != null) {
-            matchmakingService.cancel(session.getUser().getId());
+            matchmakingClient.cancel(session.getUser().getId());
         }
         startDisconnectWatchdogIfNeeded(session);
     }
@@ -85,19 +89,15 @@ public final class ChessWebSocketServer extends WebSocketServer {
         String roomId = session.getCurrentRoomId();
         if (user == null || roomId == null) return;
 
-        Optional<Room> maybeRoom = roomManager.getRoom(roomId);
-        if (maybeRoom.isEmpty()) return;
+        GatewayRoomSession roomSession = roomRegistry.get(roomId).orElse(null);
+        if (roomSession == null || roomSession.isOver()) return;
 
-        Room room = maybeRoom.get();
-        GameSessionHandle gameSession = room.getGameSession();
-        if (gameSession == null || gameSession.isOver()) return;
-
-        char color = gameSession.colorOf(user.getId());
+        char color = roomSession.colorOf(user.getId());
         if (color != 'w' && color != 'b') return; // spectators don't trigger auto-resign
 
-        room.detachMember(user.getId());
-        DisconnectWatchdog watchdog = new DisconnectWatchdog(room, gameSession, user.getId(), color);
-        gameSession.registerWatchdog(user.getId(), watchdog);
+        roomSession.removeLocalMember(user.getId());
+        DisconnectWatchdog watchdog = new DisconnectWatchdog(roomSession, user.getId(), color);
+        roomSession.registerWatchdog(user.getId(), watchdog);
         watchdog.start();
     }
 }

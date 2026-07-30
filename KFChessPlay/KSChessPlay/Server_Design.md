@@ -89,3 +89,14 @@
                     │ Game Server Shard     │  (authoritative GameEngine)
                     │ (בעלים על החדר הזה)   │
                     └─────────────────────┘
+
+6. סטטוס בפועל (2026-07-30)
+
+שלבים 1-5 מסעיף 3 הושלמו בקוד (ר' `PLAN_split_6_services.md` §6 לפירוט מלא, כולל סטיות מהתכנון וההצדקות שלהן):
+
+- **שלבים 1-2** (קונטיינר בודד, אז Docker Compose עם Redis+Postgres אמיתיים) — קיימים מקודם.
+- **שלב 3** (פיצול אמיתי ל-6 הרכיבים) — הושלם: `server.shard`/`server.gateway`/`server.matchmaking`/`server.allocator`/`server.apigateway`, כל אחד תהליך נפרד. הרכיב היחיד שלא קיבל תהליך ייעודי משלו הוא "Observability" (סעיף 1 למעלה) - זה נשאר structured logging + health checks בכל תהליך (ר' למטה), לא שירות נפרד; זה תואם את המשפט המפורש בסעיף 1 עצמו ("צריך dashboard/metrics אמיתיים לפני production" - עדיין לא).
+- **שלב 4** (Redis) — הושלם באופן חלקי-מכוון: תור ה-matchmaking וה-registry של active-room/reconnect עברו ל-Redis. **מיפוי room_id → shard במובן המילולי (טבלה נפרדת שאפשר לשאול "איזה shard מריץ את החדר הזה") לא מומש** - הקצאת ה-shard קורית פעם אחת ב-`RoomAllocatedPayload.shardId` ולא נשמרת בשום מקום אחר, כי שום דבר לא צריך לשאול את זה אחרי ההקצאה כרגע (כל תעבורת המשחק זורמת דרך `room.<roomId>.commands/.updates`, לא תלויה ב-shard id). זו הכרעת scope, לא פספוס: אם/כשיהיה צורך אמיתי (למשל Allocator עם כמה instances שצריכים להסכים מי מריץ מה אחרי restart), זה המקום להוסיף את זה.
+- **שלב 5** (Postgres + persistence אסינכרוני) — הושלם: `PostgresUserRepository`, ותהליך `EloWriterMain` נפרד שצורך אירועי Elo מ-NATS ומרוקן ב-batches (לא Postgres-batches ברמת SQL בלבד - גם ברמת האפליקציה: צובר X שניות ואז כותב את כל מה שהצטבר בטרנזקציה אחת).
+- **מה שעדיין לא קיים בכלל**: שלבים 6-10 (K3s, autoscaling, load test, multi-region, Agones) - שום דבר מהם לא התחיל.
+- **מגבלה ידועה שלא נפתרה**: זרימת ה-login/matchmaking דרך ה-WS Gateway בדיאגרמה למעלה (סעיף 5, "WS Gateway מאמת מול API Gateway... דרך ה-bus הפנימי") שונה מהמימוש בפועל - ה-login האמיתי (§3.5) קורה ישירות REST מהלקוח ל-API Gateway *לפני* שהלקוח בכלל פותח את ה-WebSocket, לא relay דרך ה-Gateway. זה תואם את הכוונה המקורית ("REST/HTTP → API Gateway" בשורה 64 למעלה) יותר מאשר את הדיאגרמה המפורטת בשורות 69-73, שנשארה לא מעודכנת מאז v2 של המסמך.

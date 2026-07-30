@@ -9,6 +9,7 @@ import server.persistence.SchemaInitializer;
 import server.persistence.SqliteConnectionProvider;
 
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,6 +63,21 @@ public class SqliteUserRepositoryTest {
         repository.updateElo(created.id, 1350);
 
         assertEquals(1350, repository.findByUsername("alice").orElseThrow().elo);
+    }
+
+    /** Server_Design.md step 5: SqliteUserRepository doesn't override {@code updateEloBatch}, so
+     *  this exercises the interface's default implementation (loop {@code updateElo} per entry)
+     *  against a real database - {@code PostgresUserRepository} overrides it for one real batched
+     *  round trip instead (see pom.xml's jacoco excludes for why that one needs a live Postgres). */
+    @Test
+    public void testUpdateEloBatchDefaultAppliesEveryEntry() {
+        UserRepository.StoredUser alice = repository.create("alice", "h", "s", 1200);
+        UserRepository.StoredUser bob = repository.create("bob", "h", "s", 1200);
+
+        repository.updateEloBatch(Map.of(alice.id, 1350, bob.id, 1050));
+
+        assertEquals(1350, repository.findByUsername("alice").orElseThrow().elo);
+        assertEquals(1050, repository.findByUsername("bob").orElseThrow().elo);
     }
 
     @Test

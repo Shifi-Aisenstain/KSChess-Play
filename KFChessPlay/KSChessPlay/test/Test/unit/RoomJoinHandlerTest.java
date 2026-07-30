@@ -8,8 +8,6 @@ import server.dispatch.handlers.RoomCreateHandler;
 import server.dispatch.handlers.RoomJoinHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
-import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -39,13 +37,14 @@ public class RoomJoinHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private RoomManager roomManager;
-    private Room startedRoom;
+    private TestSupport.GatewayHarness harness;
+    private String startedRoomId;
+    private long startedRoomWhiteUserId;
 
     @AfterEach
     public void tearDown() {
-        if (startedRoom != null && startedRoom.getGameSession() != null) {
-            startedRoom.getGameSession().handleResign(startedRoom.getUser('w').getId());
+        if (startedRoomId != null) {
+            harness.forceResign(startedRoomId, startedRoomWhiteUserId);
         }
     }
 
@@ -61,9 +60,9 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testJoinExistingRoomAssignsBlackAndStartsGame() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCreateHandler createHandler = new RoomCreateHandler(roomManager);
-        RoomJoinHandler joinHandler = new RoomJoinHandler(roomManager);
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCreateHandler createHandler = new RoomCreateHandler(harness.roomLifecycle, harness.roomRegistry);
+        RoomJoinHandler joinHandler = new RoomJoinHandler(harness.roomLifecycle, harness.roomRegistry);
 
         User alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
@@ -76,20 +75,22 @@ public class RoomJoinHandlerTest {
         assertEquals("GAMEROOM", bobSession.getCurrentRoomId());
         // Not necessarily bobSent.get(0): starting the game session now also synchronously relays a
         // GAME_STARTED GAME_EVENT to every room member (server.shard.ShardGameEventRelay, via the
-        // local Shard this test runs against - see TestSupport.newRoomManagerWithLocalShard) before
+        // local Shard this test runs against - see TestSupport.newGatewayHarness) before
         // RoomJoinHandler gets to send its own ROOM_JOINED confirmation. Both arrive; order between
         // them isn't a contract worth asserting on, so check "was it sent at all" instead of "was it first".
         assertTrue(bobSent.stream().anyMatch(s -> s.contains("BLACK")),
                 "expected a ROOM_JOINED message containing the assigned role somewhere in what bob received: " + bobSent);
 
-        startedRoom = roomManager.getRoom("GAMEROOM").orElseThrow();
-        assertNotNull(startedRoom.getGameSession());
+        startedRoomId = "GAMEROOM";
+        startedRoomWhiteUserId = alice.getId();
+        assertTrue(harness.roomManager.getRoom("GAMEROOM").orElseThrow().isStarted());
+        assertTrue(harness.roomRegistry.get("GAMEROOM").isPresent());
     }
 
     @Test
     public void testJoinUnknownRoomSendsError() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomJoinHandler joinHandler = new RoomJoinHandler(roomManager);
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomJoinHandler joinHandler = new RoomJoinHandler(harness.roomLifecycle, harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User bob = new User(2, "bob", 1200);
@@ -102,9 +103,9 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testRoomCancelBeforeGameStartsDetachesCreator() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCreateHandler createHandler = new RoomCreateHandler(roomManager);
-        RoomCancelHandler cancelHandler = new RoomCancelHandler(roomManager);
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCreateHandler createHandler = new RoomCreateHandler(harness.roomLifecycle, harness.roomRegistry);
+        RoomCancelHandler cancelHandler = new RoomCancelHandler(harness.roomLifecycle);
 
         User alice = new User(1, "alice", 1200);
         PlayerSession session = loggedInSession(alice, new ArrayList<>());
@@ -117,8 +118,8 @@ public class RoomJoinHandlerTest {
 
     @Test
     public void testRoomCancelWithNoCurrentRoomIsANoOp() throws Exception {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        RoomCancelHandler cancelHandler = new RoomCancelHandler(roomManager);
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        RoomCancelHandler cancelHandler = new RoomCancelHandler(harness.roomLifecycle);
 
         User alice = new User(1, "alice", 1200);
         PlayerSession session = loggedInSession(alice, new ArrayList<>());

@@ -3,22 +3,11 @@ package Test.unit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.auth.User;
-import server.net.MessageSink;
 import server.rooms.Room;
-import shared.protocol.MessageType;
-import shared.protocol.payload.ErrorPayload;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RoomTest {
-
-    private static final class RecordingSink implements MessageSink {
-        final List<Object> received = new ArrayList<>();
-        @Override public void send(MessageType type, Object payload) { received.add(payload); }
-    }
 
     private Room room;
     private User alice;
@@ -82,50 +71,9 @@ public class RoomTest {
     }
 
     @Test
-    public void testBroadcastToAllReachesEveryAttachedSink() {
-        room.reserveRole(alice);
-        room.reserveRole(bob);
-        RecordingSink sinkA = new RecordingSink();
-        RecordingSink sinkB = new RecordingSink();
-        room.attachSink(alice.getId(), sinkA);
-        room.attachSink(bob.getId(), sinkB);
-
-        room.broadcastToAll(MessageType.ERROR, new ErrorPayload("game over"));
-
-        assertEquals(1, sinkA.received.size());
-        assertEquals(1, sinkB.received.size());
-    }
-
-    @Test
-    public void testDetachedMemberDoesNotReceiveBroadcast() {
-        room.reserveRole(alice);
-        RecordingSink sink = new RecordingSink();
-        room.attachSink(alice.getId(), sink);
-        room.detachMember(alice.getId());
-
-        room.broadcastToAll(MessageType.ERROR, new ErrorPayload("x"));
-
-        assertTrue(sink.received.isEmpty());
-    }
-
-    @Test
-    public void testSendToTargetsOnlyThatUser() {
-        room.reserveRole(alice);
-        room.reserveRole(bob);
-        RecordingSink sinkA = new RecordingSink();
-        RecordingSink sinkB = new RecordingSink();
-        room.attachSink(alice.getId(), sinkA);
-        room.attachSink(bob.getId(), sinkB);
-
-        room.sendTo(alice.getId(), MessageType.ERROR, new ErrorPayload("only alice"));
-
-        assertEquals(1, sinkA.received.size());
-        assertTrue(sinkB.received.isEmpty());
-    }
-
-    @Test
-    public void testSendToUnattachedUserIsANoOp() {
-        room.reserveRole(alice);
-        assertDoesNotThrow(() -> room.sendTo(alice.getId(), MessageType.ERROR, new ErrorPayload("x")));
+    public void testNotStartedUntilMarkStartedIsCalled() {
+        assertFalse(room.isStarted());
+        room.markStarted();
+        assertTrue(room.isStarted());
     }
 }

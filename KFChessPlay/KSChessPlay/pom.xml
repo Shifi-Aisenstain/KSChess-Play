@@ -35,12 +35,32 @@
             <version>3.44.1.0</version>
         </dependency>
 
+        <!-- Server_Design.md step 5: PostgresUserRepository behind the existing UserRepository
+             interface, alongside SqliteUserRepository - SQLite stays the default for local dev/demo,
+             Postgres is a config switch for production (see server.config.PersistenceConfig). -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.13</version>
+        </dependency>
+
         <!-- Internal service-to-service bus for the 6-way split (Server_Design.md §3.3) -
              WS Gateway <-> Game Server Shards, Matchmaker <-> Game Allocator, etc. -->
         <dependency>
             <groupId>io.nats</groupId>
             <artifactId>jnats</artifactId>
             <version>2.26.0</version>
+        </dependency>
+
+        <!-- Server_Design.md step 4: shared state once there's more than one process instance -
+             the Matchmaker's waiting-queue and the Game Allocator's active-room/reconnect registry
+             (see shared.redis, server.matchmaking.RedisWaitingPlayersQueue, and
+             server.allocator.RedisActiveRoomRegistry). A plain, synchronous client (no reactive/async
+             API) matches this project's existing "no heavy framework" style, same reasoning as jnats. -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>5.1.0</version>
         </dependency>
 
         <dependency>
@@ -111,17 +131,25 @@
                 <configuration>
                     <excludes>
                         <exclude>Main.class</exclude>
-                        <exclude>server/ServerController.class</exclude>
-                        <!-- Composition-root wiring extracted out of ServerController (renamed
-                             from ServerMain; see fix for CR feedback: it used to inline SQL/
-                             service/dispatcher/network wiring directly, now split into these) -
-                             same rationale as ServerController itself: only exercised by a real
-                             main()/live SQLite file/live socket, and otherwise plain constructor-
-                             wiring with no branching logic worth unit testing. -->
+                        <!-- Composition-root wiring, extracted out of the various process Main
+                             classes below - only exercised by a real main()/live SQLite file/live
+                             socket, and otherwise plain constructor-wiring with no branching logic
+                             worth unit testing. server.ServerController/GameServicesConfig/
+                             server.rpc.MonolithBusGateway (the pre-§3.3/§3.4 monolith remainder and
+                             its bus front door) were deleted outright rather than excluded here: once
+                             Matchmaking (§3.3) and room/allocation (§3.4) moved to their own
+                             processes, that monolith had zero responsibilities left - RoomManager/
+                             MatchmakingService moved out, and its AuthService copy was already dead
+                             (login has run entirely inside server.gateway.WsGatewayMain's own copy
+                             since §3.2). §3.5's ApiGatewayMain will occupy this slot for real. -->
                         <exclude>server/config/PersistenceConfig*.class</exclude>
-                        <exclude>server/config/GameServicesConfig*.class</exclude>
-                        <exclude>server/config/DispatcherFactory*.class</exclude>
-                        <exclude>server/config/NetworkConfig*.class</exclude>
+                        <!-- WS Gateway composition root + its handler-registration wiring
+                             (PLAN_split_6_services.md §3.2). Same rationale as the other composition
+                             roots here: only exercised by a real main()/live NATS connection/live
+                             socket, or plain constructor-wiring with no branching logic worth unit
+                             testing. -->
+                        <exclude>server/gateway/WsGatewayMain*.class</exclude>
+                        <exclude>server/gateway/GatewayDispatcherFactory*.class</exclude>
                         <exclude>view/GameWindow*.class</exclude>
                         <exclude>client/ui/HomeScreen*.class</exclude>
                         <exclude>client/ui/RoomDialog*.class</exclude>
@@ -134,11 +162,40 @@
                              test double implementing the same MessageBus interface) is what's
                              actually unit tested - see MessageBusTest. -->
                         <exclude>shared/bus/NatsMessageBus*.class</exclude>
+                        <!-- Server_Design.md step 4: same reasoning as NatsMessageBus above - these
+                             need a live Redis server to exercise for real; the InMemory* doubles
+                             implementing the same interfaces are what's actually unit tested (see
+                             WaitingPlayersQueueTest/ActiveRoomRegistryTest). -->
+                        <exclude>shared/redis/RedisConnectionProvider*.class</exclude>
+                        <exclude>server/matchmaking/RedisWaitingPlayersQueue*.class</exclude>
+                        <exclude>server/allocator/RedisActiveRoomRegistry*.class</exclude>
+                        <!-- Server_Design.md step 5: same reasoning again - these need a live
+                             Postgres server to exercise for real; SqliteUserRepository (already
+                             covered by SqliteUserRepositoryTest against a real temp-file SQLite db)
+                             proves the shared UserRepository contract these implement identically. -->
+                        <exclude>server/persistence/PostgresConnectionProvider*.class</exclude>
+                        <exclude>server/persistence/PostgresSchemaInitializer*.class</exclude>
+                        <exclude>server/auth/PostgresUserRepository*.class</exclude>
                         <!-- Game Server Shard composition root (PLAN_split_6_services.md §3.1) - same
-                             rationale as server/ServerController above: only exercised by a real
-                             main()/live NATS connection/live SQLite file. Its actual logic lives in
+                             rationale as the other composition roots here. Its actual logic lives in
                              GameShardRuntime, which *is* unit tested (against InMemoryMessageBus). -->
                         <exclude>server/shard/GameServerShardMain*.class</exclude>
+                        <!-- Matchmaker composition root (PLAN_split_6_services.md §3.3) - same
+                             rationale. Its actual logic lives in MatchmakerRuntime, which *is* unit
+                             tested (against InMemoryMessageBus). -->
+                        <exclude>server/matchmaking/MatchmakerMain*.class</exclude>
+                        <!-- Game Allocator composition root (PLAN_split_6_services.md §3.4) - same
+                             rationale. Its actual logic lives in GameAllocatorRuntime, which *is* unit
+                             tested (against InMemoryMessageBus). -->
+                        <exclude>server/allocator/GameAllocatorMain*.class</exclude>
+                        <!-- API Gateway composition root (PLAN_split_6_services.md §3.5) - same
+                             rationale. Its REST handler logic lives in LoginRestHandler, which *is*
+                             unit tested (against a real loopback HttpServer - see LoginRestHandlerTest). -->
+                        <exclude>server/apigateway/ApiGatewayMain*.class</exclude>
+                        <!-- Elo writer composition root (Server_Design.md step 5) - same rationale.
+                             Its actual batching logic lives in EloWriterRuntime, which *is* unit
+                             tested (against InMemoryMessageBus and a fake UserRepository). -->
+                        <exclude>server/persistence/EloWriterMain*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -192,27 +249,8 @@
                             </transformers>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>server-jar</id>
-                        <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>server</shadedClassifierName>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>server.ServerController</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-
                     <!-- Game Server Shard (PLAN_split_6_services.md §3.1) - the first of the 6
-                         components in Server_Design.md §1 to get its own runnable jar/mainClass.
-                         The other 4 (WS Gateway/Matchmaker/Allocator/API Gateway) get theirs, plus a
-                         single build-arg-driven Dockerfile replacing the current per-role copies, in
-                         §3.7 ("wiring build/deploy") - not here, to keep this sub-step's diff scoped
-                         to what §3.1 actually needs to be runnable/testable. -->
+                         components in Server_Design.md §1 to get its own runnable jar/mainClass. -->
                     <execution>
                         <id>shard-jar</id>
                         <phase>package</phase>
@@ -223,6 +261,96 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>server.shard.GameServerShardMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- WS Gateway (PLAN_split_6_services.md §3.2) - the second of the 6 components
+                         to get its own runnable jar/mainClass. -->
+                    <execution>
+                        <id>gateway-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>gateway</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.gateway.WsGatewayMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- Matchmaker (PLAN_split_6_services.md §3.3) - the third of the 6 components
+                         to get its own runnable jar/mainClass. -->
+                    <execution>
+                        <id>matchmaker-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>matchmaker</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.matchmaking.MatchmakerMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- Game Allocator (PLAN_split_6_services.md §3.4) - the fourth of the 6
+                         components to get its own runnable jar/mainClass. -->
+                    <execution>
+                        <id>allocator-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>allocator</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.allocator.GameAllocatorMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- API Gateway (PLAN_split_6_services.md §3.5) - the fifth of the 6 components
+                         listed in Server_Design.md §1 to get its own runnable jar/mainClass. All 5
+                         backend processes' jars build from one build-arg-driven Dockerfile (§3.7,
+                         JAR_CLASSIFIER picks which classifier ends up as app.jar) instead of a
+                         5th near-duplicate Dockerfile.apigateway. -->
+                    <execution>
+                        <id>apigateway-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>apigateway</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.apigateway.ApiGatewayMain</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- Elo writer (Server_Design.md step 5) - not one of the original 6 components
+                         (Server_Design.md §1/§4 lists "Persistence writers" as its own capacity-
+                         planning row though), added once async/batched persistence needed a real
+                         consumer process for BusEloWriter's NATS messages. -->
+                    <execution>
+                        <id>elowriter-jar</id>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>elowriter</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>server.persistence.EloWriterMain</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

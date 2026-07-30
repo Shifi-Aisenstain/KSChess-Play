@@ -7,7 +7,6 @@ import server.dispatch.handlers.ResignHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
 import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -50,21 +49,23 @@ public class ResignHandlerTest {
 
     @Test
     public void testResignEndsTheGame() throws Exception {
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         User alice = new User(1, "alice", 1200);
         User bob = new User(2, "bob", 1200);
-        Room room = roomManager.createRoomForMatch(alice, bob);
+        Room room = harness.roomManager.createRoomForMatch(alice, bob);
 
-        ResignHandler handler = new ResignHandler(roomManager);
+        ResignHandler handler = new ResignHandler(harness.roomRegistry);
         handler.handle(session(alice, room.getId(), new ArrayList<>()), emptyMessage(MessageType.RESIGN));
 
-        assertTrue(room.getGameSession().isOver());
+        assertTrue(harness.roomRegistry.get(room.getId()).orElseThrow().isOver());
     }
 
     @Test
     public void testResignWithoutActiveGameSendsError() throws Exception {
-        RoomManager roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
-        ResignHandler handler = new ResignHandler(roomManager);
+        TestSupport.GatewayHarness harness =
+                TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        ResignHandler handler = new ResignHandler(harness.roomRegistry);
 
         List<String> sent = new ArrayList<>();
         User carol = new User(99, "carol", 1200);

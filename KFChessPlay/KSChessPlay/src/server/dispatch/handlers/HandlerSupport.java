@@ -1,10 +1,9 @@
 package server.dispatch.handlers;
 
 import server.auth.User;
-import server.game.GameSessionHandle;
+import server.gateway.GatewayRoomRegistry;
+import server.gateway.GatewayRoomSession;
 import server.net.PlayerSession;
-import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.protocol.MessageType;
 import shared.protocol.payload.ErrorPayload;
 
@@ -20,17 +19,22 @@ final class HandlerSupport {
         return user;
     }
 
-    static GameSessionHandle requireActiveGame(RoomManager roomManager, PlayerSession session) {
+    /** Replaces the old {@code RoomManager}-backed lookup (PLAN_split_6_services.md §3.2): gameplay
+     *  handlers on this Gateway instance no longer reach a live {@code GameSessionHandle} at all -
+     *  they reach this room's {@link GatewayRoomSession} instead, which relays straight to the Shard
+     *  over the bus. {@code isOver()} is still checked here so a stray command against an already-
+     *  finished game gets the same "not started/not active" error a real live room would have given. */
+    static GatewayRoomSession requireActiveGame(GatewayRoomRegistry registry, PlayerSession session) {
         String roomId = session.getCurrentRoomId();
         if (roomId == null) {
             session.send(MessageType.ERROR, new ErrorPayload("You are not in a room."));
             return null;
         }
-        Room room = roomManager.getRoom(roomId).orElse(null);
-        if (room == null || room.getGameSession() == null) {
+        GatewayRoomSession roomSession = registry.get(roomId).orElse(null);
+        if (roomSession == null || roomSession.isOver()) {
             session.send(MessageType.ERROR, new ErrorPayload("Game has not started yet."));
             return null;
         }
-        return room.getGameSession();
+        return roomSession;
     }
 }

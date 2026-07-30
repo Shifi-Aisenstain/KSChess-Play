@@ -2,8 +2,8 @@ package server.shard;
 
 import models.Position;
 import server.auth.User;
-import server.auth.UserRepository;
 import server.game.GameSession;
+import server.rating.EloWriter;
 import server.rating.RatingService;
 import server.rooms.Room;
 import shared.bus.MessageBus;
@@ -37,12 +37,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * on {@link RoomBusSubjects#commands} for SELECT/MOVE/JUMP/RESIGN/ROOM_ROSTER traffic - see that
  * class's javadoc for the full subject table. One {@link GameSession} per allocated room, exactly
  * like {@code RoomManager} used to hold one per room in-process before the split.
+ *
+ * <p>Since PLAN_split_6_services.md §3.4, {@code room.allocated} is broadcast to every Shard
+ * instance rather than addressed to just one (there's no per-shard subject), so each allocation
+ * carries a {@link RoomAllocatedPayload#shardId} and every Shard ignores allocations meant for one
+ * of its siblings - see {@link #shardId} and {@code server.allocator.ShardSelector}, which is what
+ * actually decides that field's value.
  */
 public final class GameShardRuntime {
     private final MessageBus bus;
     private final EventBus eventBus;
     private final RatingService ratingService;
-    private final UserRepository userRepository;
+    private final EloWriter eloWriter;
+    private final String shardId;
     private final Map<String, GameSession> activeSessions = new ConcurrentHashMap<>();
     /** Guards against double-allocating the same room (e.g. a duplicate/retried {@code room.allocated})
      *  - checked-and-claimed atomically via {@link Set#add}, since {@link ConcurrentHashMap} can't
@@ -51,11 +58,12 @@ public final class GameShardRuntime {
     private final Set<String> allocatedRoomIds = ConcurrentHashMap.newKeySet();
 
     public GameShardRuntime(MessageBus bus, EventBus eventBus, RatingService ratingService,
-                             UserRepository userRepository) {
+                             EloWriter eloWriter, String shardId) {
         this.bus = bus;
         this.eventBus = eventBus;
         this.ratingService = ratingService;
-        this.userRepository = userRepository;
+        this.eloWriter = eloWriter;
+        this.shardId = shardId;
     }
 
     /** Starts listening for newly allocated rooms. Idempotent w.r.t. a given room id - a duplicate
@@ -67,12 +75,13 @@ public final class GameShardRuntime {
 
     private void onRoomAllocated(Message message) {
         RoomAllocatedPayload allocation = MessageCodec.decodePayload(message, RoomAllocatedPayload.class);
+        if (!shardId.equals(allocation.shardId)) return; // allocated to a sibling Shard, not us
         if (!allocatedRoomIds.add(allocation.roomId)) return; // already running this room
 
         User white = new User(allocation.whiteId, allocation.whiteUsername, allocation.whiteElo);
         User black = new User(allocation.blackId, allocation.blackUsername, allocation.blackElo);
         GameSession session = new GameSession(allocation.roomId, new BusUpdateSink(bus, allocation.roomId),
-                white, black, eventBus, ratingService, userRepository);
+                white, black, eventBus, ratingService, eloWriter);
         activeSessions.put(allocation.roomId, session);
 
         bus.subscribe(RoomBusSubjects.commands(allocation.roomId),

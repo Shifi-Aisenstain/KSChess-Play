@@ -7,7 +7,6 @@ import server.dispatch.handlers.SelectHandler;
 import server.net.PlayerSession;
 import server.rating.EloRatingService;
 import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.eventbus.EventBus;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
@@ -37,7 +36,7 @@ public class SelectHandlerTest {
         @Override public void updateElo(long userId, int newElo) { }
     }
 
-    private RoomManager roomManager;
+    private TestSupport.GatewayHarness harness;
     private Room room;
     private User alice;
     private User bob;
@@ -50,23 +49,23 @@ public class SelectHandlerTest {
     }
 
     private void startGame() {
-        roomManager = TestSupport.newRoomManagerWithLocalShard(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
+        harness = TestSupport.newGatewayHarness(new EventBus(), new EloRatingService(), new InMemoryUserRepository());
         alice = new User(1, "alice", 1200);
         bob = new User(2, "bob", 1200);
-        room = roomManager.createRoomForMatch(alice, bob);
+        room = harness.roomManager.createRoomForMatch(alice, bob);
     }
 
     @AfterEach
     public void tearDown() {
-        if (room != null && room.getGameSession() != null) {
-            room.getGameSession().handleResign(alice.getId());
+        if (room != null) {
+            harness.forceResign(room.getId(), alice.getId());
         }
     }
 
     @Test
     public void testSelectValidSquareDoesNotThrow() throws Exception {
         startGame();
-        SelectHandler handler = new SelectHandler(roomManager);
+        SelectHandler handler = new SelectHandler(harness.roomRegistry);
         Message message = MessageCodec.decodeEnvelope(
                 MessageCodec.encode(MessageType.SELECT, new SelectPayload(true, 6, 4)));
 
@@ -76,7 +75,7 @@ public class SelectHandlerTest {
     @Test
     public void testDeselectDoesNotThrow() throws Exception {
         startGame();
-        SelectHandler handler = new SelectHandler(roomManager);
+        SelectHandler handler = new SelectHandler(harness.roomRegistry);
         Message message = MessageCodec.decodeEnvelope(
                 MessageCodec.encode(MessageType.SELECT, new SelectPayload(false, 0, 0)));
 
@@ -86,7 +85,7 @@ public class SelectHandlerTest {
     @Test
     public void testSelectWithoutActiveGameSendsError() throws Exception {
         startGame();
-        SelectHandler handler = new SelectHandler(roomManager);
+        SelectHandler handler = new SelectHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
         PlayerSession noRoomSession = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());
         noRoomSession.setUser(new User(99, "carol", 1200));
@@ -100,7 +99,7 @@ public class SelectHandlerTest {
     @Test
     public void testSelectWithRoomIdForANonexistentRoomSendsGameNotStartedError() throws Exception {
         startGame();
-        SelectHandler handler = new SelectHandler(roomManager);
+        SelectHandler handler = new SelectHandler(harness.roomRegistry);
         List<String> sent = new ArrayList<>();
         PlayerSession session = new PlayerSession(TestSupport.fakeWebSocket(true, sent), TestSupport.newActivityLogger());
         session.setUser(new User(99, "carol", 1200));

@@ -2,9 +2,9 @@ package server.dispatch.handlers;
 
 import server.auth.User;
 import server.dispatch.MessageHandler;
+import server.gateway.GatewayRoomRegistry;
+import server.gateway.RoomLifecycleClient;
 import server.net.PlayerSession;
-import server.rooms.Room;
-import server.rooms.RoomManager;
 import shared.protocol.Message;
 import shared.protocol.MessageCodec;
 import shared.protocol.MessageType;
@@ -13,10 +13,12 @@ import shared.protocol.payload.RoomActionPayload;
 import shared.protocol.payload.RoomStatusPayload;
 
 public final class RoomCreateHandler implements MessageHandler {
-    private final RoomManager roomManager;
+    private final RoomLifecycleClient roomLifecycle;
+    private final GatewayRoomRegistry roomRegistry;
 
-    public RoomCreateHandler(RoomManager roomManager) {
-        this.roomManager = roomManager;
+    public RoomCreateHandler(RoomLifecycleClient roomLifecycle, GatewayRoomRegistry roomRegistry) {
+        this.roomLifecycle = roomLifecycle;
+        this.roomRegistry = roomRegistry;
     }
 
     @Override
@@ -25,13 +27,17 @@ public final class RoomCreateHandler implements MessageHandler {
         if (user == null) return;
 
         RoomActionPayload payload = MessageCodec.decodePayload(message, RoomActionPayload.class);
-        RoomManager.CreateResult result = roomManager.createRoom(user, session, payload.roomId);
+        RoomLifecycleClient.Result result = roomLifecycle.createRoom(user.getId(), user.getUsername(), user.getElo(), payload.roomId);
         if (!result.success) {
             session.send(MessageType.ERROR, new ErrorPayload(result.errorMessage));
             return;
         }
 
-        session.setCurrentRoomId(result.room.getId());
-        session.send(MessageType.ROOM_CREATED, new RoomStatusPayload(result.room.getId(), Room.Role.WHITE.name()));
+        session.setCurrentRoomId(result.roomId);
+        // The creator is always alone at this point (WHITE) - the room isn't allocated to a Shard
+        // yet, so this just queues them until a second player's ROOM_JOIN triggers room.allocated
+        // (see GatewayRoomRegistry).
+        roomRegistry.registerPendingMember(result.roomId, user.getId(), session);
+        session.send(MessageType.ROOM_CREATED, new RoomStatusPayload(result.roomId, result.role));
     }
 }

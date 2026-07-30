@@ -270,6 +270,14 @@ reachable from `Main.java` used them. `Main.java` has only ever supported the ne
 
 ## 6. Server architecture & full connection lifecycle
 
+> **Stale as of 2026-07-30 — read §15 first.** Everything below describes the original single-process
+> server (`server.ServerMain`/`ServerController`). That process no longer exists: the server has been
+> split into five independent processes (Game Server Shard, WS Gateway, Matchmaker, Game Allocator,
+> and a still-to-come API Gateway) per `PLAN_split_6_services.md`. §15 has the current process map;
+> the sections below are kept as a still-broadly-accurate description of the domain logic itself
+> (`GameSession`, `RoomManager`, matchmaking's pairing algorithm, the protocol/event bus) - just not of
+> which process owns what anymore.
+
 ### Composition root (`server/ServerMain.java`)
 Port `8887`, db file `kungfu_chess.db`, log `server_activity.log`, Elo match range ±100. Builds one
 shared `EventBus`; wires `SqliteConnectionProvider` → `SchemaInitializer.initialize()` →
@@ -786,3 +794,82 @@ phase, same exclude list as `report`) fails the build if in-scope `LINE` `COVERE
 actual `mvn test` to confirm `jacoco:check` passes for real** — it was designed against the same
 exclude patterns and rule shape JaCoCo's Maven docs specify, but never executed through Maven itself
 in this environment.
+
+## 15. Server split into 6 processes + Redis/Postgres (2026-07-30) — current process map
+
+The single-process server described in §6 is gone. `PLAN_split_6_services.md`'s sub-steps 3.1-3.8 are
+now all done (3.1/3.2 landed earlier - commit `10c2410 "starting docker"`; 3.3-3.8 and
+`Server_Design.md` steps 4-5 landed in this pass), each `*Main`/`*Runtime` pair following the same
+shape: a thin composition root (not unit tested — connects to a real NATS/Redis/Postgres, see
+`pom.xml`'s jacoco excludes) wrapping a domain class that *is* unit tested against
+`shared.bus.InMemoryMessageBus` (and, where relevant, an in-memory double for Redis/Postgres). All
+inter-process traffic goes over NATS (`shared.bus.MessageBus`/`NatsMessageBus`), subjects defined in
+`shared.bus.RoomBusSubjects` — see `PLAN_split_6_services.md` §2 for the full subject table and §3/§6
+for the sub-step-by-sub-step build narrative (including *why* each design choice was made, not just
+what it is).
+
+| Process | Entry point | Owns | Touches a database? |
+|---|---|---|---|
+| Game Server Shard | `server.shard.GameServerShardMain` | Runs `GameSession`s (the actual game engine) — one per allocated room. Publishes state/events to `room.<roomId>.updates`. Publishes Elo updates to NATS (`server.persistence.BusEloWriter`) instead of writing them itself. | No |
+| WS Gateway | `server.gateway.WsGatewayMain` | Every client WebSocket connection (`ChessWebSocketServer`/`SessionRegistry`/dispatch handlers). Sends IDENTIFY-derived identity, never a password (see below) - login itself lives in the API Gateway now. Relays gameplay traffic to/from the Shard over `room.<roomId>.commands`/`.updates`. | No |
+| Matchmaker | `server.matchmaking.MatchmakerMain` | The ELO-range pairing queue (`MatchmakingServiceImpl`, algorithm unchanged since before any split; its waiting-queue *data* now lives in Redis - `RedisWaitingPlayersQueue`). Reaches the Allocator only over the bus (`BusRoomAllocationClient`), never in-process. | Redis |
+| Game Allocator | `server.allocator.GameAllocatorMain` | Room creation/joining/cancellation and the active-room/reconnect registry (`RoomManager`, unchanged core logic; the registry itself now lives in Redis - `RedisActiveRoomRegistry`). Picks which Shard instance runs each room via round-robin (`ShardSelector`, `SHARD_IDS` env var). | Redis |
+| API Gateway | `server.apigateway.ApiGatewayMain` | The *only* `AuthService`/`UserRepository` in the whole system now. Exposes `POST /login` over plain `com.sun.net.httpserver` (not NATS - the one REST call in this project) and `/health`. | SQLite or Postgres (`PersistenceConfig`) |
+| Elo writer | `server.persistence.EloWriterMain` | Consumes `BusEloWriter`'s NATS messages, buffers them, and drains a batch into storage every ~2s (`EloWriterRuntime`) instead of the Shard writing synchronously per game. | SQLite or Postgres (`PersistenceConfig`) |
+
+**There is no "the server" process anymore.** `server.ServerController` (formerly `ServerMain`),
+`server.config.GameServicesConfig`, and `server.rpc.MonolithBusGateway` were deleted outright once
+3.3/3.4 left them with zero responsibilities — `RoomManager`/`MatchmakingService` moved to their own
+processes, and the monolith's `AuthService` copy was already dead weight (the Gateway ran its own
+from §3.2 until §3.5 retired that too, in favor of the API Gateway above).
+
+**Login moved to REST (§3.5).** `MessageType.LOGIN`/`LoginHandler` are gone. The Swing client now
+calls `POST /login` on the API Gateway (`client.net.ApiGatewayClient`) *before* opening the WebSocket
+at all; once that succeeds, it opens the socket and sends `IDENTIFY` (`IdentifyPayload` - just the
+already-authenticated userId/username/elo, no password) to attach that identity to the connection
+(`server.dispatch.handlers.IdentifyHandler`, no `AuthService` dependency at all). `LOGIN_RESULT` is
+reused as the ack for both the REST call and the socket IDENTIFY, so the wire shape clients already
+know didn't need to change.
+
+**Observability (§3.6).** Every process's `ServerActivityLogger` now also emits one JSON object per
+line to stdout (alongside the existing human-readable file line) - see its own javadoc. Every process
+exposes a trivial `/health` (`shared.health.HealthServer`, `HEALTH_PORT`, default `8081`; the API
+Gateway folds it onto its existing HTTP server/`PORT` instead). Real dashboards/metrics are still
+explicitly out of scope, per the plan's own framing.
+
+**Build/deploy (§3.7/§3.8).** One root `Dockerfile`, build-arg `JAR_CLASSIFIER`, replaces what used to
+be 4 near-duplicate per-process Dockerfiles. `docker-compose.yml` runs all 6 processes above plus
+`nats`/`redis`/`postgres`. `build-and-run.ps1`/`run_server.ps1` are marked deprecated in favor of
+`docker compose up --build` (there's no single process left for `run_server.ps1` to launch);
+`run_client.ps1` still works for running the Swing client locally against a Dockerized backend.
+
+**Multi-shard routing, in brief**: `room.allocated` stays one global (broadcast) subject rather than
+gaining a new per-shard one — `RoomAllocatedPayload` just carries a `shardId` field, and each
+`GameShardRuntime` ignores allocations whose `shardId` isn't its own. `docker-compose.yml` today still
+only runs one `shard` replica (`SHARD_ID=shard-1`, matching the Allocator's single-entry
+`SHARD_IDS=shard-1`) — scaling to more is adding entries to both.
+
+**Redis (Server_Design.md step 4), in brief**: two pieces of state moved out of process-local memory
+into Redis, both accessed through a small interface with an `InMemory*` test double and a `Redis*`
+production implementation (`shared.redis.RedisConnectionProvider` underneath both) - exactly the
+`MessageBus`/`NatsMessageBus`/`InMemoryMessageBus` pattern applied again. **Not** moved to Redis:
+`RoomManager`'s room/role-reservation state (`Room`, the `rooms` map) - its atomicity today comes from
+plain Java `synchronized`/`ConcurrentHashMap.putIfAbsent`, and reproducing that correctly over Redis
+would need real transactions/Lua scripting; that's deliberately left as a known limitation rather than
+risking a correctness regression in already-tested code for a one-line plan bullet. Also **not**
+solved: true multi-replica Matchmaker dispatch - see `WaitingPlayersQueue`'s javadoc for exactly why
+that's still fine for today's single-replica reality but not fully distributed yet.
+
+**Postgres + async persistence (Server_Design.md step 5), in brief**: `UserRepository` gained a
+`default updateEloBatch(Map<Long,Integer>)` method (loops `updateElo` - correct for every existing
+implementation/test double unchanged) that `PostgresUserRepository` overrides with one real batched
+transaction. `server.game.GameSession` depends on the narrower `server.rating.EloWriter` (a single
+`updateElo` method) instead of the full `UserRepository` it used to need just for this one call - the
+Shard's production wiring passes a `BusEloWriter` (publishes to NATS) instead of a real repository, so
+the Shard no longer touches a database *at all*. `EloWriterMain` is the one consumer.
+
+**Cross-references for a fresh session**: `PLAN_split_6_services.md` is the design doc this table
+summarizes — read it for the *why*, not just the *what*, including §6's own running status log.
+`Server_Design.md` is one level up (the overall 6-service target architecture and production capacity
+plan this whole split is working towards) - steps 6-10 there (K3s, autoscaling, load test, multi-
+region, Agones) are not started.

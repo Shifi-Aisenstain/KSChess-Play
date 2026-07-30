@@ -1,48 +1,135 @@
-# Step 2 of Server_Design.md's build order (§3.2): a small local stack with
-# real Redis + Postgres, so the compose orchestration itself is proven before
-# any code changes. NOTE: server.ServerController does not talk to redis/postgres
-# yet - it still uses SQLite (kungfu_chess.db) inside its own container.
-# Wiring the app into these two is deliberately left for later steps in the
-# plan (§3.4 Redis for matchmaking/registry/presence, §3.5 PostgresUserRepository),
-# which themselves depend on the real 6-service split in §3.3.
+# Step 2 of Server_Design.md's build order (§3.2): a small local stack with real Redis + Postgres,
+# so the compose orchestration itself is proven before any code changes. Both are now actually wired
+# in: Redis since step 4 (Matchmaker's queue, Allocator's active-room registry), Postgres since step 5
+# (PostgresUserRepository - see `apigateway`/`elowriter` below).
 #
-# `nats` was added as part of §3.3 itself (see PLAN_split_6_services.md, sub-phase
-# 3.0): it's the internal service-to-service bus (WS Gateway <-> Game Server Shards,
-# Matchmaker <-> Game Allocator, etc.) - not the same role as redis, which stays
-# reserved for registry/queue/session state per §3.4.
+# `nats` was added as part of PLAN_split_6_services.md §3.0: it's the internal service-to-service bus
+# (WS Gateway <-> Game Server Shards, Matchmaker <-> Game Allocator, etc.) - not the same role as
+# redis, which holds registry/queue/session state instead (step 4).
 #
-# `shard` was added as part of §3.1 (PLAN_split_6_services.md, sub-phase 3.1): the first Game
-# Server Shard, running the real GameSession(s) out of process from `server` now. `server` (still
-# the monolith for everything else - WS handling, RoomManager, Matchmaker, Auth, per §3.1's scope)
-# hands rooms off to it over `nats` via room.allocated instead of running GameSession itself. Both
-# share the same SQLite file/volume for now (see GameServerShardMain's javadoc) - that's fixed
-# properly in §3.5, not here.
+# `shard` was added as part of §3.1: the first Game Server Shard, running the real GameSession(s) out
+# of process. SHARD_ID must match one of `allocator`'s SHARD_IDS entries (today, trivially, since both
+# default to a single "shard-1") - see GameShardRuntime's shardId filter. Since step 5, it publishes
+# Elo updates over `nats` (server.persistence.BusEloWriter) instead of writing to a database directly -
+# needs no DB connection of its own at all anymore.
+#
+# `gateway` was added as part of §3.2: the WS Gateway, holding every client socket - that's why the
+# 8887 port mapping lives here, not on any other service. `gateway` and `shard` talk to each other
+# directly over `nats` for gameplay traffic (server.gateway.GatewayRoomSession <-> the Shard).
+#
+# `matchmaker` was added as part of §3.3: the ELO-range pairing queue, reaching `allocator` only over
+# `nats` (server.matchmaking.BusRoomAllocationClient) - no direct dependency on `gateway` or `shard`.
+# Since step 4, its waiting-queue data lives in `redis` (server.matchmaking.RedisWaitingPlayersQueue) -
+# see that class's javadoc for exactly what is/isn't shared this way.
+#
+# `allocator` was added as part of §3.4: owns room creation/joining/cancellation and the active-room/
+# reconnect registry, and picks which `shard` instance runs each room via round-robin over SHARD_IDS
+# (server.allocator.ShardSelector) - a comma-separated list, so scaling to more than one `shard`
+# replica later is just adding entries here and to `shard`'s own SHARD_ID. Since step 4, the active-
+# room registry lives in `redis` too (server.allocator.RedisActiveRoomRegistry) - needs no database of
+# its own at all (see GameAllocatorMain's javadoc).
+#
+# `apigateway` was added as part of §3.5: the one process that still owns AuthService/UserRepository,
+# behind POST /login (8080, published so the Swing client can reach it directly - it needs no `nats`
+# connection at all, unlike every other service here). With §3.3/§3.4/§3.5 all done, the original
+# monolith (`server.ServerController`) had nothing left to run at all - RoomManager/MatchmakingService
+# moved to `allocator`/`matchmaker`, and login moved here - so it and its `server` service were deleted
+# outright rather than kept as an idle placeholder.
+#
+# `elowriter` was added as part of step 5: drains `shard`'s NATS-published Elo updates into Postgres
+# in batches (server.persistence.EloWriterRuntime) instead of `shard` writing synchronously. The only
+# other process, besides `apigateway`, that touches a database - both point POSTGRES_URL at the same
+# `postgres` instance/table so they agree on what they're reading/writing.
+#
+# Every service above builds from the single build-arg-driven root `Dockerfile` (§3.7) - JAR_CLASSIFIER
+# picks which shaded jar (matching pom.xml's shade-plugin classifiers) becomes that container's
+# app.jar - replacing near-identical per-process Dockerfiles.
+#
+# Every service also exposes a trivial /health endpoint (§3.6, HEALTH_PORT, default 8081 - see
+# shared.health.HealthServer) - not published to the host since nothing outside these containers'
+# shared network needs to reach it yet; a real orchestrator (K3s, §6) would probe it in-network the
+# same way. (`apigateway` folds /health onto its existing HttpServer/PORT instead - see ApiGatewayMain.)
 services:
-  server:
-    build: .
-    ports:
-      - "8887:8887"
-    environment:
-      DB_FILE: "/data/kungfu_chess.db"
-      NATS_URL: "nats://nats:4222"
-    volumes:
-      - sqlite-data:/data
-    depends_on:
-      - redis
-      - postgres
-      - nats
-
   shard:
     build:
       context: .
-      dockerfile: Dockerfile.shard
+      args:
+        JAR_CLASSIFIER: shard
     environment:
-      DB_FILE: "/data/kungfu_chess.db"
       NATS_URL: "nats://nats:4222"
-    volumes:
-      - sqlite-data:/data
+      SHARD_ID: "shard-1"
+      HEALTH_PORT: "8081"
     depends_on:
       - nats
+
+  gateway:
+    build:
+      context: .
+      args:
+        JAR_CLASSIFIER: gateway
+    ports:
+      - "8887:8887"
+    environment:
+      PORT: "8887"
+      NATS_URL: "nats://nats:4222"
+      HEALTH_PORT: "8081"
+    depends_on:
+      - nats
+      - shard
+
+  matchmaker:
+    build:
+      context: .
+      args:
+        JAR_CLASSIFIER: matchmaker
+    environment:
+      NATS_URL: "nats://nats:4222"
+      REDIS_URL: "redis://redis:6379"
+      HEALTH_PORT: "8081"
+    depends_on:
+      - nats
+      - redis
+      - allocator
+
+  allocator:
+    build:
+      context: .
+      args:
+        JAR_CLASSIFIER: allocator
+    environment:
+      NATS_URL: "nats://nats:4222"
+      REDIS_URL: "redis://redis:6379"
+      SHARD_IDS: "shard-1"
+      HEALTH_PORT: "8081"
+    depends_on:
+      - nats
+      - redis
+
+  apigateway:
+    build:
+      context: .
+      args:
+        JAR_CLASSIFIER: apigateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      POSTGRES_URL: "jdbc:postgresql://postgres:5432/kungfu_chess?user=kungfu&password=kungfu"
+    depends_on:
+      - postgres
+
+  elowriter:
+    build:
+      context: .
+      args:
+        JAR_CLASSIFIER: elowriter
+    environment:
+      NATS_URL: "nats://nats:4222"
+      POSTGRES_URL: "jdbc:postgresql://postgres:5432/kungfu_chess?user=kungfu&password=kungfu"
+      HEALTH_PORT: "8081"
+    depends_on:
+      - nats
+      - postgres
 
   nats:
     image: nats:2-alpine
@@ -67,4 +154,3 @@ services:
 
 volumes:
   postgres-data:
-  sqlite-data:

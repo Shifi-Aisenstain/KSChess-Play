@@ -92,4 +92,47 @@ public class ServerActivityLoggerTest {
 
         assertTrue(readLog(path).contains("user=anonymous"));
     }
+
+    /** PLAN_split_6_services.md §3.6: every line also goes to stdout as one JSON object, alongside
+     *  the existing human-readable file line - captured here by temporarily swapping System.out. */
+    @Test
+    public void testLogTrafficAlsoEmitsStructuredJsonToStdout() throws Exception {
+        String path = newLogPath();
+        ServerActivityLogger logger = new ServerActivityLogger(path, new EventBus());
+
+        java.io.PrintStream originalOut = System.out;
+        java.io.ByteArrayOutputStream captured = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(captured, true, "UTF-8"));
+        try {
+            logger.logTraffic("IN", 42L, "PING", "{}");
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String jsonLine = captured.toString("UTF-8").trim();
+        com.google.gson.JsonObject parsed = com.google.gson.JsonParser.parseString(jsonLine).getAsJsonObject();
+        assertEquals("INFO", parsed.get("level").getAsString());
+        assertTrue(parsed.get("message").getAsString().contains("user=42"));
+        assertNotNull(parsed.get("timestamp"));
+    }
+
+    @Test
+    public void testLogFatalUsesFatalLevelInStructuredOutput() throws Exception {
+        String path = newLogPath();
+        ServerActivityLogger logger = new ServerActivityLogger(path, new EventBus());
+
+        java.io.PrintStream originalOut = System.out;
+        java.io.ByteArrayOutputStream captured = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(captured, true, "UTF-8"));
+        try {
+            logger.logFatal("startup", "database unreachable");
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        com.google.gson.JsonObject parsed =
+                com.google.gson.JsonParser.parseString(captured.toString("UTF-8").trim()).getAsJsonObject();
+        assertEquals("FATAL", parsed.get("level").getAsString());
+        assertTrue(parsed.get("message").getAsString().contains("database unreachable"));
+    }
 }

@@ -1,10 +1,19 @@
-# Shared build/run logic for run_server.ps1 / run_client.ps1. Portable on purpose: everything is
-# resolved relative to this script's own location ($PSScriptRoot) or the user's home directory
-# ($env:USERPROFILE), never a hardcoded machine-specific path.
+# Shared build/run logic for run_client.ps1 (and, historically, run_server.ps1). Portable on purpose:
+# everything is resolved relative to this script's own location ($PSScriptRoot) or the user's home
+# directory ($env:USERPROFILE), never a hardcoded machine-specific path.
 #
-# Prefers a real `mvn package` (uses the shaded client/server jars from pom.xml, so Maven stays
-# the source of truth for the build). Falls back to a plain javac compile against jars already
-# cached in the local ~/.m2/repository only if `mvn` isn't on PATH.
+# Prefers a real `mvn package` (uses the shaded jars from pom.xml, so Maven stays the source of truth
+# for the build). Falls back to a plain javac compile against jars already cached in the local
+# ~/.m2/repository only if `mvn` isn't on PATH.
+#
+# DEPRECATED as the primary way to run the *backend* (PLAN_split_6_services.md §3.7): since §3.3-§3.5,
+# there is no single "the server" process to launch this way anymore - it's 5 independent processes
+# (Shard/Gateway/Matchmaker/Allocator/API Gateway) plus NATS/Redis/Postgres, which is exactly what
+# `docker compose up --build` now runs together (see docker-compose.yml). This script is kept, not
+# deleted, because `Invoke-KungFuChess` is still the right way to run the Swing *client* locally
+# (see run_client.ps1) - a real display isn't a fit for a container - against a backend started via
+# Docker Compose (or, in a pinch, by invoking this function once per backend process/classifier
+# manually - it still works for that, just not as a single "run the server" entry point anymore).
 
 function Invoke-KungFuChess {
     param(
@@ -69,8 +78,12 @@ function Get-FallbackClasspath {
     # sqlite-jdbc's JDBC driver class-inits against slf4j-api - a transitive Maven dependency that
     # a real `mvn package` bundles automatically, but this manual fallback has to list explicitly.
     $slf4j     = Resolve-M2Jar "org\slf4j" "slf4j-api" "2.0.6"
+    # Added with the internal NATS bus (PLAN_split_6_services.md §3.0) - every server-side process
+    # imports io.nats.client.* now, so this fallback needs it on the compile/run classpath too, even
+    # though the client-only "Main" entry point this script mostly runs today never touches it.
+    $nats      = Resolve-M2Jar "io\nats" "jnats" "2.26.0"
     $classesDir = Join-Path $ProjectRoot "target\classes"
-    return ($classesDir, $gson, $websocket, $sqlite, $slf4j) -join ";"
+    return ($classesDir, $gson, $websocket, $sqlite, $slf4j, $nats) -join ";"
 }
 
 function Build-WithJavac {
