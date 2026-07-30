@@ -82,8 +82,17 @@ function Get-FallbackClasspath {
     # imports io.nats.client.* now, so this fallback needs it on the compile/run classpath too, even
     # though the client-only "Main" entry point this script mostly runs today never touches it.
     $nats      = Resolve-M2Jar "io\nats" "jnats" "2.26.0"
+    # Added with Redis (Server_Design.md step 4 - RedisActiveRoomRegistry/RedisWaitingPlayersQueue/
+    # RedisConnectionProvider). Build-WithJavac compiles every *.java under src, not just the client's
+    # own files, so this fallback classpath needs it too even though "Main" itself never touches Redis -
+    # missing it fails with "package redis.clients.jedis does not exist" on those server-side files.
+    $jedis     = Resolve-M2Jar "redis\clients" "jedis" "5.1.0"
+    # jedis's own compile-time dependency (JedisPool's constructor/getResource() signatures reference
+    # commons-pool2's pooling classes directly) - javac needs it even though our own code never imports
+    # org.apache.commons.pool2.* itself. Version pinned to exactly what jedis-5.1.0's POM declares.
+    $commonsPool2 = Resolve-M2Jar "org\apache\commons" "commons-pool2" "2.12.0"
     $classesDir = Join-Path $ProjectRoot "target\classes"
-    return ($classesDir, $gson, $websocket, $sqlite, $slf4j, $nats) -join ";"
+    return ($classesDir, $gson, $websocket, $sqlite, $slf4j, $nats, $jedis, $commonsPool2) -join ";"
 }
 
 function Build-WithJavac {
@@ -97,7 +106,12 @@ function Build-WithJavac {
     if (-not $sourceFiles) { throw "No .java files found under $srcDir." }
 
     $sourcesListFile = Join-Path $env:TEMP "kfchess-sources.txt"
-    $sourceFiles | Set-Content -Encoding utf8 $sourcesListFile
+    # NOT `Set-Content -Encoding utf8`: Windows PowerShell's "utf8" always writes a BOM, and javac
+    # reads an @argfile using the OS's default (non-UTF-8) codepage - on a Hebrew-locale Windows box
+    # that mis-decodes the BOM's bytes into a stray leading character, corrupting the very first path
+    # in the file ("Invalid filename: ?C:\...\Main.java"). Writing plain UTF-8 with no BOM avoids this
+    # regardless of the system's locale/codepage.
+    [System.IO.File]::WriteAllLines($sourcesListFile, $sourceFiles, [System.Text.UTF8Encoding]::new($false))
 
     # Lombok needs explicit annotation-processor flags under manual javac (see ARCHITECTURE.md §1) -
     # plain -cp does not trigger annotation processing on newer JDKs.

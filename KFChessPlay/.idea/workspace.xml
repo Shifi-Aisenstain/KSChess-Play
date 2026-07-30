@@ -8,74 +8,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4b0277e9-849e-4947-90bc-585205bfe14b" name="Changes" comment="add login and sign in in the console">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ARCHITECTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/ARCHITECTURE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/Dockerfile.shard" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/PLAN_split_6_services.md" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/PLAN_split_6_services.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/Server_Design.md" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/Server_Design.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/build-and-run.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/build-and-run.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KSChessPlay/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/run_client.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/run_client.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/run_server.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/run_server.ps1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/client/bridge/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/client/bridge/LoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/ServerController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/auth/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/auth/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/config/DispatcherFactory.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/config/GameServicesConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/config/NetworkConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/config/PersistenceConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/config/PersistenceConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/HandlerSupport.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/HandlerSupport.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/JumpHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/JumpHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/LoginHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/MoveHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/MoveHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/PlayCancelHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/PlayCancelHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/PlayRequestHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/PlayRequestHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/ResignHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/ResignHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomCancelHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomCancelHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomCreateHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomCreateHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomJoinHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/RoomJoinHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/SelectHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/dispatch/handlers/SelectHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/game/GameEventBroadcaster.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/game/GameSession.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/game/GameSession.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/game/GameUpdateSink.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/game/GameUpdateSink.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/gateway/GatewayRoomRegistry.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/gateway/GatewayRoomRegistry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/gateway/GatewayRoomSession.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/gateway/GatewayRoomSession.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/logging/ServerActivityLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/logging/ServerActivityLogger.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/matchmaking/MatchmakingServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/matchmaking/MatchmakingServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/net/ChessWebSocketServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/net/ChessWebSocketServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/rooms/RoomManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/rooms/RoomManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/rpc/MonolithBusGateway.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/shard/GameServerShardMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/shard/GameServerShardMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/shard/GameShardRuntime.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/shard/GameShardRuntime.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/bus/RoomBusSubjects.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/bus/RoomBusSubjects.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/MessageType.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/MessageType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomAllocatedPayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/shared/protocol/payload/RoomAllocatedPayload.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/DisconnectWatchdogTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/DisconnectWatchdogTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameEventBroadcasterTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameSessionConcurrencyTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameSessionConcurrencyTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameShardRuntimeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/GameShardRuntimeTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/JumpHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/JumpHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/LoginControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/LoginControllerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/LoginHandlerTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MessageCodecTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MessageCodecTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MoveHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/MoveHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/PlayRequestHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/PlayRequestHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ResignHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ResignHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomCreateHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomCreateHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomJoinHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomJoinHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomManagerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomManagerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/RoomTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/SelectHandlerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/SelectHandlerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ServerActivityLoggerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/ServerActivityLoggerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/SqliteUserRepositoryTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/SqliteUserRepositoryTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/TestSupport.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/test/Test/unit/TestSupport.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KSChessPlay/src/server/persistence/PostgresSchemaInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/KSChessPlay/src/server/persistence/PostgresSchemaInitializer.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,7 +86,9 @@
     "JUnit.test1.executor": "Run",
     "Maven.kschess-play [clean].executor": "Run",
     "Maven.kschess-play [compile].executor": "Run",
+    "Maven.kungfu-chess [compile].executor": "Run",
     "Maven.kungfu-chess [package].executor": "Run",
+    "Maven.kungfu-chess [test].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Repository.Attach.Annotations": "false",
     "Repository.Attach.JavaDocs": "false",
