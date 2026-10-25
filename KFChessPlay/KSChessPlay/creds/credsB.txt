@@ -1,2 +1,0 @@
-playerBlack
-passB

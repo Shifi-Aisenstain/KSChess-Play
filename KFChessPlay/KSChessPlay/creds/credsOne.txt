@@ -1,2 +1,0 @@
-playerOne
-pass1
